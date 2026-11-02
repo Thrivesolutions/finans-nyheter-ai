@@ -1,0 +1,2335 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Selskapsprofil – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<style>
+/* Oversikten skal aldri scrolles: innholdet tilpasses skjermhøyden. «Se mer» vises bare når noe ikke får plass. */
+.ov-fit { flex: 1; min-height: 0; overflow: hidden; max-height: 340px; }
+.ov-more { margin-top: 12px; align-self: flex-start; flex-shrink: 0; }
+@media (min-height: 660px) and (min-width: 1100px) {
+  html.ov-lock, html.ov-lock body { height: 100vh; overflow: hidden; }
+  html.ov-lock .app-shell { height: 100vh; min-height: 0; }
+  html.ov-lock .main { height: 100vh; min-height: 0; }
+  html.ov-lock .content { flex: 1 1 0; min-height: 0; overflow: hidden; padding-bottom: 22px; gap: 16px; }
+  html.ov-lock #panel-overview { flex: 1 1 0; min-height: 0; gap: 16px; }
+  html.ov-lock #panel-overview .ov-kpis { flex: 0 0 auto; flex-wrap: nowrap; gap: 10px; }
+  html.ov-lock #panel-overview .ov-kpis .kpi-tile { min-width: 0; padding: 12px 12px; }
+  html.ov-lock #panel-overview .ov-kpis .kpi-value { font-size: 17px; }
+  html.ov-lock #panel-overview .ov-kpis .kpi-label { font-size: 10px; letter-spacing: .02em; }
+  html.ov-lock #panel-overview .ov-row { flex-wrap: nowrap; min-height: 0; }
+  html.ov-lock #panel-overview .ov-row-top { flex: 1.1 1 0; }
+  html.ov-lock #panel-overview .ov-row-bottom { flex: 1 1 0; }
+  html.ov-lock #panel-overview .ov-row > * { min-width: 0 !important; min-height: 0; }
+  html.ov-lock #panel-overview .ov-fit { max-height: none; }
+  html.ov-lock #panel-overview .ov-chart { flex: 1 1 0; min-height: 50px; width: 100%; }
+}
+</style>
+</head>
+<body>
+<script>Auth.requireAuth();</script>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="varsler.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="konto.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm" id="sidebarAvatar">··</div><div class="col" style="line-height:1.2;min-width:0;flex:1;"><span style="font-size:13px;font-weight:600;" id="sidebarName">…</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div><button type="button" class="icon-btn plain" id="signOutBtn" title="Logg ut"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> Selskaper <span class="sep">/</span> <b id="crumbCompany">…</b><a href="selskaper.html" data-back="1" style="display:inline-flex;align-items:center;gap:5px;margin-left:16px;padding:4px 11px 4px 8px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:12px;font-weight:600;text-decoration:none;vertical-align:middle;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Tilbake</a></div>
+      <div class="row center gap-14">
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="companyHeader"></div>
+
+      <div class="tabbar" data-tabbar="company" id="companyTabbar">
+        <div class="tab active" data-tab="overview">Oversikt</div>
+        <div class="tab" data-tab="news">Nyheter</div>
+        <div class="tab" data-tab="financials">Finans</div>
+        <div class="tab" data-tab="valuation">Verdsettelse</div>
+        <div class="tab" data-tab="estimates">Målsetting</div>
+        <div class="tab" data-tab="paid">Estimater</div>
+        <div class="tab" data-tab="events">Hendelser</div>
+        <div class="tab" data-tab="ownership">Eierskap</div>
+        <div class="tab" data-tab="leadership">Ledelse og struktur</div>
+        <div class="tab" data-tab="thesis">Tese &amp; risiko</div>
+        <div class="tab" data-tab="sourcesai">Kilder</div>
+      </div>
+
+      <div class="tabpanel active" data-tabpanel="company" data-panel="overview" id="panel-overview"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="news" id="panel-news"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="financials" id="panel-financials"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="valuation" id="panel-valuation"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="estimates" id="panel-estimates"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="paid" id="panel-paid"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="events" id="panel-events"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="ownership" id="panel-ownership"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="leadership" id="panel-leadership"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="thesis" id="panel-thesis"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="sourcesai" id="panel-sourcesai"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ny kilde -->
+<div class="modal-overlay" id="modalNewSource">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3" id="srcModalTitle">Ny kilde</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="muted" id="srcModalHint" style="margin:0;font-size:12.5px;line-height:1.5;"></p>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Navn</span><input class="input" id="srcName" placeholder="F.eks. Offshore Energy Today"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;" id="srcUrlLabel">URL / lenke</span><input class="input" id="srcUrl" placeholder="https://..."></label>
+      <label class="col gap-6" id="srcCategoryWrap"><span style="font-size:12.5px;font-weight:600;">Kategori</span><select class="select" id="srcCategory"></select></label>
+      <label class="col gap-6" id="srcWhatWrap" style="display:none;"><span style="font-size:12.5px;font-weight:600;">Hva hentes her? (valgfritt)</span><textarea class="input" id="srcWhat" rows="3" placeholder="F.eks. «Oversikt over alle kvartalsrapporter», og hvorfor du vil at assistenten skal bruke lenken." style="resize:vertical;font-family:inherit;"></textarea></label>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="srcSaveBtn">Legg til kilde</button></div>
+  </div>
+</div>
+
+<!-- MODAL: velg periode for innsidehandler -->
+<div class="modal-overlay" id="modalInsPeriod">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Velg periode</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <div class="row gap-8 wrap" id="insPresets"></div>
+      <div class="row gap-12 wrap" style="margin-top:6px;">
+        <label class="col gap-6" style="flex:1;min-width:140px;"><span style="font-size:12.5px;font-weight:600;">Fra dato</span><input class="input" type="date" id="insFrom"></label>
+        <label class="col gap-6" style="flex:1;min-width:140px;"><span style="font-size:12.5px;font-weight:600;">Til dato</span><input class="input" type="date" id="insTo"></label>
+      </div>
+      <p class="muted" id="insPeriodErr" style="margin:0;font-size:12px;color:var(--neg);display:none;"></p>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="insPeriodApply">Bruk perioden</button></div>
+  </div>
+</div>
+
+<!-- MODAL: bekreft kilde-handling (deaktiver/slett) -->
+<div class="modal-overlay" id="modalConfirmSource">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3" id="confirmSourceTitle">Er du sikker?</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body"><p style="font-size:13px;margin:0;" id="confirmSourceText"></p></div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="confirmSourceBtn">Ja, bekreft</button></div>
+  </div>
+</div>
+
+<!-- MODAL: test prompt -->
+<div class="modal-overlay" id="modalTestPrompt">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 class="h3">Test prompt</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="testPromptBody"></div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Lukk</button><button class="btn btn-primary" id="runTestBtn">Kjør test</button></div>
+  </div>
+</div>
+
+<!-- MODAL: forklaring av verdsettelsesnøkkeltall -->
+<div class="modal-overlay" id="modalMetricInfo">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3" id="metricInfoTitle">–</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="metricInfoBody"></div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Lukk</button></div>
+  </div>
+</div>
+
+<!-- MODAL: eksempel på selskapsstruktur -->
+<div class="modal-overlay" id="modalOrgExample">
+  <div class="modal hx-modal">
+    <div class="modal-head"><div><h3 class="h3">Slik styres et børsnotert selskap</h3><span class="muted" style="font-size:12px;">Et fiktivt eksempel («Eksempel ASA») som viser hvem som bestemmer over hvem</span></div><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="hx-intro">Tenk på det som en kjede med fire ledd (pluss generalforsamlingen, der eierne stemmer). Makten går <b>nedover</b> (de øverste velger de under), og ansvaret går <b>oppover</b> (de under må stå til rette for de over). Slik er det i nesten alle børsnoterte selskaper.</p>
+      <div class="hx-flow">
+        <div class="hx-level">
+          <div class="hx-num">1</div>
+          <div class="hx-info"><h4>Eierne (aksjonærene)</h4><p>Alle som eier aksjer. <b>1 aksje = 1 stemme</b>, så den som eier mest, bestemmer mest. Eierne møtes én gang i året på <b>generalforsamlingen</b> og stemmer over blant annet hvem som skal sitte i styret.</p></div>
+          <div class="hx-vis">
+            <span class="hx-vis-label">Eksempel: hvem eier Eksempel ASA?</span>
+            <div class="hx-bar"><span style="width:40%;background:#18181b;">40 %</span><span style="width:25%;background:#2563eb;">25 %</span><span style="width:20%;background:#0f766e;">20 %</span><span style="width:15%;background:#a1a1aa;">15 %</span></div>
+            <div class="hx-legend"><span><i style="background:#18181b"></i>Grunnlegger</span><span><i style="background:#2563eb"></i>Fond (f.eks. DNB-fondene)</span><span><i style="background:#0f766e"></i>Staten / pensjonsfond</span><span><i style="background:#a1a1aa"></i>Småsparere (deg og meg)</span></div>
+            <span class="hx-note">Grunnlegger og fondene eier til sammen 65 %, så de kan i praksis avgjøre hver eneste avstemning. Småsparere kan stemme, men er for få til å avgjøre noe alene.</span>
+          </div>
+        </div>
+        <div class="hx-arrow"><span class="down"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Møtes på generalforsamlingen, én gang i året</span></div>
+        <div class="hx-level hx-mid">
+          <div class="hx-num">GF</div>
+          <div class="hx-info"><h4>Generalforsamlingen og valgkomiteen</h4><p>Her bruker eierne stemmene sine. Før møtet har en liten <b>valgkomité</b> funnet ut hvem som bør sitte i styret, slik at eierne ikke må finne på navn selv.</p></div>
+          <div class="hx-vis">
+            <span class="hx-vis-label">Slik går det til</span>
+            <ol class="hx-steps">
+              <li><span><b>Eierne velger valgkomiteen</b> (vanligvis 2–4 personer), ofte folk som representerer de største eierne, eller uavhengige.</span></li>
+              <li><span><b>Komiteen foreslår</b> hvem som skal sitte i styret og hva de skal ha i honorar, etter å ha snakket med eierne og kandidatene.</span></li>
+              <li><span><b>Forslaget sendes ut</b> sammen med innkallingen til alle aksjonærer.</span></li>
+              <li><span><b>Eierne stemmer</b> på generalforsamlingen: forslaget vedtas, eller endres.</span></li>
+            </ol>
+            <span class="hx-note">Hvem møter? Få møter fysisk, ofte bare noen titalls. Men de store eierne stemmer alltid, selv, digitalt eller via fullmakt, så ofte er godt over halvparten av aksjene representert.</span>
+          </div>
+        </div>
+        <div class="hx-arrow"><span class="down"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Velger styret</span><span class="up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Kan bytte ut hele styret</span></div>
+        <div class="hx-level">
+          <div class="hx-num">2</div>
+          <div class="hx-info"><h4>Styret</h4><p>Kontrollørene. Styret <b>ansetter og kan sparke sjefen</b>, godkjenner strategi, budsjett og regnskap, og passer på at ledelsen gjør en god jobb for eierne. Styret driver <b>ikke</b> selskapet i hverdagen.</p></div>
+          <div class="hx-vis">
+            <span class="hx-vis-label">Eksempel: styret i Eksempel ASA (7 personer)</span>
+            <div class="hx-chips"><span class="hx-chip dark">Styreleder</span><span class="hx-chip">Nestleder</span><span class="hx-chip">Medlem</span><span class="hx-chip">Medlem</span><span class="hx-chip">Medlem</span><span class="hx-chip">Ansattvalgt<small>(ansatte velger selv)</small></span><span class="hx-chip">Ansattvalgt</span></div>
+            <span class="hx-note">Valgt for 1–2 år av gangen. Valgkomiteen foreslår navn, og eierne stemmer. Ingen kan bare sende inn et tilfeldig navn.</span>
+          </div>
+        </div>
+        <div class="hx-arrow"><span class="down"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Ansetter sjefen (CEO)</span><span class="up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Kan sparke sjefen</span></div>
+        <div class="hx-level">
+          <div class="hx-num">3</div>
+          <div class="hx-info"><h4>Ledelsen (CEO og ledergruppen)</h4><p>Sjefen (CEO) og direktørene hans. De <b>driver selskapet hver dag</b> og rapporterer til styret. De bestemmer hva som skal gjøres, og sjefen velger selv resten av ledergruppen.</p></div>
+          <div class="hx-vis">
+            <span class="hx-vis-label">Eksempel: ledergruppen i Eksempel ASA</span>
+            <div class="hx-chips"><span class="hx-chip dark">CEO<small>sjef</small></span><span class="hx-chip">CFO<small>økonomi</small></span><span class="hx-chip">COO<small>drift</small></span><span class="hx-chip">CTO<small>teknologi</small></span><span class="hx-chip">Salgsdirektør</span><span class="hx-chip">HR-direktør</span></div>
+            <span class="hx-note">Ledelsen er ansatt i selskapet (de har altså en sjef: styret). De sitter vanligvis ikke i styret selv.</span>
+          </div>
+        </div>
+        <div class="hx-arrow"><span class="down"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Ansetter, sparker, planlegger og driver</span><span class="up"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Rapporterer resultater</span></div>
+        <div class="hx-level">
+          <div class="hx-num">4</div>
+          <div class="hx-info"><h4>Resten av selskapet</h4><p>Alle de ansatte og avdelingene. Ledelsen bestemmer <b>hvem som ansettes og sies opp</b>, lager planer og budsjetter, og sørger for at produkter lages og selges.</p></div>
+          <div class="hx-vis">
+            <span class="hx-vis-label">Eksempel: det ledelsen styrer</span>
+            <div class="hx-chips"><span class="hx-chip">Produksjon</span><span class="hx-chip">Salg og marked</span><span class="hx-chip">IT</span><span class="hx-chip">Økonomi</span><span class="hx-chip">Kundeservice</span><span class="hx-chip">Datterselskaper</span></div>
+            <span class="hx-note">Eksempel: Ledelsen bestemmer å åpne et nytt kontor, ansette 20 personer og legge ned en lite lønnsom avdeling. Slike ting trenger ikke eierne å godkjenne, så lenge det følger strategien styret har godkjent.</span>
+          </div>
+        </div>
+      </div>
+      <p class="hx-scen-title">Hva skjer hvis noe går galt?</p>
+      <div class="hx-scen">
+        <div><b>Sjefen gjør en dårlig jobb</b>Styret kan bytte ham ut, ofte på en vanlig styremøtedag. Eierne trenger ikke være med.</div>
+        <div><b>Styret gjør en dårlig jobb</b>Eierne kan stemme ut styret på neste generalforsamling og velge nye folk.</div>
+        <div><b>Selskapet blir kjøpt opp</b>Den nye storeieren får flertall, bytter styret, og det nye styret kan bytte sjef. Datterselskapet beholder sitt eget styre og sin ledelse, men de svarer til morselskapet.</div>
+      </div>
+      <p class="hx-note">Selskapets egen oversikt finner du i rammene på denne siden: styret og ledelsen under «Selskapsstruktur», og eierne på siden «Eierskap».</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-primary" data-modal-close>Lukk</button></div>
+  </div>
+</div>
+
+<!-- MODAL: guide til tese (ferdig utfylt eksempel) -->
+<div class="modal-overlay" id="modalScoreHelp">
+  <div class="modal hx-modal">
+    <div class="modal-head"><div><h3 class="h3">Hvordan vi gir poeng</h3><span class="muted" style="font-size:12px;">Hver nyhet merkes som positiv, nøytral eller negativ</span></div><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="hx-intro">Hver nyhet får en av tre merkelapper: <b>positiv</b>, <b>nøytral</b> eller <b>negativ</b>. Merkelappen sier om nyheten, hvis den stemmer, er <b>bra eller dårlig nytt for selskapet</b>. Plattformen gir ikke råd om å kjøpe eller selge, og merkelappen er ikke en prognose.</p>
+      <table class="score-table">
+        <thead><tr><th>Merkelapp</th><th>Farge</th><th>Betyr</th></tr></thead>
+        <tbody>
+          <tr class="pos"><td><b>Positiv</b></td><td>Grønn</td><td>Nyheten er bra for selskapet, for eksempel høyere inntjening, en ny stor kontrakt eller et mål som oppnås.</td></tr>
+          <tr class="neu"><td><b>Nøytral</b></td><td>Grå</td><td>Nyheten har liten eller ingen betydning for selskapet, eller den er for usikker til å tillegge noen retning.</td></tr>
+          <tr class="neg"><td><b>Negativ</b></td><td>Rød</td><td>Nyheten er dårlig for selskapet, for eksempel lavere inntjening, en bot eller et tap av en kunde.</td></tr>
+        </tbody>
+      </table>
+      <h4 class="score-h">Hva du ser på hver nyhet</h4>
+      <p class="ex-tip" style="margin-top:0;">Åpner du en nyhet, får du først en kort <b>AI-oppsummering</b> av hva som har skjedd. Under den står <b>Begrunnelse og konklusjon</b>: hvorfor nyheten er merket positiv, nøytral eller negativ, og hva som er usikkert. Er du uenig, kan du bruke begrunnelsen til å se hvor vi har tenkt annerledes enn deg.</p>
+
+      <div id="scoreDetailed" style="display:none;">
+      <!-- DEN DETALJERTE POENGSKALAEN (-10 til +10, fem nivåer) ER SKJULT FOR NÅ OG TAS I BRUK SENERE. Slå på ved å sette SCORE_DETAIL = true i skriptet. -->
+      <h4 class="score-h">Detaljert poengskala (-10 til +10)</h4>
+      <table class="score-table">
+        <thead><tr><th>Nivå</th><th>Poeng</th><th>Typisk</th><th>Betyr</th></tr></thead>
+        <tbody>
+          <tr class="pos"><td><b>Sterkt positiv</b></td><td>+7 til +10</td><td>+8</td><td>Kan endre bildet for selskapet. +10 brukes bare for det helt ekstreme, som et oppkjøpsbud.</td></tr>
+          <tr class="pos"><td><b>Positiv</b></td><td>+3 til +6</td><td>+4</td><td>Merkbart bra for selskapet, men ikke avgjørende.</td></tr>
+          <tr class="neu"><td><b>Nøytral</b></td><td>-2 til +2</td><td>0</td><td>Liten eller ingen betydning.</td></tr>
+          <tr class="neg"><td><b>Negativ</b></td><td>-3 til -6</td><td>-4</td><td>Merkbart dårlig for selskapet, men ikke avgjørende.</td></tr>
+          <tr class="neg"><td><b>Sterkt negativ</b></td><td>-7 til -10</td><td>-8</td><td>Kan svekke selskapet alvorlig. -10 brukes bare for det helt ekstreme, som en konkurs.</td></tr>
+        </tbody>
+      </table>
+      <h4 class="score-h">Slik kommer poengene frem</h4>
+      <p class="hx-intro" style="margin-top:0;">AI-en gjetter ikke et tall. Den svarer på fem faste spørsmål om hver nyhet, og tallet regnes ut fra svarene:</p>
+      <ol class="score-list">
+        <li><b>Retning:</b> er det positivt, nøytralt eller negativt for selskapet?</li>
+        <li><b>Størrelse:</b> hvor mye av driften eller inntjeningen berøres? Er det oppgitt beløp, sammenlignes det med selskapets størrelse.</li>
+        <li><b>Sikkerhet:</b> er det bekreftet av selskapet eller myndighetene, meldt av flere medier, av ett medium, eller bare rykter?</li>
+        <li><b>Nyhet:</b> er det nytt, delvis kjent, eller noe markedet allerede visste?</li>
+        <li><b>Varighet:</b> er det en engangshendelse, eller virker det over flere kvartaler?</li>
+      </ol>
+      <p class="ex-tip">Størrelsen setter utgangspunktet. Usikre saker trekkes ned (rykter kan aldri få mer enn +3 eller -3), og saker som allerede er kjent trekkes ned. Varige saker løftes litt. Saker som får +6/-6 eller mer, sjekkes en gang til av en sterkere modell, og den mest forsiktige vurderingen brukes.</p>
+      </div>
+
+      <h4 class="score-h">Sannsynlighet</h4>
+      <p class="ex-tip" style="margin-top:0;">Der plattformen vurderer hvor sannsynlig noe er (for eksempel under «Krysser bull- eller bear-casen?»), brukes bare tre ord: <b>Lite sannsynlig</b>, <b>Middels</b> og <b>Sannsynlig</b>. Det regnes ut av systemet, ikke gjettes: hvor godt kilden er bekreftet, hvor mange uavhengige kilder som sier det samme, om det finnes en konkret dato, og om nyere nyheter taler imot. Når selskapet selv, en børsmelding eller en myndighet har bekreftet det, står det <b>Bekreftet skal skje</b> eller <b>Bekreftet skal ikke skje</b>. Under hvert funn står det «Grunnlag» som viser hva vurderingen bygger på.</p>
+
+      <p class="ex-disc">Merkelappene er plattformens vurdering av det som står i nyhetene. De er ikke en fasit, og ikke råd om å kjøpe eller selge.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalThesisGuide">
+  <div class="modal hx-modal">
+    <div class="modal-head"><div><h3 class="h3">Slik fyller du ut tesen din</h3><span class="muted" style="font-size:12px;">Ferdig utfylt eksempel: Kongsberg Gruppen ASA (KOG) · Oslo Børs</span></div><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="hx-intro">Plattformen lager ikke teser selv og gir aldri råd om å kjøpe eller selge. Den følger <b>din</b> tese: hver nyhet som kommer inn, sammenlignes med det du har skrevet her, og merkes som at den <b>støtter</b>, <b>svekker</b> eller <b>ikke berører</b> det du ser for deg. Jo mer konkret du skriver, jo bedre kan den koble nyhetene til tesen din.</p>
+      <p class="ex-disc">Dette er et eksempel på <i>hvordan</i> du fyller ut, ikke en vurdering av aksjen og ingen anbefaling. Tallene er hentet fra selskapets rapport for 2. kvartal 2026 (13. juli 2026).</p>
+
+      <div class="ex-kpis">
+        <div class="ex-kpi"><span>Omsetning 2. kv. 2026</span><b>10,4 mrd. kr</b><i>+31 % fra året før</i></div>
+        <div class="ex-kpi"><span>Driftsmargin (EBIT)</span><b>16,1 %</b><i>mot 14,2 % året før</i></div>
+        <div class="ex-kpi"><span>Ordrebeholdning</span><b>157,5 mrd. kr</b><i>+40,9 mrd. kr på ett år</i></div>
+        <div class="ex-kpi"><span>Selskapets mål</span><b>100 mrd. kr</b><i>i omsetning i 2029</i></div>
+      </div>
+
+      <div class="card pad col gap-10" style="margin-top:14px;">
+        <div class="eyebrow">Hvorfor jeg følger/eier selskapet</div>
+        <div class="ex-text">Jeg eier Kongsberg Gruppen for å være med på en flerårig opptrapping av europeisk forsvarsinvestering. Selskapet har en ordrebeholdning på rundt 157 mrd. kr, som er mer enn tre ganger årsomsetningen, og det gir uvanlig god synlighet fremover.<br><br>Jeg tror på tre ting: (1) etterspørselen etter luftvern og presisjonsmissiler (NASAMS og JSM) er strukturell og ikke en engangstopp, (2) ledelsen under Eirik Lie har vist at den kan skalere opp produksjonen og kjøpe teknologi uten å miste marginen, og (3) målet om 100 mrd. kr i omsetning i 2029 er ambisiøst, men støttet av ordreboken.<br><br>Tidshorisont: 3–5 år. Det jeg følger tettest er om produksjonen vokser like raskt som ordrene, og om marginen holdes oppe underveis. Kortsiktige kursbevegelser rundt enkeltkvartaler bryr jeg meg mindre om.</div>
+        <span class="ex-tip"><b>Hvorfor dette er bra:</b> Det sier <i>hva</i> du eier selskapet for, <i>hvorfor</i> du tror på det, hvilken <i>tidshorisont</i> du har og <i>hva du følger tettest</i>. Det siste styrer hvilke nyheter plattformen løfter frem for deg.</span>
+      </div>
+
+      <div class="row wrap gap-16" style="margin-top:14px;">
+        <div class="card pad col gap-8" style="flex:1;min-width:260px;">
+          <div class="eyebrow" style="color:var(--pos);">Bull case</div>
+          <div class="ex-text">Ordreinngangen holder seg høy, og nye fabrikker i USA og Australia kommer i drift som planlagt. Omsetningen nærmer seg målet på 100 mrd. kr i 2029, samtidig som driftsmarginen holder seg på 16 % eller høyere.</div>
+          <div class="faint" style="font-size:11px;margin-top:4px;">Spesifikke drivere for dette scenarioet</div>
+          <div class="chip-row"><span class="chip">Ordrebeholdningen holder seg over 150 mrd. kr eller vokser kvartal for kvartal</span><span class="chip">Nye store kontrakter på JSM og NASAMS fra flere land</span><span class="chip">Nye missilfabrikker i USA og Australia starter produksjon innen utgangen av 2027</span><span class="chip">Oppkjøp (som Zone 5 Technologies) gir omsetning uten å presse marginen</span><span class="chip">Europeiske forsvarsbudsjetter fortsetter oppover mot NATOs mål på 3,5 % av BNP</span></div>
+        </div>
+        <div class="card pad col gap-8" style="flex:1;min-width:260px;">
+          <div class="eyebrow">Base case</div>
+          <div class="ex-text">Omsetning og ordreinngang fortsetter å vokse, men i et roligere tempo enn målet. Marginen holder seg rundt dagens nivå, og noen leveranser blir skjøvet noen kvartaler.</div>
+          <div class="faint" style="font-size:11px;margin-top:4px;">Spesifikke drivere for dette scenarioet</div>
+          <div class="chip-row"><span class="chip">Ordreinngangen er god, men uten nye rekordkvartaler</span><span class="chip">Produksjonsøkningen forsinkes med 1–3 kvartaler uten at kunder trekker seg</span><span class="chip">Driftsmarginen ligger mellom 14 % og 16 %</span><span class="chip">Forsvarsbudsjettene holder seg på dagens nivå uten nye løft</span></div>
+        </div>
+        <div class="card pad col gap-8" style="flex:1;min-width:260px;">
+          <div class="eyebrow" style="color:var(--neg);">Bear case</div>
+          <div class="ex-text">Leveransene klarer ikke å følge ordrene. Forsinkelser og høyere kostnader presser marginen, og veksten blir svakere enn målet. Politisk støtte svekkes, eller konkurrenter tar viktige kontrakter.</div>
+          <div class="faint" style="font-size:11px;margin-top:4px;">Spesifikke drivere for dette scenarioet</div>
+          <div class="chip-row"><span class="chip">Driftsmarginen faller under 13 % to kvartaler på rad</span><span class="chip">Store forsinkelser eller kostnadsoverskridelser på nye fabrikker eller viktige leveranser</span><span class="chip">Viktige kontrakter går til konkurrenter eller kanselleres</span><span class="chip">Europeiske land kutter eller utsetter forsvarsbudsjetter</span><span class="chip">Et stort oppkjøp betales for dyrt eller integreres dårlig</span></div>
+        </div>
+      </div>
+
+      <div class="hx-vis" style="margin-top:14px;">
+        <span class="hx-vis-label">Hva som gjør denne utfyllingen god</span>
+        <span class="ex-tip"><b>Driverne er målbare.</b> «Marginen faller under 13 % to kvartaler på rad» kan plattformen faktisk sjekke mot en nyhet. «Dårligere tider» kan den ikke.<br><b>Hvert scenario har både tekst og drivere.</b> Teksten er det store bildet, driverne er det som må skje for at bildet skal stemme.<br><b>Scenarioene er ikke bare speilbilder.</b> Bear handler om hva som kan gå galt (leveranser, kostnader, konkurrenter, politikk), ikke bare «motsatt av bull».<br><b>Hvert punkt er én ting.</b> Ikke «god vekst og høy margin» i samme driver. Da kan ikke plattformen se hvilken av dem en nyhet gjelder.</span>
+      </div>
+
+      <div class="hx-vis" style="margin-top:12px;">
+        <span class="hx-vis-label">Slik bruker plattformen det du har skrevet</span>
+        <span class="ex-tip"><b>Eksempel:</b> Kongsberg melder at Canada har valgt JSM-missilet. Plattformen merker nyheten som <b>støtter Bull case</b> (driveren «Nye store kontrakter på JSM og NASAMS fra flere land») og forklarer hvorfor. Kommer det flere nyheter som peker samme vei, vises de samlet under «Krysser bull- eller bear-casen?». Det er du som vurderer hva det betyr for deg. Plattformen gir ingen råd.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/live-company.js"></script>
+<script>
+function __startCompanyPage() {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+  var params = new URLSearchParams(location.search);
+  var ticker = params.get("ticker") || "DNB";
+  if (!MOCK.companies[ticker]) ticker = "DNB";
+
+  // ---------- persistence per selskap ----------
+  function loadOverrides(t) { return App.store.get("company:" + t, {}); }
+  function saveOverrides(t, ov) { App.store.set("company:" + t, ov); }
+
+  var overrides = loadOverrides(ticker);
+  var base = MOCK.companies[ticker];
+  var C = JSON.parse(JSON.stringify(base)); // arbeidskopi
+
+  if (overrides.inPortfolio !== undefined) C.inPortfolio = overrides.inPortfolio;
+  if (overrides.thesis && !C.live) Object.assign(C.thesis, overrides.thesis); // live-selskaper henter tesen fra databasen
+  if (overrides.sources) C.sources = overrides.sources;
+  if (overrides.thresholds) Object.assign(C.thresholds, overrides.thresholds);
+  if (overrides.newsMeta) {
+    C.news.forEach(function (n) {
+      var m = overrides.newsMeta[n.id];
+      if (m) Object.assign(n, m);
+    });
+  }
+  if (overrides.manualEvents) C.events = C.events.concat(overrides.manualEvents);
+
+  // Kilder er delt i tre seksjoner (group): "reports" (kvartalsrapporter), "events" (kommende
+  // hendelser) og "news" (nyheter og oppdateringer). Eldre kilder uten group er nyhetskilder.
+  C.sources.forEach(function (src) { if (!src.group) src.group = "news"; });
+  // Første gang (før brukeren har endret noe): foreslå rapport- og kalenderlenke ut fra selskapets
+  // eksisterende IR-kilde, slik at seksjonene ikke starter helt tomme.
+  if (!overrides.sources && !C.live) {
+    var irSrc = C.sources.filter(function (x) { return x.category === "ir" && x.url; })[0];
+    if (irSrc) {
+      C.sources.push({ id: MOCK.uid(), name: irSrc.name + " – rapporter og presentasjoner", url: irSrc.url, category: "ir", group: "reports", on: true, custom: false });
+      C.sources.push({ id: MOCK.uid(), name: irSrc.name + " – finanskalender", url: irSrc.url, category: "ir", group: "events", on: true, custom: false });
+    }
+    if (C.exchange === "Oslo Børs") {
+      C.sources.push({ id: MOCK.uid(), name: "Oslo Børs NewsWeb – børsmeldinger", url: "https://newsweb.oslobors.no", category: "exchange", group: "reports", on: true, custom: false });
+    }
+  }
+
+  function persist(patch) {
+    Object.assign(overrides, patch);
+    saveOverrides(ticker, overrides);
+  }
+
+  // Ekte, live kurs fra finance_plattform.company_quote_snapshot (hentet av
+  // fetch-stock-prices-jobben hvert 15. minutt mens børsen er åpen). Til den er
+  // hentet (eller hvis Yahoo mangler kurs for selskapet) viser vi eksempeldata,
+  // slik at siden aldri står tom eller må vente på nettverket før noe vises.
+  var isLiveQuote = false;
+  function loadLiveQuote() {
+    return Auth.db("companies").select("id").eq("ticker", ticker).maybeSingle().then(function (companyRes) {
+      if (companyRes.error || !companyRes.data) return;
+      return Auth.db("company_quote_snapshot")
+        .select("price, change_pct, week52_low, week52_high, updated_at")
+        .eq("company_id", companyRes.data.id)
+        .maybeSingle();
+    }).then(function (snapRes) {
+      if (!snapRes || snapRes.error || !snapRes.data || snapRes.data.price == null) return;
+      var s = snapRes.data;
+      C.price = Number(s.price);
+      C.changePct = s.change_pct != null ? Number(s.change_pct) : 0;
+      if (s.week52_low != null) base.week52Low = Number(s.week52_low);
+      if (s.week52_high != null) base.week52High = Number(s.week52_high);
+      isLiveQuote = true;
+      renderOverview();
+    }).catch(function (err) {
+      console.error("[Innsikt] Feil ved henting av live kurs:", err);
+    });
+  }
+
+  var G = MOCK.globalDefaults;
+  // Eksempeldata er datert 18. sep 2026. For selskap fra databasen brukes ekte dagens dato.
+  function nowDate() { return C.live ? new Date() : new Date("2026-09-18"); }
+
+  // ---------- formatting ----------
+  function n1(v) { return (v === undefined || v === null) ? "–" : v.toLocaleString("nb-NO", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
+  function n2(v) { return (v === undefined || v === null) ? "–" : v.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function pct(v, d) { if (v === undefined || v === null) return "–"; d = d === undefined ? 1 : d; return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(d).replace(".", ",") + " %"; }
+  function pctClass(v) { return v > 0 ? "pill-pos" : v < 0 ? "pill-neg" : "pill-neu"; }
+  function money(v, unit) { return n1(v) + " " + unit; }
+  function esc(s) { return App.escapeHtml(s); }
+
+  // Samme lyseblå som brukes på Kursutvikling (Oversikt) – brukes på Finans-sidens
+  // grafer/diagrammer, uavhengig av selskapets egen fargekode (C.color).
+  var CHART_BLUE = "#38bdf8";
+
+  // Delt "i"-popup for nøkkeltall (brukes på Finans og Verdsettelse): viser
+  // hva feltet betyr, hvordan det regnes ut, og et eksempel når det finnes.
+  function openMetricInfo(info) {
+    if (!info) return;
+    document.getElementById("metricInfoTitle").textContent = info.label;
+    var bodyHtml = '<p style="margin:0;font-size:13px;line-height:1.55;">' + esc(info.desc) + '</p>' +
+      '<div><div class="eyebrow" style="margin-bottom:4px;">Regnes ut som</div><p class="muted" style="margin:0;font-size:12.5px;line-height:1.5;">' + esc(info.formula) + '</p></div>';
+    if (info.example) {
+      bodyHtml += '<div><div class="eyebrow" style="margin-bottom:4px;">Eksempel</div><p class="muted" style="margin:0;font-size:12.5px;line-height:1.5;">' + esc(info.example) + '</p></div>';
+    }
+    document.getElementById("metricInfoBody").innerHTML = bodyHtml;
+    document.getElementById("modalMetricInfo").classList.add("open");
+  }
+  function wireMetricInfoButtons(root, infoMap) {
+    App.qsa("[data-metric-info]", root).forEach(function (btn) {
+      btn.addEventListener("click", function () { openMetricInfo(infoMap[btn.getAttribute("data-metric-info")]); });
+    });
+  }
+  function infoDot(key, label) {
+    return '<button type="button" class="info-dot" data-metric-info="' + key + '" aria-label="Om ' + esc(label) + '">i</button>';
+  }
+
+  // ---------- header ----------
+  function renderHeader() {
+    document.getElementById("crumbCompany").textContent = C.name;
+    document.title = C.name + " – Innsikt";
+
+    document.getElementById("companyHeader").innerHTML =
+      '<div class="row wrap between" style="gap:16px;">' +
+        '<div class="row center gap-16">' +
+          '<div style="width:56px;height:56px;border-radius:14px;background:' + C.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;">' + C.initials + '</div>' +
+          '<div>' +
+            '<div class="row center gap-10 wrap">' +
+              '<h1 class="h1" style="font-size:23px;">' + esc(C.name) + '</h1>' +
+            '</div>' +
+            '<span class="muted" style="font-size:13px;">' + C.ticker + ' · ' + C.exchange + ' · ' + C.sector + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+  }
+
+  // ---------- OVERSIKT ----------
+  var NO_MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, mai: 4, jun: 5, jul: 6, aug: 7, sep: 8, okt: 9, nov: 10, des: 11 };
+  function parseNoDate(s) {
+    var m = /(\d{1,2})\.\s*([a-zæøå]+)\s*(\d{4})/i.exec(s || "");
+    if (!m || NO_MONTHS[m[2].toLowerCase()] === undefined) return "2026-01-01";
+    var mm = String(NO_MONTHS[m[2].toLowerCase()] + 1); if (mm.length < 2) mm = "0" + mm;
+    var dd = String(parseInt(m[1], 10)); if (dd.length < 2) dd = "0" + dd;
+    return m[3] + "-" + mm + "-" + dd;
+  }
+
+  var PRICE_RANGES = [["1d", "1D"], ["1u", "1U"], ["1m", "1M"], ["3m", "3M"], ["6m", "6M"], ["ytd", "I år"], ["1y", "1 år"], ["5y", "5 år"]];
+  var priceState = { range: "1m" };
+
+  function seededRand(seed) { var x = Math.sin(seed) * 10000; return x - Math.floor(x); }
+
+  // Genererer en midlertidig kursserie for perioder vi ikke har ekte historikk for ennå.
+  // Erstattes med reell kursdata (API) når det kobles til.
+  function priceSeries(range) {
+    if (C.realPrices && C.realPrices.length > 1) {
+      var pts = C.realPrices, last = pts[pts.length - 1].t, cut;
+      var days = { "1d": 2, "1u": 7, "1m": 30, "3m": 91, "6m": 182, "1y": 365, "5y": 1826 }[range];
+      if (range === "ytd") cut = new Date(new Date(last).getFullYear(), 0, 1).getTime();
+      else if (range === "1d") cut = null;
+      else cut = last - days * 86400000;
+      var sel = range === "1d" ? pts.slice(-2) : pts.filter(function (p) { return p.t >= cut; });
+      if (sel.length < 2) sel = pts.slice(-2);
+      return sel.map(function (p) { return p.v; });
+    }
+    if (range === "1m") return C.priceHistory.slice();
+    var cfg = { "1d": [48, 0.006], "1u": [42, 0.014], "3m": [66, 0.028], "6m": [130, 0.04], "ytd": [180, 0.06], "1y": [220, 0.08], "5y": [260, 0.18] }[range];
+    var n = cfg[0], vol = cfg[1];
+    var end = C.price;
+    var start = range === "1d" ? end / (1 + C.changePct / 100) : end * (1 - vol * (n / 10));
+    var seed = ticker.split("").reduce(function (a, c) { return a + c.charCodeAt(0); }, 0) + n;
+    var arr = [start];
+    for (var i = 1; i < n - 1; i++) {
+      var r = (seededRand(seed + i * 12.9898) - 0.5) * 2;
+      var trend = start + (end - start) * (i / (n - 1));
+      arr.push(trend * (1 + r * vol * 0.4));
+    }
+    arr.push(end);
+    return arr;
+  }
+  function priceChangePct(series) { return ((series[series.length - 1] - series[0]) / series[0]) * 100; }
+
+  function materialityList() {
+    var real = C.news.filter(function (n) { return n.material; });
+    if (!C.lastReport) return real.sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 10);
+    var reportDate = parseNoDate(C.lastReport.date);
+    var reportEntry = {
+      id: "synthetic-report", source: "Rapport", time: App.fmtDateShort(reportDate), date: reportDate,
+      headline: C.lastReport.label + (C.lastReport.summary ? " – " + C.lastReport.summary : ""), impact: null, synthetic: true
+    };
+    return real.concat([reportEntry])
+      .sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 10);
+  }
+
+  function renderOverview() {
+    var lastLow = base.week52Low, lastHigh = base.week52High;
+
+    var series = priceSeries(priceState.range);
+    var pricePts = App.linePoints(series, 640, 150, 10, 10);
+    var priceArea = App.areaPoints(pricePts, 640, 150);
+    var periodChange = priceChangePct(series);
+    var chartColor = CHART_BLUE;
+    var rangeSeg = PRICE_RANGES.map(function (r) {
+      return '<span class="seg-item' + (priceState.range === r[0] ? " active" : "") + '" data-range="' + r[0] + '">' + r[1] + '</span>';
+    }).join("");
+
+    var todayD = nowDate();
+    var upcomingEvents = C.events.filter(function (e) { return new Date(e.date) >= todayD; })
+      .sort(function (a, b) { return new Date(a.date) - new Date(b.date); }).slice(0, 12);
+    var upcomingHtml = upcomingEvents.map(function (e) {
+      return '<div class="fit-item row between center gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-soft);">' +
+        '<div class="col gap-2" style="min-width:0;"><span style="font-size:12.5px;font-weight:600;">' + esc(e.title) + '</span><span class="faint" style="font-size:11px;">' + e.type + '</span></div>' +
+        '<span class="pill pill-outline" style="flex-shrink:0;height:fit-content;">' + App.fmtDate(e.date) + '</span>' +
+      '</div>';
+    }).join("") || '<p class="empty-hint">Ingen bekreftede kommende hendelser.</p>';
+
+    var insiderTrades = (C.ownership && C.ownership.insiderTrades) || [];
+    var OV_INSIDER_MAX = 20;
+    var insiderRows = insiderTrades.slice(0, OV_INSIDER_MAX).map(function (t) {
+      var total = t.shares * t.price;
+      return "<tr><td style='font-weight:600;'>" + esc(t.name) + "</td><td>" + esc(t.role) + "</td>" +
+        "<td><span class='pill " + (t.type === "Kjøp" ? "pill-pos" : "pill-neg") + "'>" + t.type + "</span></td>" +
+        "<td>" + t.shares.toLocaleString("nb-NO") + "</td><td>" + n2(t.price) + "</td>" +
+        "<td style='font-weight:600;'>" + Math.round(total).toLocaleString("nb-NO") + " kr</td>" +
+        "<td style='white-space:nowrap;'>" + App.fmtDate(t.date) + "</td></tr>";
+    }).join("") || "<tr><td colspan='7'><span class='empty-hint'>Ingen registrerte innsidehandler.</span></td></tr>";
+
+    var recentNews = materialityList().map(function (n) {
+      var badge = n.synthetic ? '<span class="pill pill-outline" style="flex-shrink:0;height:fit-content;">Rapport</span>' :
+        '<span class="pill ' + (n.impact > 0 ? "pill-pos" : n.impact < 0 ? "pill-neg" : "pill-neu") + '" style="flex-shrink:0;height:fit-content;">' + scoreText(n.impact) + '</span>';
+      return '<div class="fit-item row between center gap-12" style="padding:10px 0;border-bottom:1px solid var(--border-soft);">' +
+        '<div class="col gap-2" style="min-width:0;">' +
+          '<span style="font-size:13px;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + esc(n.headline) + '</span>' +
+          '<span class="faint" style="font-size:11.5px;">' + n.source + ' · ' + n.time + '</span>' +
+        '</div>' +
+        badge +
+      '</div>';
+    }).join("") || '<p class="empty-hint">Ingen vesentlige nyheter registrert.</p>';
+
+    var latestFin = C.financials.annual[C.financials.annual.length - 1] || {};
+    var netDebtText = n1(latestFin.netDebt) + " " + C.financials.unit;
+    var target = C.analystTarget;
+    var upside = target ? ((target.avg - C.price) / C.price) * 100 : null;
+    var targetText = target ?
+      n2(target.avg) + " " + C.currency + ' <span style="font-size:11px;font-weight:700;color:' + (upside >= 0 ? "var(--pos)" : "var(--neg)") + ';">(' + pct(upside) + ')</span>' :
+      "–";
+
+    var LOCKED_KPIS = ["Forward P/E", "Konsensus kursmål"];
+    var kpis = [
+      ["Markedsverdi", C.marketCapText], ["P/E", n1(C.peRatio)], ["Forward P/E", n1(C.fwdPe)],
+      ["EV/EBITDA", n1(C.evEbitda)], ["Dividendeyield", pct(C.divYield)], ["52-ukers range", n1(lastLow) + "–" + n1(lastHigh)],
+      ["Konsensus kursmål", targetText], ["Netto gjeld", netDebtText]
+    ].map(function (kv) {
+      if (C.kpiOverride && C.kpiOverride[kv[0]]) kv = C.kpiOverride[kv[0]];
+      if (LOCKED_KPIS.indexOf(kv[0]) > -1) {
+        return '<div class="kpi-tile" style="opacity:.55;"><div class="kpi-label">' + kv[0] + '</div>' +
+          '<div class="kpi-value" style="color:var(--text-faint);">Kommer</div>' +
+          '<div style="font-size:10px;font-weight:600;color:var(--text-faint);margin-top:3px;">Krever betalt kilde</div></div>';
+      }
+      return '<div class="kpi-tile"><div class="kpi-label">' + kv[0] + '</div><div class="kpi-value">' + kv[1] + '</div></div>';
+    }).join("");
+
+    var html =
+      '<div class="row wrap gap-16 ov-kpis">' + kpis + '</div>' +
+      '<div class="row wrap gap-16 ov-row ov-row-top">' +
+        '<div class="card pad col" style="flex:1.7;min-width:480px;">' +
+          '<div class="col gap-4" style="margin-bottom:14px;">' +
+            '<div class="eyebrow">Kursutvikling</div>' +
+            '<div class="row center gap-10">' +
+              '<span style="font-size:26px;font-weight:700;">' + n2(C.price) + ' ' + C.currency + '</span>' +
+              '<span class="pill ' + pctClass(periodChange) + '">' + pct(periodChange) + '</span>' +
+              (isLiveQuote ? '<span title="Live kurs fra Yahoo Finance" style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--pos);text-transform:uppercase;letter-spacing:.04em;"><span style="width:6px;height:6px;border-radius:50%;background:var(--pos);display:inline-block;"></span>Live</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<svg class="ov-chart" width="100%" height="150" viewBox="0 0 640 150" preserveAspectRatio="none">' +
+            '<defs><linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + chartColor + '" stop-opacity="0.22"/><stop offset="100%" stop-color="' + chartColor + '" stop-opacity="0"/></linearGradient></defs>' +
+            '<polyline points="' + priceArea + '" fill="url(#priceGrad)"></polyline>' +
+            '<polyline points="' + pricePts + '" fill="none" stroke="' + chartColor + '" stroke-width="2.4" vector-effect="non-scaling-stroke"></polyline>' +
+          '</svg>' +
+          '<div class="row center" style="margin-top:14px;">' +
+            '<div class="seg" id="priceRangeSeg" style="flex-wrap:wrap;justify-content:center;">' + rangeSeg + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="col gap-16" style="flex:1;min-width:280px;">' +
+          '<div class="card pad col" style="flex:1;min-height:0;">' +
+            '<div class="eyebrow" style="margin-bottom:6px;">Kommende hendelser</div>' +
+            '<div class="ov-fit">' + upcomingHtml + '</div>' +
+            '<button class="btn btn-sm ov-more" style="display:none;" data-goto-tab="events">Se alle hendelser →</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="row wrap gap-16 ov-row ov-row-bottom">' +
+        '<div class="card pad col" style="flex:1;min-width:320px;">' +
+          '<div class="eyebrow" style="margin-bottom:12px;">Siste vesentlige nyheter</div>' +
+          '<div class="ov-fit">' + recentNews + '</div>' +
+          '<button class="btn btn-sm ov-more" style="display:none;" data-goto-tab="news">Se mer →</button>' +
+        '</div>' +
+        '<div class="card pad col" style="flex:1.3;min-width:440px;">' +
+          '<div class="eyebrow" style="margin-bottom:12px;">Innsidehandler</div>' +
+          '<div class="ov-fit"><table class="tbl"><thead><tr><th>Navn</th><th>Rolle</th><th>Type</th><th>Antall</th><th>Pris</th><th>Totalt</th><th>Dato</th></tr></thead><tbody>' + insiderRows + '</tbody></table></div>' +
+          '<button class="btn btn-sm ov-more" style="display:none;" data-goto-tab="ownership">Se mer →</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("panel-overview").innerHTML = html;
+    App.qsa("#priceRangeSeg .seg-item", document.getElementById("panel-overview")).forEach(function (s) {
+      s.addEventListener("click", function () { priceState.range = s.getAttribute("data-range"); renderOverview(); });
+    });
+    syncOverviewLock();
+  }
+
+  // Oversikten er alltid låst til skjermhøyden (ingen scrolling). Hver ramme viser så mange rader som
+  // faktisk får plass; «Se mer» dukker bare opp når en rad er skjult fordi rammen er full.
+  function fitOverview() {
+    var root = document.getElementById("panel-overview");
+    if (!root || !root.classList.contains("active")) return;
+    App.qsa(".ov-fit", root).forEach(function (box) {
+      var items = App.qsa("tbody tr, .fit-item", box);
+      var btn = box.parentNode.querySelector(".ov-more");
+      items.forEach(function (it) { it.style.display = ""; });
+      if (btn) btn.style.display = "none";
+      if (!items.length || box.scrollHeight <= box.clientHeight + 1) return;
+      if (btn) btn.style.display = "";
+      var i = items.length;
+      while (i > 0 && box.scrollHeight > box.clientHeight + 1) { i--; items[i].style.display = "none"; }
+    });
+  }
+  function syncOverviewLock() {
+    var active = !!document.querySelector('#panel-overview.active');
+    document.documentElement.classList.toggle("ov-lock", active);
+    if (active) { window.scrollTo(0, 0); fitOverview(); requestAnimationFrame(fitOverview); }
+  }
+  document.addEventListener("tabchange", syncOverviewLock);
+  window.addEventListener("resize", App.debounce(fitOverview, 80));
+  window.addEventListener("load", function () { syncOverviewLock(); setTimeout(fitOverview, 250); });
+
+  // ---------- NYHETER ----------
+  var newsState = { search: "", sources: null, range: "all", openId: null };
+  var NEWS_RANGES = [["all", "Alle datoer"], ["24t", "Siste 24 timer"], ["uke", "Siste uke"], ["maned", "Siste måned"]];
+
+  // Ett samlet skille mellom nyheter, brukt for farge og tekst overalt. Skalaen går fra -10 til +10 og deles i fem nivåer
+  // (samme tabell som i «Hvordan vi gir poeng»): Sterkt positiv +7..+10, Positiv +3..+6, Nøytral -2..+2, Negativ -3..-6, Sterkt negativ -7..-10.
+  var SCORE_LEVELS = [
+    { key: "strong_pos", label: "Sterkt positiv", from: 7, to: 10, typical: 8, color: "var(--pos)", bg: "var(--pos-bg)" },
+    { key: "pos", label: "Positiv", from: 3, to: 6, typical: 4, color: "var(--pos)", bg: "var(--pos-bg)" },
+    { key: "neu", label: "Nøytral", from: -2, to: 2, typical: 0, color: "var(--neu)", bg: "var(--neu-bg)" },
+    { key: "neg", label: "Negativ", from: -6, to: -3, typical: -4, color: "var(--neg)", bg: "var(--neg-bg)" },
+    { key: "strong_neg", label: "Sterkt negativ", from: -10, to: -7, typical: -8, color: "var(--neg)", bg: "var(--neg-bg)" }
+  ];
+  // Plattformen viser foreløpig bare Positiv / Nøytral / Negativ (flate farger). Den detaljerte skalaen over (fem nivåer, tall -10..+10,
+  // «slik kom poengene frem») ligger klar og slås på igjen ved å sette SCORE_DETAIL = true.
+  var SCORE_DETAIL = false;
+  function simpleTier(v) {
+    v = Math.round(Number(v) || 0);
+    return v > 0 ? { key: "pos", label: "Positiv", color: "var(--pos)", bg: "var(--pos-bg)" }
+         : v < 0 ? { key: "neg", label: "Negativ", color: "var(--neg)", bg: "var(--neg-bg)" }
+         : { key: "neu", label: "Nøytral", color: "var(--neu)", bg: "var(--neu-bg)" };
+  }
+  function scoreText(v) { return SCORE_DETAIL ? ((v > 0 ? "+" : "") + v) : simpleTier(v).label; }
+  function impactTier(v) {
+    if (!SCORE_DETAIL) return simpleTier(v);
+    v = Math.round(Number(v) || 0);
+    for (var i = 0; i < SCORE_LEVELS.length; i++) if (v >= SCORE_LEVELS[i].from && v <= SCORE_LEVELS[i].to) return SCORE_LEVELS[i];
+    return SCORE_LEVELS[2];
+  }
+  var BASIS_WORDS = {
+    size: { negligible: "Ubetydelig", small: "Liten", noticeable: "Merkbar", large: "Stor", decisive: "Avgjørende" },
+    certainty: { confirmed: "Bekreftet", multiple_reports: "Flere kilder", single_report: "Én kilde", rumor: "Rykter" },
+    novelty: { "new": "Ny", partly_known: "Delvis kjent", already_known: "Allerede kjent" },
+    duration: { one_off: "Engangshendelse", lasting: "Varig" }
+  };
+  function basisLine(b) {
+    if (!SCORE_DETAIL || !b) return "";
+    var parts = [["Størrelse", "size"], ["Sikkerhet", "certainty"], ["Nyhet", "novelty"], ["Varighet", "duration"]].map(function (x) {
+      var w = BASIS_WORDS[x[1]][b[x[1]]]; return w ? x[0] + ": <b>" + w + "</b>" : "";
+    }).filter(Boolean);
+    return parts.length ? '<div class="faint" style="font-size:11.5px;margin-top:8px;">Slik kom poengene frem – ' + parts.join(" · ") + '</div>' : "";
+  }
+
+  function conclusionText(key) {
+    return key === "pos" ? "Positiv for selskapet. Hvis dette stemmer, er det bra nytt."
+         : key === "neg" ? "Negativ for selskapet. Hvis dette stemmer, er det dårlig nytt."
+         : "Nøytral. Saken har liten eller ingen betydning for selskapet, eller er for usikker til å peke en vei.";
+  }
+  function newsMatches(n) {
+    if (newsState.search && (n.headline + " " + n.aiSummary).toLowerCase().indexOf(newsState.search.toLowerCase()) === -1) return false;
+    if (newsState.sources && !newsState.sources.has(n.source)) return false;
+    if (newsState.range !== "all") {
+      var days = { "24t": 1, "uke": 7, "maned": 30 }[newsState.range];
+      var d = (new Date("2026-09-18") - new Date(n.date)) / 86400000;
+      if (d > days) return false;
+    }
+    return true;
+  }
+
+  function renderNewsList() {
+    var list = C.news.filter(newsMatches).slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+
+    var body = list.map(function (n) {
+      var open = newsState.openId === n.id;
+      var w = Math.min(Math.abs(n.impact) * 8, 80);
+      var left = n.impact >= 0 ? 80 : 80 - w;
+      var tier = impactTier(n.impact);
+      return '<div class="accordion-item' + (open ? " open" : "") + '" data-news-id="' + n.id + '">' +
+        '<div class="accordion-head" data-news-toggle="' + n.id + '">' +
+          '<div class="row center gap-12" style="min-width:0;">' +
+            '<span class="tag">' + esc(n.source) + '</span>' +
+            (n.read ? '<span class="faint" style="font-size:10.5px;font-weight:700;flex-shrink:0;">Lest</span>' : '') +
+            '<span style="font-size:13px;font-weight:600;">' + esc(n.headline) + '</span>' +
+          '</div>' +
+          '<div class="row center gap-10" style="flex-shrink:0;">' +
+            '<span class="faint" style="font-size:11.5px;">' + n.time + '</span>' +
+            '<span class="pill" style="color:' + tier.color + ';background:' + tier.bg + ';">' + scoreText(n.impact) + '</span>' +
+            '<svg class="accordion-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</div>' +
+        '</div>' +
+        '<div class="accordion-body">' +
+          '<div class="news-detail">' +
+            '<div class="news-detail-summary">' +
+              '<div class="news-detail-label">AI-oppsummering</div>' +
+              '<div class="news-detail-hint">Kort om hva som har skjedd, slik kilden beskriver det.</div>' +
+              '<p class="news-detail-text">' + esc(n.aiSummary) + '</p>' +
+            '</div>' +
+            '<div class="news-detail-main">' +
+              '<div class="news-detail-label">Begrunnelse og konklusjon</div>' +
+              '<div class="news-detail-hint">Hvorfor nyheten er vurdert som ' + tier.label.toLowerCase() + ' for selskapet, og hva som er usikkert.</div>' +
+              '<p class="news-detail-text muted">' + esc(n.rationale) + '</p>' +
+              '<p class="news-detail-concl" style="color:' + tier.color + ';"><b>Konklusjon:</b> ' + conclusionText(tier.key) + '</p>' +
+              basisLine(n.basis) +
+            '</div>' +
+            '<div class="news-detail-noterow">' +
+              '<div class="row gap-8 wrap">' +
+                '<button class="btn btn-sm" data-news-action="note" data-id="' + n.id + '">Legg til notat</button>' +
+              '</div>' +
+              '<div class="col gap-8" id="noteArea-' + n.id + '" style="display:none;">' +
+                '<textarea class="ta" rows="2" id="noteInput-' + n.id + '" placeholder="Skriv et notat om denne artikkelen...">' + esc(n.note || "") + '</textarea>' +
+                '<button class="btn btn-sm btn-primary" style="align-self:flex-start;" data-news-action="savenote" data-id="' + n.id + '">Lagre notat</button>' +
+              '</div>' +
+              (n.note ? '<p style="margin:0;font-size:11.5px;color:var(--text-mut);background:#fafafa;padding:8px 10px;border-radius:8px;"><b>Notat:</b> ' + esc(n.note) + '</p>' : '') +
+            '</div>' +
+            '<div class="news-detail-score" style="border-color:' + tier.color + ';background:' + tier.bg + ';">' +
+              '<div class="news-detail-score-label">AI-vurdering</div>' +
+              (SCORE_DETAIL
+                ? '<div class="news-detail-score-num" style="color:' + tier.color + ';">' + (n.impact > 0 ? "+" : "") + n.impact + '</div>' +
+                  '<div class="news-detail-score-sub">' + tier.label + '</div>' +
+                  '<div class="impact-bar-wrap" style="justify-content:center;"><div class="impact-bar"><div class="mid"></div><div class="fill" style="left:' + left + 'px;width:' + w + 'px;background:' + tier.color + ';"></div></div></div>'
+                : '<div class="news-detail-score-num" style="color:' + tier.color + ';font-size:22px;margin:6px 0 2px;">' + tier.label + '</div>') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("") || '<p class="empty-hint">Ingen nyheter matcher filteret.</p>';
+
+    document.getElementById("newsListContainer").innerHTML = body;
+    // En nyhet regnes som lest så snart du åpner den for å se AI-oppsummeringen – det
+    // finnes ingen egen "merk som lest/ulest"-knapp, dette skjer og vises automatisk.
+    function setRead(id, val) {
+      var item = C.news.filter(function (x) { return x.id === id; })[0];
+      if (!item || item.read === val) return;
+      item.read = val;
+      var meta = overrides.newsMeta || {};
+      meta[id] = Object.assign(meta[id] || {}, { read: val });
+      persist({ newsMeta: meta });
+    }
+    App.qsa("[data-news-toggle]", document.getElementById("newsListContainer")).forEach(function (h) {
+      h.addEventListener("click", function () {
+        var id = h.getAttribute("data-news-toggle");
+        var opening = newsState.openId !== id;
+        newsState.openId = opening ? id : null;
+        if (opening) setRead(id, true);
+        renderNewsList();
+      });
+    });
+    App.qsa("[data-news-action]", document.getElementById("newsListContainer")).forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute("data-id"), action = b.getAttribute("data-news-action");
+        var item = C.news.filter(function (x) { return x.id === id; })[0];
+        var meta = overrides.newsMeta || {};
+        if (action === "note") { var box = document.getElementById("noteArea-" + id); box.style.display = box.style.display === "none" ? "flex" : "none"; return; }
+        if (action === "savenote") { item.note = document.getElementById("noteInput-" + id).value; meta[id] = Object.assign(meta[id] || {}, { note: item.note }); persist({ newsMeta: meta }); }
+        renderNewsList();
+      });
+    });
+  }
+
+  // To like utseende moderne filter-dropdowns ("Kilder" og "Alle datoer") som deler
+  // samme knapp/panel-stil (.fdrop). Lukkes ved klikk utenfor, og kun én åpen om gangen.
+  function closeAllFdrops(except) {
+    App.qsa(".fdrop.open", document.getElementById("panel-news")).forEach(function (d) {
+      if (d !== except) d.classList.remove("open");
+    });
+  }
+
+  function wireFilterDropdowns(root) {
+    App.qsa("[data-fdrop-toggle]", root).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var drop = btn.closest(".fdrop");
+        var wasOpen = drop.classList.contains("open");
+        closeAllFdrops();
+        drop.classList.toggle("open", !wasOpen);
+      });
+    });
+    document.addEventListener("click", function () { closeAllFdrops(); });
+  }
+
+  function renderNews() {
+    var sources = Array.from(new Set(C.news.map(function (n) { return n.source; })));
+    var rangeLabel = NEWS_RANGES.filter(function (r) { return r[0] === newsState.range; })[0][1];
+    var html =
+      '<div class="card pad col gap-14">' +
+        '<div class="row wrap gap-10 between">' +
+          '<div class="search-wrap" style="width:260px;"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg><input class="input" id="newsSearchInput" placeholder="Søk i nyheter..."></div>' +
+          '<button type="button" class="btn btn-sm" id="openScoreHelp" style="align-self:center;">Hvordan vi gir poeng</button>' +
+          '<div class="row gap-8 wrap">' +
+            '<div class="fdrop" id="fdropSources">' +
+              '<button type="button" class="fdrop-btn" data-fdrop-toggle="sources"><span>Kilder</span>' +
+                '<svg class="fdrop-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>' +
+              '</button>' +
+              '<div class="fdrop-panel" style="min-width:210px;">' +
+                '<div class="fdrop-panel-label">Vis nyheter fra</div>' +
+                sources.map(function (s) { return '<label class="fdrop-check"><input type="checkbox" class="newsSourceCb" value="' + esc(s) + '" checked><span>' + esc(s) + '</span></label>'; }).join("") +
+              '</div>' +
+            '</div>' +
+            '<div class="fdrop" id="fdropRange">' +
+              '<button type="button" class="fdrop-btn" data-fdrop-toggle="range"><span id="rangeFdropLabel">' + esc(rangeLabel) + '</span>' +
+                '<svg class="fdrop-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>' +
+              '</button>' +
+              '<div class="fdrop-panel">' +
+                NEWS_RANGES.map(function (r) { return '<button type="button" class="fdrop-opt' + (r[0] === newsState.range ? " active" : "") + '" data-range-opt="' + r[0] + '">' + r[1] + '</button>'; }).join("") +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div id="newsListContainer" class="col"></div>' +
+      '</div>';
+    document.getElementById("panel-news").innerHTML = html;
+
+    if (SCORE_DETAIL) document.getElementById("scoreDetailed").style.display = "";
+    document.getElementById("openScoreHelp").addEventListener("click", function () { document.getElementById("modalScoreHelp").classList.add("open"); });
+    document.getElementById("newsSearchInput").addEventListener("input", App.debounce(function (e) { newsState.search = e.target.value; renderNewsList(); }, 200));
+    App.qsa(".newsSourceCb", document.getElementById("panel-news")).forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var checked = App.qsa(".newsSourceCb", document.getElementById("panel-news")).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+        newsState.sources = new Set(checked);
+        renderNewsList();
+      });
+    });
+    App.qsa("[data-range-opt]", document.getElementById("panel-news")).forEach(function (opt) {
+      opt.addEventListener("click", function (e) {
+        e.stopPropagation();
+        newsState.range = opt.getAttribute("data-range-opt");
+        document.getElementById("rangeFdropLabel").textContent = opt.textContent;
+        App.qsa("[data-range-opt]", document.getElementById("fdropRange")).forEach(function (o) { o.classList.toggle("active", o === opt); });
+        document.getElementById("fdropRange").classList.remove("open");
+        renderNewsList();
+      });
+    });
+    wireFilterDropdowns(document.getElementById("panel-news"));
+    renderNewsList();
+  }
+
+  // ---------- FINANS ----------
+  var finState = { period: "annual" };
+  // Hvilken rad som vises i den store detaljerte grafen akkurat nå (kun én av gangen),
+  // og om den skal vises som søyler eller linje.
+  var finChartState = { key: null, type: "bar" };
+  var FIN_ROWS = [
+    ["revenue", "Omsetning", "u"], ["revenueGrowth", "Omsetningsvekst", "%"], ["ebitda", "EBITDA", "u"], ["ebit", "EBIT", "u"],
+    ["netIncome", "Resultat", "u"], ["eps", "EPS", "n2"], ["grossMargin", "Bruttomargin", "%"], ["opMargin", "Driftsmargin", "%"],
+    ["fcf", "Fri kontantstrøm", "u"], ["capex", "CAPEX", "u"], ["debt", "Gjeld", "u"], ["netDebt", "Netto gjeld", "u"],
+    ["cash", "Kontantbeholdning", "u"], ["sharesOutText", "Utestående aksjer", "txt"]
+  ];
+
+  var FIN_METRIC_INFO = {
+    revenue: { label: "Omsetning", desc: "Omsetning viser de totale inntektene selskapet har hatt i perioden – altså alt som er solgt av varer og tjenester, før noen kostnader er trukket fra. Dette er «toppen» av resultatregnskapet, og alle andre lønnsomhetstall her på siden (EBITDA, EBIT, resultat) tar utgangspunkt i omsetningen og trekker fra ulike kostnader på veien nedover.", formula: "Sum av alt selskapet har solgt/fakturert i perioden (driftsinntekter), før varekostnader, lønn, avskrivninger, renter og skatt er trukket fra.", example: "Selger selskapet varer og tjenester for totalt 50 mrd kr i kvartalet, er omsetningen 50 mrd kr – uansett hvor mye det kostet å produsere og selge dem." },
+    revenueGrowth: { label: "Omsetningsvekst", desc: "Omsetningsvekst viser hvor mye omsetningen har endret seg sammenlignet med samme periode året før. Dette er et av de aller viktigste tegnene på om selskapet vokser eller krymper, og brukes ofte til å vurdere om prisingen av aksjen (for eksempel P/E) er rimelig ut fra farten selskapet vokser i.", formula: "(Omsetning nå − omsetning samme periode i fjor) ÷ omsetning i fjor, i prosent.", example: "Omsatte selskapet for 45 mrd i samme kvartal i fjor, og for 50 mrd i år, blir veksten (50 − 45) ÷ 45 ≈ +11 %." },
+    ebitda: { label: "EBITDA", desc: "EBITDA er driftsresultatet før renter, skatt, avskrivninger og nedskrivninger er trukket fra. Målet brukes mye fordi det viser hvor lønnsom selve kjernedriften er, uten at regnskapsmessige valg om avskrivninger eller hvor mye gjeld selskapet har påvirker tallet – det gjør det enklere å sammenligne ulike selskaper med hverandre.", formula: "Omsetning − driftskostnader (unntatt avskrivninger og nedskrivninger).", example: "Har selskapet 50 mrd i omsetning og 30 mrd i driftskostnader før avskrivninger, blir EBITDA 50 − 30 = 20 mrd." },
+    ebit: { label: "EBIT", desc: "EBIT er driftsresultatet etter at avskrivninger og nedskrivninger er trukket fra, men før renter og skatt. Dette er et strengere lønnsomhetsmål enn EBITDA, fordi det tar hensyn til at maskiner, bygninger og annet utstyr slites og mister verdi over tid.", formula: "EBITDA − avskrivninger og nedskrivninger.", example: "Har selskapet 20 mrd i EBITDA og 5 mrd i avskrivninger på utstyr og anlegg, blir EBIT 20 − 5 = 15 mrd." },
+    netIncome: { label: "Resultat", desc: "Resultat (også kalt nettoresultat eller «bunnlinjen») er det selskapet faktisk sitter igjen med etter at absolutt alle kostnader er trukket fra: driftskostnader, avskrivninger, renter på gjeld og skatt. Dette er tallet eierne av selskapet til syvende og sist bryr seg mest om, og det EPS (resultat per aksje) regnes ut fra.", formula: "EBIT − renter − skatt (+/− eventuelle andre engangsposter).", example: "Har selskapet 15 mrd i EBIT, betaler 2 mrd i renter på gjelden og 3 mrd i skatt, sitter det igjen med et resultat på 15 − 2 − 3 = 10 mrd." },
+    eps: { label: "EPS (Earnings per share)", desc: "EPS fordeler hele selskapets resultat på hver enkelt utestående aksje, og viser dermed hvor mye av overskuddet som «tilhører» én aksje. Tallet brukes direkte til å regne ut P/E, og er ofte det første analytikere ser på når de skal vurdere om et resultat var bra eller dårlig.", formula: "Resultat ÷ Antall utestående aksjer.", example: "Har selskapet et resultat på 10 mrd og 2 mrd utestående aksjer, blir EPS 10 ÷ 2 = 5 kr per aksje." },
+    grossMargin: { label: "Bruttomargin", desc: "Bruttomargin viser hvor stor andel av omsetningen som er igjen etter at direkte produksjons- eller varekostnader er trukket fra, altså før andre driftskostnader som lønn, markedsføring og administrasjon. En høy og stabil bruttomargin er ofte et tegn på at selskapet har prismakt eller en effektiv produksjon.", formula: "(Omsetning − varekostnad) ÷ Omsetning, i prosent.", example: "Koster varene og produksjonen 20 mrd av 50 mrd i omsetning, er bruttomarginen (50 − 20) ÷ 50 = 60 %." },
+    opMargin: { label: "Driftsmargin", desc: "Driftsmargin viser hvor stor andel av omsetningen som er igjen som driftsresultat (EBIT), etter at alle driftskostnader – inkludert lønn, markedsføring og avskrivninger – er trukket fra. Dette er et av de mest brukte målene på hvor lønnsom selve driften er, og gjør det enkelt å sammenligne selskaper i samme bransje uavhengig av størrelse.", formula: "EBIT ÷ Omsetning, i prosent.", example: "Har selskapet 15 mrd i EBIT og 50 mrd i omsetning, er driftsmarginen 15 ÷ 50 = 30 %." },
+    fcf: { label: "Fri kontantstrøm (FCF)", desc: "Fri kontantstrøm viser hvor mye reelle kontanter selskapet har igjen etter driften og de investeringene som er nødvendige for å holde virksomheten gående. Dette er penger som er fritt tilgjengelige til å betale utbytte, kjøpe tilbake aksjer eller betale ned gjeld – og regnes av mange som et mer «ærlig» lønnsomhetsmål enn det regnskapsmessige resultatet, siden det ikke lar seg påvirke av regnskapsmessige avskrivninger.", formula: "Kontantstrøm fra drift − CAPEX (investeringer i anlegg og utstyr).", example: "Har selskapet 18 mrd i kontanter fra driften og investerer 6 mrd i nytt utstyr, blir fri kontantstrøm 18 − 6 = 12 mrd." },
+    capex: { label: "CAPEX (Capital Expenditures)", desc: "CAPEX er pengene selskapet bruker på å kjøpe, bygge eller vedlikeholde langsiktige eiendeler som fabrikker, maskiner og annet utstyr. Høy CAPEX kan bety at selskapet investerer i fremtidig vekst, men den trekker samtidig ned den frie kontantstrømmen på kort sikt.", formula: "Sum investeringer i varige driftsmidler i perioden.", example: "Bygger selskapet en ny fabrikk for 6 mrd i løpet av kvartalet, er CAPEX for perioden 6 mrd." },
+    debt: { label: "Gjeld", desc: "Gjeld viser selskapets totale rentebærende gjeld – altså lån og obligasjoner som selskapet må betale renter og avdrag på. Tallet sier ikke alene om selskapet er i en sårbar posisjon; det må ses i sammenheng med hvor mye kontanter og inntjening selskapet har til å betjene gjelden med.", formula: "Sum kortsiktig og langsiktig rentebærende gjeld på balansen.", example: "Har selskapet 40 mrd i banklån og obligasjoner, er gjelden 40 mrd." },
+    netDebt: { label: "Netto gjeld", desc: "Netto gjeld tar gjelden og trekker fra kontantbeholdningen, for å vise den reelle gjeldsbelastningen hvis selskapet i teorien brukte alle kontantene sine til å betale ned gjeld med en gang. Et negativt tall betyr at selskapet har mer kontanter enn gjeld, altså en netto kontantposisjon – som regnes som finansielt sterkt.", formula: "Gjeld − Kontantbeholdning.", example: "Har selskapet 40 mrd i gjeld og 15 mrd i kontanter, blir netto gjeld 40 − 15 = 25 mrd." },
+    cash: { label: "Kontantbeholdning", desc: "Kontantbeholdning viser hvor mye kontanter og lett omsettelige verdipapirer selskapet har tilgjengelig akkurat nå. Dette er selskapets økonomiske buffer – penger som raskt kan brukes til å betale regninger, investere, eller tåle en periode med svakere inntjening.", formula: "Sum kontanter og kontantekvivalenter på balansen.", example: "Har selskapet 15 mrd på konto og i kortsiktige plasseringer, er kontantbeholdningen 15 mrd." },
+    sharesOutText: { label: "Utestående aksjer", desc: "Utestående aksjer er det totale antallet aksjer selskapet har utstedt og som eies av aksjonærene – deg selv inkludert, hvis du eier aksjen. Tallet brukes til å regne ut nøkkeltall per aksje, som EPS og P/E, og en endring i antallet (for eksempel via tilbakekjøp eller nyemisjon) påvirker hvor stor andel av selskapet hver aksje representerer.", formula: "Antall aksjer registrert som utstedt, hentet direkte fra selskapets kvartals- eller årsrapport.", example: "Har selskapet utstedt totalt 2 mrd aksjer, er det tallet på 2 mrd som vises her – og resultatet fordeles på nettopp disse aksjene når EPS regnes ut." }
+  };
+
+  // Henter ut et rent tall fra en rad, selv når verdien er en ferdigformatert
+  // tekststreng (som "3,10 mrd" for Utestående aksjer) – slik at også slike
+  // felt kan vises i den detaljerte grafen.
+  function finNumericValue(d, key, fmt) {
+    var v = d[key];
+    if (fmt === "txt") {
+      if (typeof v === "string") {
+        var m = v.replace(",", ".").match(/-?[\d.]+/);
+        return m ? parseFloat(m[0]) : 0;
+      }
+      return typeof v === "number" ? v : 0;
+    }
+    return v;
+  }
+  function finDisplayValue(v, fmt) {
+    if (v === null || v === undefined) return "–";
+    return fmt === "%" ? pct(v) : fmt === "n2" ? n2(v) : n1(v);
+  }
+  // Formatet for en rad: standard fra FIN_ROWS, men selskapstypen (bank/forsikring) kan overstyre.
+  function finRowFmt(r) { return (C.finFmt && C.finFmt[r[0]]) || r[2]; }
+  function finRowLabel(r) { return (C.finLabels && C.finLabels[r[0]]) || r[1]; }
+
+  // Bygger den store, detaljerte grafen (søyle eller linje) for én valgt rad:
+  // rutenett med verdimerker langs y-aksen, tallverdi over hver søyle/punkt,
+  // og periodenavn langs x-aksen.
+  function renderFinChartSvg(rowMeta, data) {
+    var key = rowMeta[0], fmt = finRowFmt(rowMeta);
+    var rawValues = data.map(function (d) { return finNumericValue(d, key, fmt); });
+    var values = rawValues.map(function (v) { return v === null || v === undefined ? 0 : v; });
+    var periods = data.map(function (d) { return d.period; });
+
+    var W = 900, H = 320, padL = 54, padR = 16, padTop = 16, padBottom = 34;
+    var innerW = W - padL - padR, innerH = H - padTop - padBottom;
+    var maxV = Math.max.apply(null, values), minV = Math.min.apply(null, values);
+    var axisMin = Math.min(0, minV), axisMax = Math.max(0, maxV);
+    if (axisMin === axisMax) { axisMax = axisMin + 1; }
+    var range = axisMax - axisMin;
+
+    function yFor(v) { return padTop + innerH - ((v - axisMin) / range) * innerH; }
+    var zeroY = yFor(0);
+
+    var gridCount = 4, gridLines = "";
+    for (var g = 0; g <= gridCount; g++) {
+      var gv = axisMin + (range * g / gridCount);
+      var gy = yFor(gv);
+      gridLines += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="var(--border)" stroke-width="1"></line>' +
+        '<text x="' + (padL - 8) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="10" fill="var(--text-faint)">' + finDisplayValue(gv, fmt) + '</text>';
+    }
+
+    var step = innerW / values.length;
+    var content;
+    if (finChartState.type === "bar") {
+      content = values.map(function (v, i) {
+        var barW = step * 0.46;
+        var x = padL + i * step + (step - barW) / 2;
+        var y = Math.min(yFor(v), zeroY);
+        var barH = Math.max(1, Math.abs(yFor(v) - zeroY));
+        var valY = yFor(v) - 8; if (v < 0) valY = yFor(v) + 14;
+        return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + barH.toFixed(1) + '" fill="' + CHART_BLUE + '" rx="3"></rect>' +
+          '<text x="' + (x + barW / 2).toFixed(1) + '" y="' + valY.toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--text-dim)">' + finDisplayValue(rawValues[i], fmt) + '</text>';
+      }).join("");
+    } else {
+      var pts = values.map(function (v, i) { return (padL + i * step + step / 2).toFixed(1) + "," + yFor(v).toFixed(1); }).join(" ");
+      var dots = values.map(function (v, i) {
+        var x = padL + i * step + step / 2, y = yFor(v);
+        return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3.6" fill="' + CHART_BLUE + '"></circle>' +
+          '<text x="' + x.toFixed(1) + '" y="' + (y - 10).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--text-dim)">' + finDisplayValue(rawValues[i], fmt) + '</text>';
+      }).join("");
+      content = '<polyline points="' + pts + '" fill="none" stroke="' + CHART_BLUE + '" stroke-width="2.4"></polyline>' + dots;
+    }
+
+    var labels = periods.map(function (p, i) {
+      var x = padL + i * step + step / 2;
+      return '<text x="' + x.toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="10.5" fill="var(--text-faint)">' + esc(p) + '</text>';
+    }).join("");
+    var zeroLine = zeroY !== yFor(axisMin) && zeroY !== yFor(axisMax) ? '<line x1="' + padL + '" y1="' + zeroY.toFixed(1) + '" x2="' + (W - padR) + '" y2="' + zeroY.toFixed(1) + '" stroke="var(--text-faint)" stroke-width="1"></line>' : "";
+
+    return '<svg width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' + gridLines + zeroLine + content + labels + '</svg>';
+  }
+
+  function renderFinancials() {
+    var unit = C.financials.unit;
+    var data = finState.period === "annual" ? C.financials.annual : C.financials.quarterly;
+
+    var rows = FIN_ROWS.map(function (r) {
+      var key = r[0], label = finRowLabel(r), fmt = finRowFmt(r);
+      var naReason = C.finNA && C.finNA[key];
+      var cells = data.map(function (d) {
+        var v = d[key];
+        var out = naReason ? "–" : fmt === "%" ? pct(v) : fmt === "n2" ? n2(v) : fmt === "txt" ? (v == null ? "–" : v) : n1(v) + (fmt === "u" ? "" : "");
+        return "<td>" + out + "</td>";
+      }).join("");
+      var isActive = finChartState.key === key;
+      var btn = '<td><button type="button" class="btn btn-sm' + (isActive ? " btn-primary" : "") + '" data-chart-key="' + key + '">' + (isActive ? "Vises nå" : "Visuell fremvisning") + '</button></td>';
+      return "<tr><td style='font-weight:600;'>" + label + infoDot(key, label) + (fmt === "u" && !naReason ? ' <span class="faint">(' + unit + ')</span>' : "") + (naReason ? ' <span class="faint" title="' + esc(naReason) + '">(ikke relevant)</span>' : "") + "</td>" + cells + btn + "</tr>";
+    }).join("");
+    var headCells = data.map(function (d) { return "<th>" + d.period + "</th>"; }).join("");
+
+    var chartPanel = "";
+    if (finChartState.key) {
+      var activeMeta = FIN_ROWS.filter(function (r) { return r[0] === finChartState.key; })[0];
+      if (activeMeta) {
+        chartPanel =
+          '<div class="card pad" style="margin-bottom:16px;min-height:460px;">' +
+            '<div class="row between center wrap gap-10" style="margin-bottom:10px;">' +
+              '<div class="seg" id="finChartTypeSeg">' +
+                '<span class="seg-item' + (finChartState.type === "bar" ? " active" : "") + '" data-t="bar">Søylediagram</span>' +
+                '<span class="seg-item' + (finChartState.type === "line" ? " active" : "") + '" data-t="line">Linjediagram</span>' +
+              '</div>' +
+              '<div class="row center gap-10">' +
+                '<span style="font-size:13px;font-weight:700;">' + esc(finRowLabel(activeMeta)) + (finRowFmt(activeMeta) === "u" ? ' <span class="faint" style="font-weight:600;">(' + esc(unit) + ')</span>' : "") + '</span>' +
+                '<button type="button" class="icon-btn plain" id="finChartClose" aria-label="Lukk">✕</button>' +
+              '</div>' +
+            '</div>' +
+            renderFinChartSvg(activeMeta, data) +
+          '</div>';
+      }
+    }
+
+    document.getElementById("panel-financials").innerHTML =
+      '<div class="row between center wrap gap-10">' +
+        '<div class="seg" id="finPeriodSeg"><span class="seg-item' + (finState.period === "quarterly" ? " active" : "") + '" data-p="quarterly">Kvartal</span><span class="seg-item' + (finState.period === "annual" ? " active" : "") + '" data-p="annual">År</span></div>' +
+        '<span class="muted" style="font-size:12px;">Alle tall i ' + unit + ' der ikke annet er angitt</span>' +
+      '</div>' +
+      chartPanel +
+      '<div class="card pad" style="overflow-x:auto;"><table class="tbl" style="min-width:820px;"><thead><tr><th>Nøkkeltall</th>' + headCells + '<th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+    App.qsa("#finPeriodSeg .seg-item", document.getElementById("panel-financials")).forEach(function (s) {
+      s.addEventListener("click", function () { finState.period = s.getAttribute("data-p"); renderFinancials(); });
+    });
+    App.qsa("[data-chart-key]", document.getElementById("panel-financials")).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var key = b.getAttribute("data-chart-key");
+        finChartState.key = finChartState.key === key ? null : key;
+        renderFinancials();
+      });
+    });
+    var typeSeg = document.getElementById("finChartTypeSeg");
+    if (typeSeg) {
+      App.qsa(".seg-item", typeSeg).forEach(function (s) {
+        s.addEventListener("click", function () { finChartState.type = s.getAttribute("data-t"); renderFinancials(); });
+      });
+    }
+    var closeBtn = document.getElementById("finChartClose");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function () { finChartState.key = null; renderFinancials(); });
+    }
+
+    wireMetricInfoButtons(document.getElementById("panel-financials"), Object.assign({}, FIN_METRIC_INFO, C.finInfo || {}));
+  }
+
+  // ---------- VERDSETTELSE ----------
+  var valState = { metric: "pe" };
+
+  // Multiplene er gruppert etter hva som faktisk driver dem, slik at et avvik
+  // er lettere å plassere: er det inntjeningsbildet, driften/gjelda, omsetningen,
+  // bokført verdi, eller kontantstrøm/utbytte som har endret seg?
+  // Forward P/E ligger IKKE her – den bygger på analytiker-estimater for fremtidig
+  // overskudd (betalt/usikker kilde), akkurat som konsensustallene i Estimater-fanen.
+  var VAL_GROUPS = [
+    { label: "Inntjening", desc: "Styres av selskapets overskudd, basert på faktiske, rapporterte tall.", metrics: [["pe", "P/E"]] },
+    { label: "Drift og gjeld", desc: "Styres av driftsresultatet og selskapets gjeld.", metrics: [["evEbitda", "EV/EBITDA"], ["evEbit", "EV/EBIT"]] },
+    { label: "Omsetning", desc: "Styres av selskapets totale salgsinntekter.", metrics: [["ps", "P/S"]] },
+    { label: "Bokført verdi", desc: "Styres av den regnskapsmessige verdien av eiendelene.", metrics: [["pb", "P/B"]] },
+    { label: "Kontantstrøm og utbytte", desc: "Styres av hvor mye kontanter selskapet genererer og betaler ut til deg som aksjonær.", metrics: [["fcfYield", "FCF yield"], ["divYield", "Dividend yield"]] }
+  ];
+  var VAL_METRICS = VAL_GROUPS.reduce(function (acc, g) { return acc.concat(g.metrics); }, []);
+
+  var VAL_METRIC_INFO = {
+    pe: { label: "P/E (Price/Earnings)", desc: "P/E viser hvor mye du som investor betaler for aksjen, sammenlignet med hvor mye selskapet faktisk tjener per aksje. Jo høyere tall, jo mer betaler du for hver krone i overskudd – og jo mer vekst må selskapet levere fremover for at prisen skal være forsvart. Et lavt tall kan bety at aksjen er billig, men kan også bety at markedet venter svakere resultater i tiden som kommer.", formula: "Aksjekurs ÷ Resultat per aksje (siste 12 måneder).", example: "Koster aksjen 100 kr, og selskapet har tjent 10 kr per aksje siste år, blir P/E 100 ÷ 10 = 10. Du betaler altså 10 ganger årsresultatet for aksjen." },
+    fwdPe: { label: "Forward P/E", desc: "Forward P/E fungerer på samme måte som vanlig P/E, men bruker analytikernes forventede overskudd for de neste 12 månedene i stedet for resultatet selskapet allerede har rapportert. Brukes til å vurdere om aksjen ser billig eller dyr ut basert på hvor selskapet er på vei, ikke bare hvor det har vært.", formula: "Aksjekurs ÷ Forventet resultat per aksje (neste 12 måneder, basert på analytikeres estimater).", example: "Koster aksjen 100 kr, og analytikerne venter et resultat på 12,5 kr per aksje neste år, blir forward P/E 100 ÷ 12,5 = 8 – lavere enn dagens P/E hvis markedet tror overskuddet vil vokse." },
+    evEbitda: { label: "EV/EBITDA", desc: "EV/EBITDA ser på hele selskapets verdi – både det aksjonærene eier og gjelden selskapet har – opp mot driftsresultatet før avskrivninger og nedskrivninger. Dette gjør multippelen mer rettferdig å sammenligne på tvers av selskaper, fordi den ikke lar seg påvirke av om selskapet er finansiert med mye eller lite gjeld, slik P/E gjør.", formula: "Enterprise Value (markedsverdi av aksjene + gjeld − kontanter) ÷ EBITDA.", example: "Har selskapet en markedsverdi på 80 mrd, 30 mrd i gjeld og 10 mrd i kontanter, blir EV 80 + 30 − 10 = 100 mrd. Er EBITDA 20 mrd, blir EV/EBITDA 100 ÷ 20 = 5." },
+    evEbit: { label: "EV/EBIT", desc: "EV/EBIT bygger på samme prinsipp som EV/EBITDA, men bruker EBIT – driftsresultatet etter at avskrivninger og nedskrivninger er trukket fra. Det gjør EV/EBIT til et strengere mål, siden det også tar hensyn til slitasje og verdifall på utstyr, maskiner og anlegg.", formula: "Enterprise Value ÷ EBIT (driftsresultat etter avskrivninger).", example: "Er EV 100 mrd og EBIT 15 mrd, blir EV/EBIT 100 ÷ 15 ≈ 6,7 – høyere enn EV/EBITDA fordi EBIT er et lavere tall enn EBITDA." },
+    ps: { label: "P/S (Price/Sales)", desc: "P/S sammenligner aksjeprisen med hvor mye selskapet omsetter for per aksje. Multippelen brukes mye for selskaper som ennå ikke går med overskudd, fordi omsetning finnes selv når resultatet er negativt – da fungerer verken P/E eller EV/EBIT som mål.", formula: "Aksjekurs ÷ Omsetning per aksje (siste 12 måneder).", example: "Koster aksjen 50 kr, og selskapet omsetter for 25 kr per aksje, blir P/S 50 ÷ 25 = 2. Du betaler altså 2 kr for hver krone i omsetning." },
+    pb: { label: "P/B (Price/Book)", desc: "P/B viser prisen på aksjen sammenlignet med den bokførte, regnskapsmessige verdien av selskapets eiendeler minus gjeld (egenkapitalen). Brukes ofte i kapitalintensive bransjer som bank og industri, der eiendelene i balansen sier mye om hva selskapet faktisk er verdt.", formula: "Aksjekurs ÷ Bokført egenkapital per aksje.", example: "Koster aksjen 60 kr, og bokført egenkapital per aksje er 40 kr, blir P/B 60 ÷ 40 = 1,5. Du betaler altså 50 % mer enn den regnskapsmessige verdien." },
+    fcfYield: { label: "FCF yield", desc: "FCF yield viser hvor mye reell, fri kontantstrøm selskapet genererer i året, som en prosentandel av det du betaler for aksjen. Dette er penger selskapet faktisk sitter igjen med etter drift og nødvendige investeringer, og som kan brukes til utbytte, nedbetaling av gjeld eller tilbakekjøp av aksjer. Høyere tall er bedre, siden det betyr mer kontantstrøm for hver krone du investerer.", formula: "Fri kontantstrøm ÷ Markedsverdi (antall aksjer × aksjekurs), i prosent.", example: "Er markedsverdien 100 mrd og fri kontantstrøm 8 mrd, blir FCF yield 8 ÷ 100 = 8 %." },
+    divYield: { label: "Dividend yield", desc: "Dividend yield viser hvor mye utbytte du får utbetalt i løpet av et år, som en prosentandel av aksjekursen. Dette er den direkte kontantavkastningen du får som aksjonær, uavhengig av om aksjekursen stiger eller faller. Høyere tall er bedre, men et unormalt høyt utbytte kan også være et faresignal om at det ikke er bærekraftig over tid.", formula: "Utbytte per aksje (siste 12 måneder) ÷ Aksjekurs, i prosent.", example: "Koster aksjen 200 kr, og selskapet betaler 8 kr i utbytte per aksje i året, blir dividend yield 8 ÷ 200 = 4 %." }
+  };
+
+  function avg(arr, key) {
+    var vals = arr.map(function (x) { return x[key]; }).filter(function (v) { return v !== null && v !== undefined; });
+    return vals.length ? vals.reduce(function (s, v) { return s + v; }, 0) / vals.length : null;
+  }
+
+  // Yield-tall (FCF yield, dividend yield) er en avkastning – der er høyere enn
+  // snittet bra. Multipler (P/E, EV/EBITDA osv.) er en pris – der er lavere enn
+  // snittet bra (billigere). Avviksindikatoren fargelegges derfor ulikt for de to.
+  var VAL_YIELD_KEYS = { fcfYield: true, divYield: true };
+
+  function renderValuation() {
+    var hist = C.valuationHistory;
+    if (!hist.length) { document.getElementById("panel-valuation").innerHTML = '<div class="card pad"><span class="muted">Ingen verdsettelse er beregnet for dette selskapet ennå.</span></div>'; return; }
+    var current = hist[hist.length - 1];
+
+    function metricRow(key, label) {
+      if (C.valLabels && C.valLabels[key] && key !== "fwdPe") label = C.valLabels[key];
+      if (C.valNA && C.valNA[key]) {
+        return "<tr><td style='font-weight:600;'>" + esc(label) + "</td><td colspan='2'><span class='faint' style='font-size:12px;'>Ikke relevant: " + esc(C.valNA[key]) + "</span></td></tr>";
+      }
+      var fiveYr = avg(hist, key);
+      var fmt = VAL_YIELD_KEYS[key] ? pct : n1;
+      var curVal = current[key];
+      var diffHtml = "";
+      if (fiveYr && curVal !== null && curVal !== undefined) {
+        var diffPct = ((curVal - fiveYr) / Math.abs(fiveYr)) * 100;
+        var better = VAL_YIELD_KEYS[key] ? diffPct > 0 : diffPct < 0;
+        var diffColor = Math.round(diffPct) === 0 ? "var(--text-faint)" : (better ? "var(--pos)" : "var(--neg)");
+        diffHtml = '<span style="font-size:11px;font-weight:700;color:' + diffColor + ';margin-left:7px;">' + pct(diffPct, 0) + ' vs. snitt</span>';
+      }
+      return "<tr><td style='font-weight:600;'>" + esc(label) + infoDot(key, label) + "</td><td>" + fmt(curVal) + diffHtml + "</td><td>" + fmt(fiveYr) + "</td></tr>";
+    }
+
+    var rows = VAL_GROUPS.map(function (g) {
+      var groupHead = '<tr><td colspan="3" style="border-bottom:none;padding:16px 4px 3px;">' +
+        '<span style="font-size:10.5px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;">' + esc(g.label) + '</span> ' +
+        '<span class="faint" style="font-size:11px;">– ' + esc(g.desc) + '</span>' +
+      '</td></tr>';
+      var metricRows = g.metrics.map(function (m) { return metricRow(m[0], m[1]); }).join("");
+      return groupHead + metricRows;
+    }).join("");
+
+    var histM = hist.filter(function (h) { return h[valState.metric] !== null && h[valState.metric] !== undefined; });
+    var metricPts = histM.length > 1 ? App.linePoints(histM.map(function (h) { return h[valState.metric]; }), 600, 140, 8, 8) : "";
+    var metricOptions = VAL_METRICS.map(function (m) { return '<option value="' + m[0] + '"' + (m[0] === valState.metric ? " selected" : "") + '>' + ((C.valLabels && C.valLabels[m[0]]) || m[1]) + '</option>'; }).join("");
+
+    document.getElementById("panel-valuation").innerHTML =
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:2px;">Multipler – nå vs. historikk</div>' +
+        '<table class="tbl"><thead><tr><th>Multippel</th><th>Nå</th><th>5-års snitt</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div class="card pad">' +
+        '<div class="row between center wrap gap-10" style="margin-bottom:12px;"><div class="eyebrow">Historisk utvikling</div><select class="select" id="valMetricSelect" style="width:180px;">' + metricOptions + '</select></div>' +
+        '<svg width="100%" height="140" viewBox="0 0 600 140" preserveAspectRatio="none"><polyline points="' + metricPts + '" fill="none" stroke="' + C.color + '" stroke-width="2.2"></polyline></svg>' +
+        (metricPts ? "" : '<p class="empty-hint">Ikke nok tall for denne multippelen til å tegne en utvikling.</p>') +
+        '<div class="row between" style="font-size:10.5px;color:var(--text-faint);margin-top:4px;">' + histM.map(function (h) { return "<span>" + h.period + "</span>"; }).join("") + '</div>' +
+      '</div>' +
+      // ---- Krever betalt/upålitelig datakilde – lukket dropdown til vi evt. kobler til dette ----
+      '<div class="card">' +
+        '<div class="accordion-item" style="border-bottom:none;">' +
+          '<div class="accordion-head" style="padding:16px 18px;align-items:flex-start;">' +
+            '<div class="col gap-2"><span style="font-size:13px;font-weight:700;">Betalt datainnhenting – kommer i fremtiden</span><span class="muted" style="font-size:11.5px;">Forward P/E bygger på analytikeres estimat for fremtidig overskudd, ikke tall selskapet selv har rapportert. Krever en betalt eller mer pålitelig datakilde. Ikke koblet til ennå.</span></div>' +
+            '<svg class="accordion-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:3px;"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</div>' +
+          '<div class="accordion-body" style="padding:0 18px 18px;overflow-x:auto;">' +
+            '<table class="tbl"><thead><tr><th>Multippel</th><th>Nå</th><th>5-års snitt</th></tr></thead><tbody>' + metricRow("fwdPe", "Forward P/E") + '</tbody></table>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("valMetricSelect").addEventListener("change", function (e) { valState.metric = e.target.value; renderValuation(); });
+
+    wireMetricInfoButtons(document.getElementById("panel-valuation"), Object.assign({}, VAL_METRIC_INFO, C.valInfo || {}));
+    App.initAccordions(document.getElementById("panel-valuation"));
+  }
+
+  // ---------- GUIDING-RUNDER (Estimater) ----------
+  function renderGuidanceLegacy(goals) {
+    var statusPill = { venter: '<span class="pill pill-outline">Venter på fasit</span>', "nådd": '<span class="pill pill-pos">Mål nådd</span>', "ikke-nådd": '<span class="pill pill-neg">Mål ikke nådd</span>' };
+    var dirBadge = { up: '<span class="pill pill-pos">Hevet</span>', down: '<span class="pill pill-neg">Justert ned</span>', flat: '<span class="pill pill-neu">Uendret</span>' };
+    var resolved = goals.filter(function (g) { return g.status === "nådd" || g.status === "ikke-nådd"; });
+    var hit = goals.filter(function (g) { return g.status === "nådd"; });
+    var pend = goals.filter(function (g) { return g.status === "venter"; });
+    var summaryText = resolved.length ? (hit.length + " av " + resolved.length + " avgjorte mål nådd") : "Ingen avgjorte mål ennå";
+    if (pend.length) summaryText += " · " + pend.length + " venter på fasit";
+    var rows = goals.map(function (g) {
+      var updatesHtml = g.updates.map(function (u, i) {
+        return '<div class="row gap-10" style="padding:6px 0;align-items:center;' + (i > 0 ? "border-top:1px solid var(--border-soft);" : "") + '"><span class="faint" style="font-size:11px;width:70px;flex-shrink:0;">' + u.date + '</span>' + dirBadge[u.direction] + '<span style="font-size:12px;flex:1;">' + esc(u.text) + '</span></div>';
+      }).join("");
+      return '<div class="accordion-item"><div class="accordion-head"><div class="col gap-4" style="flex:1;"><div class="row gap-10 wrap" style="align-items:center;"><span style="font-size:13px;font-weight:700;">' + esc(g.title) + '</span>' + statusPill[g.status] + '</div><span class="muted" style="font-size:12px;">' + esc(g.conclusion) + '</span></div>' +
+        '<svg class="accordion-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:3px;"><path d="m6 9 6 6 6-6"/></svg></div>' +
+        '<div class="accordion-body"><div class="col gap-2" style="border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;"><div class="eyebrow" style="margin-bottom:4px;">Oppdateringer (nyeste øverst)</div>' + updatesHtml + '</div></div></div>';
+    }).join("");
+    return '<div class="row between center wrap gap-10" style="margin-bottom:4px;"><div class="eyebrow">Guiding-historikk (selskapets egen)</div><span style="font-size:12px;font-weight:700;">' + summaryText + '</span></div>' +
+      '<span class="muted" style="font-size:11.5px;display:block;margin-bottom:6px;">Selskapets egne mål over tid. Trykk på et mål for oppdateringshistorikk.</span>' + (rows || '<p class="empty-hint">Ingen mål registrert ennå.</p>');
+  }
+
+  var guidView = "home";
+  function renderGuidanceRounds(rounds) {
+    var today = nowDate();
+    var fd = function (iso) { return iso ? App.fmtDate(String(iso).slice(0, 10)) : "–"; };
+    var sgn = function (n) { return (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n); };
+    var kindPill = { satt: '<span class="pill pill-outline">Satt</span>', bekreftet: '<span class="pill pill-neu">Bekreftet</span>', hevet: '<span class="pill pill-pos">Hevet</span>', senket: '<span class="pill pill-neg">Justert ned</span>', fasit: '<span class="pill pill-outline">Fasit</span>' };
+    var outcomeTxt = { "nådd": "Mål nådd", holdt_seg: "Holdt seg", forverret: "Forverret" };
+    var outcomeCls = { "nådd": "pill-pos-strong", holdt_seg: "pill-neu", forverret: "pill-neg-strong" };
+    var outcomeCol = { "nådd": "var(--pos)", holdt_seg: "var(--text-faint)", forverret: "var(--neg)" };
+    var chev = '<svg class="accordion-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:4px;"><path d="m6 9 6 6 6-6"/></svg>';
+    var lock = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+    var box = 'border:1px solid var(--border-soft);border-radius:8px;padding:10px 12px;';
+    var srcLink = function (label, url, page) {
+      var t = esc(label || "Rapport") + (page ? ", side " + page : "");
+      return url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">' + t + '</a>' : t;
+    };
+    var kv = function (k, v) { return v ? '<div class="col gap-2" style="min-width:150px;flex:1;"><span class="eyebrow">' + k + '</span><span style="font-size:12px;">' + v + '</span></div>' : ""; };
+    // liten faktaflis: etikett over, tydelig verdi under
+    var tile = function (label, value, sub, bg, fg) {
+      return '<div style="background:' + (bg || "var(--neu-bg)") + ';border-radius:8px;padding:5px 9px;min-width:0;">' +
+        '<div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mut);">' + label + '</div>' +
+        '<div style="font-size:12.5px;font-weight:700;color:' + (fg || "var(--text)") + ';margin-top:0;">' + value + '</div>' +
+        (sub ? '<div style="font-size:10px;line-height:1.25;color:var(--text-mut);">' + sub + '</div>' : "") + '</div>';
+    };
+    var HZ = {
+      kortsiktig: { label: "Kortsiktig", rule: "under 12 mnd", bg: "#e6effe", fg: "#1d4ed8", i: 0 },
+      mellomlang: { label: "Middels lang", rule: "12 til 36 mnd", bg: "#f3e8ff", fg: "#7e22ce", i: 1 },
+      langsiktig: { label: "Langsiktig", rule: "36 mnd og over", bg: "#fce7f3", fg: "#be185d", i: 2 }
+    };
+    var hzOf = function (r) {
+      if (r.horizon && HZ[r.horizon]) return r.horizon;
+      var m = r.spanMonths;
+      if (m == null && r.dueDate && r.setDate) m = (new Date(r.dueDate) - new Date(r.setDate)) / 86400000 / 30.4375;
+      return m == null ? "kortsiktig" : (m < 12 ? "kortsiktig" : m < 36 ? "mellomlang" : "langsiktig");
+    };
+    var typeTile = function (r) {
+      var h = HZ[hzOf(r)];
+      var seg = [0, 1, 2].map(function (k) { return '<span style="flex:1;height:4px;border-radius:2px;background:' + (k <= h.i ? h.fg : "rgba(0,0,0,.12)") + ';"></span>'; }).join("");
+      var mn = r.spanMonths != null ? Math.round(r.spanMonths) : (r.dueDate && r.setDate ? Math.round((new Date(r.dueDate) - new Date(r.setDate)) / 86400000 / 30.4375) : null);
+      return '<div style="background:' + h.bg + ';border-radius:8px;padding:5px 9px;min-width:0;" title="' + h.label + ': ' + h.rule + ' fra målet ble satt til fristen">' +
+        '<div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mut);">Tidshorisont</div>' +
+        '<div style="font-size:12.5px;font-weight:700;color:' + h.fg + ';">' + h.label + '</div>' +
+        '<div style="display:flex;gap:3px;margin:3px 0 2px;">' + seg + '</div>' +
+        '<div style="font-size:10px;line-height:1.25;color:var(--text-mut);">' + (mn != null ? mn + " mnd" : "") + (r.standing ? (mn != null ? " · " : "") + "↻ fornyes årlig" : "") + '</div></div>';
+    };
+    var hzLegend = '<div title="Regnes fra dagen målet ble satt til fristen" style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:11.5px;"><span style="font-weight:700;color:var(--text-mut);text-transform:uppercase;letter-spacing:.05em;font-size:10px;">Tidshorisont</span>' +
+      ["kortsiktig", "mellomlang", "langsiktig"].map(function (k) { var h = HZ[k]; return '<span style="display:inline-flex;align-items:center;gap:6px;background:' + h.bg + ';color:' + h.fg + ';border-radius:20px;padding:2px 11px;font-weight:700;"><span style="display:inline-flex;gap:2px;">' + [0, 1, 2].map(function (j) { return '<span style="width:9px;height:4px;border-radius:2px;background:' + (j <= h.i ? h.fg : "rgba(0,0,0,.18)") + ';"></span>'; }).join("") + '</span>' + h.label + ' <span style="font-weight:500;opacity:.8;">' + h.rule + '</span></span>'; }).join("") + '</div>';
+    var isFasitCheck = function (r, d) {
+      if (!d) return false;
+      if (r.finalCheckDate) return String(d) >= String(r.finalCheckDate);
+      return !!r.dueDate && String(d) > String(r.dueDate);
+    };
+    var fasitPill = function (r) {
+      var c = r.outcome === "nådd" ? "pill-pos" : r.outcome === "forverret" ? "pill-neg" : "pill-neu";
+      return '<span class="pill ' + c + '">Fasit</span>';
+    };
+    var updList = function (r) {
+      var ups = r.updates.slice().sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      return ups.map(function (u, i) {
+        var chk = u.nextCheck ? (isFasitCheck(r, u.nextCheck) ? '<span class="pill pill-outline" style="white-space:nowrap;">Fasit sjekkes ' + fd(u.nextCheck) + '</span>' : '<span class="faint" style="font-size:11px;white-space:nowrap;">Oppdatering sjekkes ' + fd(u.nextCheck) + '</span>') : (u.kind === "fasit" ? '<span class="faint" style="font-size:11px;white-space:nowrap;">Avgjort</span>' : "");
+        var src = u.sourceLabel ? '<span style="font-size:11.5px;flex:0 0 230px;max-width:230px;" class="faint">Kilde: ' + srcLink(u.sourceLabel, u.url, u.page) + '</span>' : '<span style="flex:0 0 230px;max-width:230px;"></span>';
+        return '<div class="row gap-10" style="padding:7px 0;align-items:flex-start;' + (i > 0 ? "border-top:1px solid var(--border-soft);" : "") + '">' +
+          '<span class="faint" style="font-size:11px;width:84px;flex-shrink:0;padding-top:2px;">' + fd(u.date) + '</span><span style="width:78px;flex-shrink:0;">' + (u.kind === "fasit" ? fasitPill(r) : (kindPill[u.kind] || kindPill.bekreftet)) + '</span>' +
+          '<span style="font-size:12px;flex:1 1 0;min-width:0;padding-top:1px;">' + esc(u.text) + '</span>' + src + '<span style="flex:0 0 190px;text-align:right;padding-top:1px;">' + chk + '</span></div>';
+      }).join("") || '<span class="muted" style="font-size:12px;">Ingen oppdateringer ennå.</span>';
+    };
+    var cardStyle = function (col) { return 'border:1px solid var(--border);border-left:3px solid ' + col + ';border-radius:10px;margin-bottom:8px;padding:0 14px;background:var(--card);'; };
+    var grid = 'display:grid;grid-template-columns:repeat(4,minmax(108px,1fr));gap:6px;flex:0 1 540px;max-width:100%;';
+    var open = rounds.filter(function (r) { return r.status === "pågår"; }).sort(function (a, b) { return String(a.nextCheckDate || a.dueDate).localeCompare(String(b.nextCheckDate || b.dueDate)) || a.title.localeCompare(b.title, "nb"); });
+    var done = rounds.filter(function (r) { return r.status === "ferdig"; }).sort(function (a, b) { return String(b.closedDate).localeCompare(String(a.closedDate)) || a.title.localeCompare(b.title, "nb"); });
+    // Poeng per mål: +1 nådd, -1 ikke nådd. Er målet justert (uansett hvor mange ganger) blir det +0,5 / -0,5. Mål som ikke er avgjort gir ingen poeng.
+    var isAdjusted = function (r) { return (r.changesUp || 0) + (r.changesDown || 0) > 0; };
+    var goalPts = function (r) { if (r.outcome === "nådd") return isAdjusted(r) ? 0.5 : 1; if (r.outcome === "forverret") return isAdjusted(r) ? -0.5 : -1; return null; };
+    var fmtGoalPts = function (v) { return (v > 0 ? "+" : "−") + String(Math.abs(v)).replace(".", ","); };
+    var goalPtsReason = function (r) {
+      var adj = isAdjusted(r);
+      return r.outcome === "nådd" ? (adj ? "Nådd, men målet ble justert underveis. Gir et halvt poeng." : "Nådd uten at målet ble justert. Gir ett poeng.")
+                                  : (adj ? "Ikke nådd, og målet ble justert underveis. Gir et halvt minuspoeng." : "Ikke nådd. Gir ett minuspoeng.");
+    };
+    var scored = done.filter(function (r) { return r.score != null; });
+    var avg = scored.length ? scored.reduce(function (s, r) { return s + r.score; }, 0) / scored.length : null;
+    var hit = done.filter(function (r) { return r.outcome === "nådd"; }).length;
+    var avgTxt = avg == null ? "" : (Math.round(avg * 10) / 10).toString().replace(".", ",").replace("-", "");
+    var nHolt = done.filter(function (r) { return r.outcome === "holdt_seg"; }).length;
+    var nForv = done.filter(function (r) { return r.outcome === "forverret"; }).length;
+    var nIkke = done.filter(function (r) { return !r.outcome; }).length;
+    var chip = function (n, label, bg, fg) { return '<span style="display:inline-flex;align-items:center;gap:5px;background:' + bg + ';color:' + fg + ';border-radius:20px;padding:3px 11px;font-size:11.5px;font-weight:700;">' + n + ' <span style="font-weight:600;">' + label + '</span></span>'; };
+    // ---- Måloppnåelse siste 5 år (erstatter «Tillit til selskapets mål» med -10..+10) ----
+    // Regler: nådd = +1, ikke nådd = -1, justert og nådd = +0,5, justert og ikke nådd = -0,5. Uavgjorte mål teller ikke.
+    // Samme regler ligger i databasen (visningen company_goal_record). GOAL_RECORD_DUMMY = true viser eksempeldata mens vi ser på utseendet.
+    var GOAL_RECORD_DUMMY = true;
+    var fiveYearsAgo = new Date(today.getTime() - 5 * 365.25 * 86400000);
+    var rec = { reached: 0, reachedAdj: 0, missedAdj: 0, missed: 0 };
+    done.forEach(function (r) {
+      if (r.outcome !== "nådd" && r.outcome !== "forverret") return;
+      if (r.closedDate && new Date(r.closedDate) < fiveYearsAgo) return;
+      var adj = isAdjusted(r);
+      if (r.outcome === "nådd") { if (adj) rec.reachedAdj++; else rec.reached++; }
+      else { if (adj) rec.missedAdj++; else rec.missed++; }
+    });
+    var isDummyRec = GOAL_RECORD_DUMMY;
+    if (isDummyRec) rec = { reached: 9, reachedAdj: 4, missedAdj: 2, missed: 5 };
+    var recN = rec.reached + rec.reachedAdj + rec.missedAdj + rec.missed;
+    var recPts = rec.reached + 0.5 * rec.reachedAdj - 0.5 * rec.missedAdj - rec.missed;
+    var pctOf = function (n) { return recN ? Math.round(n / recN * 100) : 0; };
+    var fmtPts = function (v) { var t = (Math.round(v * 10) / 10).toString().replace(".", ","); return (v > 0 ? "+" : v < 0 ? "−" : "") + t.replace("-", ""); };
+    var seg = function (n, label, bg, fg) {
+      if (!n) return "";
+      return '<div title="' + label + ': ' + n + ' mål" style="flex:' + n + ' 1 0;min-width:46px;background:' + bg + ';color:' + fg + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;height:34px;">' + pctOf(n) + ' %</div>';
+    };
+    var legendDot = function (bg, label, n) { return '<span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim);"><span style="width:10px;height:10px;border-radius:3px;background:' + bg + ';display:inline-block;"></span>' + label + ' <b>' + n + '</b></span>'; };
+    var posN = rec.reached + rec.reachedAdj, negN = rec.missedAdj + rec.missed;
+    var C_POS = "#16a34a", C_POS2 = "#86d49f", C_NEG2 = "#f19b9b", C_NEG = "#dc2626";
+    var dash = '<div style="border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:0 0 14px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px 20px;">' +
+        '<div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mut);">Måloppnåelse siste 5 år</div>' +
+        '<div style="font-size:12px;color:var(--text-mut);margin-top:3px;max-width:560px;">Alle mål selskapet har satt de siste 5 årene og fått avgjort, delt etter hvordan det gikk. Mål som ble justert underveis teller halvt.</div></div>' +
+        (recN ? '<div style="text-align:right;"><div style="font-size:26px;font-weight:800;line-height:1.1;color:' + (recPts > 0 ? "var(--pos)" : recPts < 0 ? "var(--neg)" : "var(--text-dim)") + ';">' + fmtPts(recPts) + '</div><div style="font-size:11px;color:var(--text-mut);">poeng på ' + recN + ' mål</div></div>' : '') +
+      '</div>' +
+      (isDummyRec ? '<div style="margin-top:8px;display:inline-block;background:var(--warn-bg);color:var(--warn);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;">Eksempeldata – ikke ekte tall</div>' : '') +
+      (recN ?
+        '<div style="display:flex;border-radius:8px;overflow:hidden;margin-top:14px;">' +
+          seg(rec.reached, "Nådd", C_POS, "#fff") + seg(rec.reachedAdj, "Justert og nådd", C_POS2, "#14532d") + seg(rec.missedAdj, "Justert og ikke nådd", C_NEG2, "#7f1d1d") + seg(rec.missed, "Ikke nådd", C_NEG, "#fff") +
+        '</div>' +
+        '<div class="row gap-14 wrap" style="margin-top:8px;gap:6px 18px;">' + legendDot(C_POS, "Nådd", rec.reached) + legendDot(C_POS2, "Justert og nådd", rec.reachedAdj) + legendDot(C_NEG2, "Justert og ikke nådd", rec.missedAdj) + legendDot(C_NEG, "Ikke nådd", rec.missed) + '</div>' +
+        '<div style="margin-top:16px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-mut);">Totalt</div>' +
+        '<div style="display:flex;border-radius:8px;overflow:hidden;margin-top:5px;">' +
+          (posN ? '<div style="flex:' + posN + ' 1 0;min-width:70px;background:var(--pos-bg);color:var(--pos);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;height:30px;">Positivt ' + pctOf(posN) + ' %</div>' : '') +
+          (negN ? '<div style="flex:' + negN + ' 1 0;min-width:70px;background:var(--neg-bg);color:var(--neg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;height:30px;">Negativt ' + pctOf(negN) + ' %</div>' : '') +
+        '</div>' +
+        (recN < 5 && !isDummyRec ? '<div class="muted" style="font-size:11.5px;margin-top:8px;">For få avgjorte mål til å si noe sikkert.</div>' : '')
+      : '<div class="muted" style="font-size:12.5px;margin-top:12px;">Ingen avgjorte mål de siste 5 årene ennå.</div>') +
+    '</div>';
+
+    var minDays = open.reduce(function (m, r) { if (!r.nextCheckDate) return m; var d = Math.round((new Date(r.nextCheckDate) - today) / 86400000); return d >= 0 && (m == null || d < m) ? d : m; }, null);
+    var pick = function (view, title, count, line1, line2) {
+      return '<div data-gview="' + view + '" role="button" tabindex="0" style="flex:1 1 280px;cursor:pointer;border:1px solid var(--border);border-radius:12px;padding:16px 20px;background:var(--card);transition:border-color .15s, box-shadow .15s;" onmouseover="this.style.borderColor=\'var(--text-faint)\';this.style.boxShadow=\'0 2px 10px rgba(0,0,0,.05)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.boxShadow=\'none\'">' +
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;"><div><div style="font-size:12.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">' + title + '</div><div style="font-size:11.5px;color:var(--text-mut);margin-top:3px;">' + line1 + '</div><div style="font-size:11.5px;color:var(--text-mut);margin-top:1px;">' + line2 + '</div></div>' +
+        '<div style="font-size:30px;font-weight:800;line-height:1;">' + count + '</div></div>' +
+        '<div style="font-size:12px;font-weight:700;margin-top:12px;color:var(--text-dim);">Vis målene →</div></div>';
+    };
+
+    var shortPeriod = function (l) { l = String(l || "").replace(/^Løpende mål, vurderes for /i, "").replace(/^Løpende mål, /i, ""); return l ? l.charAt(0).toUpperCase() + l.slice(1) : ""; };
+    var openRows = open.map(function (r) {
+      var days = r.nextCheckDate ? Math.round((new Date(r.nextCheckDate) - today) / 86400000) : null;
+      var soon = days != null && days <= 30;
+      var nextVal = r.nextCheckDate ? (days != null && days >= 0 ? "Om " + days + (days === 1 ? " dag" : " dager") : fd(r.nextCheckDate)) : "–";
+      var nextSub = r.nextCheckDate ? (isFasitCheck(r, r.nextCheckDate) ? "Fasit " : "Oppdatering ") + fd(r.nextCheckDate) : "";
+      var final = r.finalCheckDate ? esc(r.finalCheckLabel || "Rapport") + " (" + fd(r.finalCheckDate) + ")" : "Selskapets første rapport etter fristen";
+      return '<div class="accordion-item" style="' + cardStyle("#c4c4cc") + '"><div class="accordion-head" style="align-items:flex-start;"><div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-start;">' +
+        '<div class="col gap-6" style="flex:1 1 240px;min-width:0;">' +
+          '<div class="row gap-10 wrap" style="align-items:center;"><span style="font-size:15px;font-weight:800;">' + esc(r.title) + '</span></div>' +
+          '<span style="font-size:12.5px;color:var(--text-dim);">' + esc(r.target) + '</span></div>' +
+        '<div style="' + grid + '">' + tile("Satt", fd(r.setDate)) + tile("Skal nås", fd(r.dueDate), esc(shortPeriod(r.periodLabel))) + tile("Neste sjekk", nextVal, nextSub, soon ? "var(--warn-bg)" : null, soon ? "var(--warn)" : null) + typeTile(r) + '</div>' +
+        '</div>' + chev + '</div>' +
+        '<div class="accordion-body"><div class="col gap-12">' +
+          (r.quote ? '<div style="font-size:11.5px;" class="muted">Fra rapporten (oversatt): «' + esc(r.quote) + '»</div>' : "") +
+          '<div style="' + box + '"><div class="eyebrow" style="margin-bottom:4px;">Oppdateringer (nyeste øverst)</div>' + updList(r) + '</div>' +
+        '</div></div></div>';
+    }).join("");
+
+    var doneRows = done.map(function (r) {
+      var col = r.outcome ? outcomeCol[r.outcome] : "var(--text-faint)";
+      var pill = r.outcome ? '<span class="pill ' + outcomeCls[r.outcome] + '">' + outcomeTxt[r.outcome] + '</span>' : '<span class="pill pill-outline">Ikke vurdert</span>';
+      var gp = goalPts(r);
+      var scoreBox = gp == null ? '<div style="flex-shrink:0;min-width:58px;"></div>' : '<div style="flex-shrink:0;text-align:center;min-width:58px;border-radius:10px;padding:6px 8px;background:' + (gp > 0 ? "var(--pos-bg)" : "var(--neg-bg)") + ';color:' + (gp > 0 ? "var(--pos)" : "var(--neg)") + ';" title="Poeng for dette målet: +1 nådd, -1 ikke nådd, +/-0,5 hvis målet ble justert (uansett hvor mange ganger)"><div style="font-size:20px;font-weight:800;line-height:1.1;">' + fmtGoalPts(gp) + '</div><div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">poeng</div></div>';
+      return '<div class="accordion-item" style="' + cardStyle(col) + '"><div class="accordion-head" style="align-items:flex-start;"><div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-start;">' +
+        '<div class="col gap-6" style="flex:1 1 240px;min-width:0;">' +
+          '<div class="row gap-10 wrap" style="align-items:center;"><span style="font-size:15px;font-weight:800;">' + esc(r.title) + '</span>' + pill + '<span class="faint" style="font-size:11px;">' + lock + ' Låst</span></div>' +
+          '<span style="font-size:12.5px;color:var(--text-dim);">' + esc(r.target) + '</span></div>' +
+        '<div style="' + grid + '">' + tile("Satt", fd(r.setDate)) + tile("Skulle nås", fd(r.dueDate), esc(shortPeriod(r.periodLabel))) + tile("Avgjort", fd(r.closedDate), "Låst") + typeTile(r) + '</div>' +
+        '</div>' + scoreBox + chev + '</div>' +
+        '<div class="accordion-body"><div class="col gap-12">' +
+          '<div style="' + box + 'font-size:12.5px;line-height:1.5;"><div class="eyebrow" style="margin-bottom:6px;">Resultat</div>' +
+            (r.conclusion ? '<div style="font-weight:600;">' + esc(r.conclusion) + '</div>' : "") +
+            (r.actual ? '<div style="margin-top:4px;"><span class="muted">Faktisk resultat:</span> ' + esc(r.actual) + '</div>' : "") +
+            (gp != null ? '<div style="margin-top:4px;"><span class="muted">Poeng ' + fmtGoalPts(gp) + ':</span> ' + goalPtsReason(r) + '</div>' : "") +
+            (r.evidenceQuote ? '<div style="margin-top:4px;" class="muted">Fra rapporten (oversatt): «' + esc(r.evidenceQuote) + '»</div>' : "") +
+          '</div>' +
+          '<div style="' + box + '"><div class="eyebrow" style="margin-bottom:4px;">Oppdateringer (nyeste øverst)</div>' + updList(r) + '</div>' +
+        '</div></div></div>';
+    }).join("");
+
+    var head = '<div class="eyebrow">Målsetting</div>' +
+      '<span class="muted" style="font-size:11.5px;display:block;margin:2px 0 12px;">Mål selskapet selv har satt, med frist og kilde. Når fasit finnes, låses målet med en konklusjon. Over ser du hvor stor andel av målene de siste 5 årene som er nådd, justert eller bommet. Hvert år og hver periode får sitt eget kort.</span>' + dash;
+    if (guidView === "open" || guidView === "done") {
+      var isOpen = guidView === "open";
+      return '<div style="display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap;margin:0 0 14px;"><button class="btn btn-sm" data-gview="home">← Tilbake</button>' +
+        '<div><div style="font-size:12.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;">' + (isOpen ? "Pågående mål" : lock + " Ferdige mål") + ' <span style="color:var(--text-mut);font-weight:600;">(' + (isOpen ? open.length : done.length) + ')</span></div>' +
+        '<div style="font-size:11.5px;color:var(--text-mut);margin-top:2px;">' + (isOpen ? "Venter på fasit. Sortert etter nærmeste sjekk." : hit + " av " + done.length + " nådd. Disse er låst.") + '</div></div><div style="margin-left:auto;">' + hzLegend + '</div></div>' +
+        (isOpen ? (openRows || '<p class="empty-hint">Ingen pågående mål.</p>') : (doneRows || '<p class="empty-hint">Ingen ferdige mål ennå.</p>'));
+    }
+    return head + '<div style="display:flex;flex-wrap:wrap;gap:12px;">' +
+      pick("open", "Pågående mål", open.length, "Venter på fasit. Sortert etter nærmeste sjekk.", minDays != null ? "Neste sjekk om " + minDays + (minDays === 1 ? " dag" : " dager") : "") +
+      pick("done", lock + " Ferdige mål", done.length, done.length ? hit + " av " + done.length + " nådd. Disse er låst." : "Ingen avgjort ennå.", "") + '</div>';
+  }
+
+  // ---------- ESTIMATER ----------
+  function renderEstimates() {
+    var E = C.estimates;
+    function paidCard(label) {
+      return '<div class="card pad-sm col gap-8" style="flex:1;min-width:180px;opacity:.55;">' +
+        '<div class="eyebrow">' + label + '</div>' +
+        '<div style="font-size:19px;font-weight:700;color:var(--text-faint);">Kommer</div>' +
+        '<div class="row center gap-5" style="font-size:11px;font-weight:600;color:var(--text-faint);">Krever betalt kilde</div>' +
+      '</div>';
+    }
+    var rounds = E.guidanceRounds || [];
+    var goalsHtml = rounds.length ? renderGuidanceRounds(rounds) : renderGuidanceLegacy(E.guidanceGoals || []);
+    var estRows = E.quarterlyBeats.map(function (q) {
+      var pillClass = q.result === "beat" ? "pill-pos" : q.result === "miss" ? "pill-neg" : "pill-neu";
+      var label = q.result === "beat" ? "Slo forventning" : q.result === "miss" ? "Under forventning" : "I tråd";
+      return "<tr><td>" + q.period + "</td><td>" + n1(q.estRevenue) + "</td><td>" + n1(q.actRevenue) + "</td><td>" + n2(q.estEps) + "</td><td>" + n2(q.actEps) + "</td><td><span class='pill " + pillClass + "'>" + label + "</span></td></tr>";
+    }).join("");
+
+    document.getElementById("panel-estimates").innerHTML =
+      // ---- Tilgjengelig nå (gratis, pålitelig kilde: selskapets egne rapporter) ----
+      '<div class="card pad">' +
+        goalsHtml +
+      '</div>';
+
+    document.getElementById("panel-paid").innerHTML =
+      '<div style="opacity:.6;filter:grayscale(1);pointer-events:none;user-select:none;" aria-disabled="true">' +
+        '<div class="card pad col gap-14" style="box-shadow:none;border:1px dashed var(--border);">' +
+          '<div class="col gap-2"><span style="font-size:13px;font-weight:700;">Betalt datainnhenting – kommer i fremtiden</span><span class="muted" style="font-size:11.5px;">Analytiker-estimater (helårs-konsensus og sammenligning per kvartal) krever en betalt eller mer pålitelig datakilde. Ikke koblet til ennå.</span></div>' +
+          '<div class="row wrap gap-16">' + paidCard("Konsensus omsetning (i år)") + paidCard("Konsensus EPS (i år)") + paidCard("Konsensus EBITDA (i år)") + '</div>' +
+          '<div class="col gap-6" style="padding:16px;border:1px dashed var(--border);border-radius:10px;text-align:center;"><span class="muted" style="font-size:12px;">Estimatrevisjoner (hvordan helårsestimatet endrer seg over tid) vises her når vi har koblet til en betalt kilde.</span></div>' +
+          '<div class="col gap-8" style="overflow-x:auto;"><div class="eyebrow">Faktisk vs. forventet (per kvartal)</div>' +
+            '<table class="tbl"><thead><tr><th>Periode</th><th>Est. omsetning</th><th>Faktisk omsetning</th><th>Est. EPS</th><th>Faktisk EPS</th><th>Resultat</th></tr></thead><tbody>' + estRows + '</tbody></table></div>' +
+        '</div>' +
+      '</div>';
+
+    var panelE = document.getElementById("panel-estimates");
+    App.initAccordions(panelE);
+    panelE.querySelectorAll("[data-gview]").forEach(function (el) {
+      var go = function () { guidView = el.getAttribute("data-gview"); renderEstimates(); window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; };
+      el.addEventListener("click", go);
+      el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    });
+  }
+
+  // ---------- HENDELSER ----------
+  // Kun kommende/tidligere hendelser hentet automatisk, hver med kilde. Ingen merkelapper, filter eller manuell registrering.
+  function renderEvents() {
+    var today = nowDate();
+    var sorted = C.events.slice().sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+    var upcoming = sorted.filter(function (e) { return new Date(e.date) >= today; });
+    var past = sorted.filter(function (e) { return new Date(e.date) < today; }).reverse();
+
+    function evRow(e) {
+      var d = new Date(e.date);
+      var src = e.url ? '<a href="' + esc(e.url) + '" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:underline;">' + esc(e.sourceName || "Kilde") + '</a>' : '<span class="faint">Ingen kilde</span>';
+      return '<div class="row gap-12" style="padding:10px 0;align-items:center;border-bottom:1px solid var(--border-soft);">' +
+        '<div class="col center" style="width:44px;height:44px;border-radius:10px;background:var(--bg);flex-shrink:0;justify-content:center;"><span style="font-size:13px;font-weight:700;line-height:1;">' + d.getDate() + '</span><span class="faint" style="font-size:8.5px;font-weight:700;text-transform:uppercase;">' + App.fmtDateShort(e.date).split(". ")[1] + '</span></div>' +
+        '<div class="col gap-2 grow"><span style="font-size:12.5px;font-weight:600;">' + esc(e.title) + '</span>' + (e.description ? '<span class="muted" style="font-size:11.5px;">' + esc(e.description) + '</span>' : "") + '</div>' +
+        '<span style="font-size:11.5px;flex:0 0 220px;text-align:right;" class="faint">Kilde: ' + src + '</span>' +
+      '</div>';
+    }
+    var chk = C.eventCheck;
+    var chkLine = chk ? 'Sist sjekket ' + App.fmtDate(String(chk.at).slice(0, 10)) + '. Kalenderen sjekkes automatisk hver uke, og børsmeldinger sjekkes daglig.' : 'Kalenderen sjekkes automatisk hver uke, og børsmeldinger sjekkes daglig. Ikke sjekket ennå.';
+
+    document.getElementById("panel-events").innerHTML =
+      '<div class="muted" style="font-size:11.5px;">' + chkLine + '</div>' +
+      '<div class="card pad"><div class="eyebrow" style="margin-bottom:8px;">Kommende</div>' + (upcoming.map(evRow).join("") || '<p class="empty-hint">Ingen kommende hendelser.</p>') + '</div>' +
+      '<div class="card pad"><div class="eyebrow" style="margin-bottom:8px;">Tidligere</div>' + (past.map(evRow).join("") || '<p class="empty-hint">Ingen tidligere hendelser.</p>') + '</div>';
+  }
+
+  // ---------- EIERSKAP ----------
+  var insPeriod = { key: "12m", from: "", to: "" };
+  var INS_PRESETS = [["30d", "Siste 30 dager", 30], ["3m", "Siste 3 måneder", 91], ["6m", "Siste 6 måneder", 182], ["12m", "Siste 12 måneder", 365], ["all", "Alle registrerte", 0]];
+  function insRange() {
+    var iso = function (d) { return d.toISOString().slice(0, 10); };
+    if (insPeriod.key === "custom") return { from: insPeriod.from || "0000-01-01", to: insPeriod.to || "9999-12-31", label: (insPeriod.from ? App.fmtDate(insPeriod.from) : "Start") + " – " + (insPeriod.to ? App.fmtDate(insPeriod.to) : "i dag") };
+    var p = INS_PRESETS.filter(function (x) { return x[0] === insPeriod.key; })[0] || INS_PRESETS[3];
+    if (!p[2]) return { from: "0000-01-01", to: "9999-12-31", label: p[1] };
+    return { from: iso(new Date(Date.now() - p[2] * 86400000)), to: "9999-12-31", label: p[1] };
+  }
+  function renderOwnership() {
+    var O = C.ownership;
+    var holdPx = Number(C.price) || 0, holdCur = C.currency === "NOK" ? "kr" : (C.currency || "");
+    var srcLink = function (u, txt) { return u ? ' <a href="' + esc(u) + '" target="_blank" rel="noopener" style="color:var(--text-mut);">' + esc(txt || "Kilde") + ' ↗</a>' : ""; };
+    var holderRows = O.topHolders.map(function (h) {
+      return "<tr><td>" + esc(h.name) + "</td><td>" + n1(h.pct) + " %</td><td style='color:" + (h.change > 0 ? "var(--pos)" : h.change < 0 ? "var(--neg)" : "var(--text-faint)") + ";font-weight:700;'>" + (!h.change ? "–" : pct(h.change, 2)) + "</td></tr>";
+    }).join("");
+    var holdCap = O.topHolders.length ? '<div class="muted" style="font-size:11.5px;margin-top:10px;">Kilde: ' + (/ir\.oms\.no/.test(O.holdersUrl || "") ? "VPS (Euronext)" : "børsmeldinger/investorside") + (O.holdersAsOf ? ", per " + App.fmtDate(O.holdersAsOf) : "") + "." + srcLink(O.holdersUrl, "Åpne kilden") + " Banker som står som forvalter kan eie på vegne av flere.</div>" : "";
+    var rng = insRange();
+    var trades = O.insiderTrades.filter(function (t) { return t.date >= rng.from && t.date <= rng.to; });
+    var agg = function (type) { var l = trades.filter(function (t) { return t.type === type; }); return { n: l.length, v: l.reduce(function (a, t) { return a + t.shares * t.price; }, 0) }; };
+    var buy = agg("Kjøp"), sell = agg("Salg");
+    var money = function (v) { return Math.round(v).toLocaleString("nb-NO") + " " + (holdCur || "kr"); };
+    var frame = function (title, a, col) { return '<div style="flex:1;min-width:180px;border:1px solid var(--border);border-radius:12px;padding:12px 14px;"><div class="eyebrow" style="color:' + col + ';">' + title + '</div><div style="font-size:21px;font-weight:800;margin-top:4px;">' + money(a.v) + '</div><div class="muted" style="font-size:12px;margin-top:2px;">' + a.n + (a.n === 1 ? " handel" : " handler") + '</div></div>'; };
+    var insiderRows = trades.map(function (t) {
+      var total = Math.round(t.shares * t.price);
+      return "<tr><td>" + esc(t.name) + "</td><td>" + esc(t.role) + "</td><td><span class='pill " + (t.type === "Kjøp" ? "pill-pos" : "pill-neg") + "'>" + t.type + "</span></td><td>" + t.shares.toLocaleString("nb-NO") + "</td><td>" + n2(t.price) + "</td><td>" + total.toLocaleString("nb-NO") + " " + (holdCur || "kr") + "</td><td style='white-space:nowrap;'>" + App.fmtDate(t.date) + (t.time ? ", " + t.time : "") + "</td><td>" + (t.url ? '<a href="' + esc(t.url) + '" target="_blank" rel="noopener" style="color:var(--text-mut);">Kilde ↗</a>' : "") + "</td></tr>";
+    }).join("");
+    var mgmtRows = O.managementHoldings.slice().sort(function (x, y) { return y.shares - x.shares; }).map(function (m) {
+      return "<tr><td>" + esc(m.name) + "</td><td>" + esc(m.role) + "</td><td>" + m.shares.toLocaleString("nb-NO") + "</td><td style='font-weight:600;'>" + (holdPx ? Math.round(m.shares * holdPx).toLocaleString("nb-NO") + " " + holdCur : "–") + "</td></tr>";
+    }).join("");
+    var mgmtCap = '<div class="muted" style="font-size:11.5px;margin-top:10px;">Viser bare nåværende styre og ledelse: personer som står på selskapets egen styre-/ledelsesside eller i Enhetsregisteret, eller som har meldt innsidehandel siste 12 måneder. Tall fra årsrapporten for personer som ikke kan bekreftes, vises ikke.' + srcLink(O.mgmtUrl, "Åpne kilden") + "</div>";
+
+    document.getElementById("panel-ownership").innerHTML =
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Største aksjonærer</div>' + (holderRows ? '<table class="tbl"><thead><tr><th>Aksjonær</th><th>Eierandel</th><th>Endring</th></tr></thead><tbody>' + holderRows + '</tbody></table>' + holdCap : '<p class="empty-hint">Aksjonærlisten er ikke hentet ennå.</p>') + '</div>' +
+      '<div class="card pad"><div class="row" style="justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;"><div class="eyebrow">Innsidehandler</div><div class="row gap-8" style="align-items:center;"><span class="muted" style="font-size:12px;">' + esc(rng.label) + '</span><button class="btn" id="insPeriodBtn">Velg periode</button></div></div>' +
+      '<div class="row gap-12 wrap" style="margin-bottom:14px;">' + frame("Kjøp (innsidere)", buy, "var(--pos)") + frame("Salg (innsidere)", sell, "var(--neg)") + '</div>' +
+      '<div style="max-height:460px;overflow:auto;"><table class="tbl"><thead><tr><th>Navn</th><th>Rolle</th><th>Type</th><th>Antall</th><th>Pris</th><th>Totalt</th><th>Dato</th><th></th></tr></thead><tbody>' + (insiderRows || '<tr><td colspan="8" class="empty-hint">Ingen innsidehandler i denne perioden.</td></tr>') + '</tbody></table></div></div>' +
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Ledelsens aksjebeholdning</div>' + (mgmtRows ? '<table class="tbl"><thead><tr><th>Navn</th><th>Rolle</th><th>Antall aksjer</th><th>Verdi (dagens kurs)</th></tr></thead><tbody>' + mgmtRows + '</tbody></table>' : '<p class="empty-hint">Ingen bekreftet beholdning for nåværende ledelse ennå.</p>') + mgmtCap + '</div>';
+    var pb = document.getElementById("insPeriodBtn");
+    if (pb) pb.onclick = function () {
+      var host = document.getElementById("insPresets");
+      host.innerHTML = INS_PRESETS.map(function (p) { return '<button class="btn' + (insPeriod.key === p[0] ? " btn-primary" : "") + '" data-ip="' + p[0] + '">' + p[1] + '</button>'; }).join("");
+      Array.prototype.forEach.call(host.querySelectorAll("[data-ip]"), function (b) { b.onclick = function () { insPeriod = { key: b.getAttribute("data-ip"), from: "", to: "" }; document.getElementById("modalInsPeriod").classList.remove("open"); renderOwnership(); }; });
+      var r = insRange(); document.getElementById("insFrom").value = insPeriod.key === "custom" ? insPeriod.from : (r.from > "1000" ? r.from : ""); document.getElementById("insTo").value = insPeriod.key === "custom" ? insPeriod.to : "";
+      document.getElementById("insPeriodErr").style.display = "none";
+      document.getElementById("modalInsPeriod").classList.add("open");
+    };
+  }
+  (function () {
+    var ap = document.getElementById("insPeriodApply"); if (!ap) return;
+    ap.onclick = function () {
+      var f = document.getElementById("insFrom").value, t = document.getElementById("insTo").value, er = document.getElementById("insPeriodErr");
+      if (!f && !t) { er.textContent = "Velg minst en dato, eller trykk på en av snarveiene over."; er.style.display = "block"; return; }
+      if (f && t && f > t) { er.textContent = "Fra-datoen kan ikke være etter til-datoen."; er.style.display = "block"; return; }
+      insPeriod = { key: "custom", from: f, to: t }; document.getElementById("modalInsPeriod").classList.remove("open"); renderOwnership();
+    };
+  })();
+
+  // ---------- LEDELSE OG STRUKTUR ----------
+  function renderLeadership() {
+    var L = C.leadership;
+    if (!L) { document.getElementById("panel-leadership").innerHTML = '<div class="card pad"><span class="muted">Ingen ledelsesdata registrert ennå.</span></div>'; return; }
+    var execs = L.executives || [];
+    var boardAll = L.board || [];
+    var isDeputy = function (b) { return /vara|observat/i.test(b.role || ""); };
+    var board = boardAll.filter(function (b) { return !isDeputy(b); });      // faste styremedlemmer
+    var deputies = boardAll.filter(isDeputy);                                  // varamedlemmer og observatører vises for seg
+    var rank = function (b) { return /styreleder/i.test(b.role) ? 0 : /nestleder/i.test(b.role) ? 1 : 2; };
+    board = board.slice().sort(function (a, b) { return rank(a) - rank(b); });
+
+    var isCeoRole = function (r) { return /konsernsjef|\bceo\b|administrerende direkt/i.test(r || ""); };
+    var isCfoRole = function (r) { return /finansdirekt|\bcfo\b/i.test(r || ""); };
+    execs = execs.map(function (p, i) { return { p: p, i: i, k: isCeoRole(p.role) ? 0 : isCfoRole(p.role) ? 1 : 2 }; })
+      .sort(function (a, b) { return a.k - b.k || a.i - b.i; }).map(function (x) { return x.p; });
+
+    var ceoIdx = -1;
+    execs.forEach(function (p, i) { if (ceoIdx === -1 && /konsernsjef/i.test(p.role)) ceoIdx = i; });
+    var ceo = ceoIdx >= 0 ? execs[ceoIdx] : execs[0];
+    var restExecs = execs.filter(function (p, i) { return i !== (ceoIdx >= 0 ? ceoIdx : 0); });
+
+    // Konsernstatus avgjøres av dataene, ikke hardkodet per selskap – slik at et
+    // selskap som går inn i (eller ut av) et konsern senere oppdateres automatisk:
+    //  - L.parent = { name: "..." }  → dette selskapet er et datterselskap.
+    //  - L.subsidiaries = [{name:"..."}, ...] → dette selskapet er selv morselskap i et konsern.
+    // Er ingen av delene satt, er selskapet frittstående, og da skal det ikke
+    // stå "Konsernledelse" noe sted på siden – kun "Ledergruppe".
+    var subsidiaries = L.subsidiaries || [];
+    var isKonsern = !!(L.parent || subsidiaries.length);
+    var execLabel = isKonsern ? "Konsernledelse" : "Ledergruppe";
+
+    var statusLine = L.parent
+      ? '<span class="muted" style="font-size:12px;">Datterselskap av <strong>' + esc(L.parent.name) + '</strong> – det er ledelsen der som har overordnet styring. Følger du allerede med på morselskapet, trenger du ikke legge inn dette datterselskapet separat.</span>'
+      : (subsidiaries.length
+          ? '<span class="muted" style="font-size:12px;">Morselskap i et konsern med ' + subsidiaries.length + ' datterselskap' + (subsidiaries.length > 1 ? "er" : "") + '.</span>'
+          : '<span class="muted" style="font-size:12px;">Frittstående selskap – ikke en del av et konsern.</span>');
+
+    function node(name, role, big) {
+      return '<div class="orgnode' + (big ? " big" : "") + '"><span class="oname">' + esc(name) + '</span><span class="orole">' + esc(role) + '</span></div>';
+    }
+    function leaf(name, role) { return "<li>" + node(name, role, false) + "</li>"; }
+
+    // Bygger et ekte forgrenet tre (jf. referansebildet): én boks øverst i hvert
+    // nivå, kun forgrenet der det faktisk finnes flere under. Nivåene ovenfra:
+    // Morselskap (hvis datterselskap) → Styret → Konsernsjef/CEO → Ledergruppe.
+    var tiers = [];
+    if (L.parent) tiers.push([L.parent.name, "Morselskap – eier og overordnet styring", false]);
+    if (board.length) {
+      var chair = board.filter(function (b) { return /styreleder/i.test(b.role); })[0] || board[0];
+      tiers.push(["Styret", "Leder: " + chair.name + " · " + board.length + " medlem" + (board.length > 1 ? "mer" : "") + (deputies.length ? " + " + deputies.length + " vara" : ""), false]);
+    }
+    if (ceo) tiers.push([ceo.name, ceo.role, true]);
+
+    // Pyramiden: Styret øverst → sjef → ledergruppe i et rutenett under sjefen (flere rader, ingen sidelengs rulling).
+    var stem = '<div class="org-stem"></div>';
+    var groupBox = function (label, list, role) {
+      return stem + '<div class="org-group"><div class="org-glabel">' + label + ' · ' + list.length + '</div><div class="org-grid">' +
+        list.map(function (p) { return node(p.name, role || p.role, false); }).join("") + '</div></div>';
+    };
+    var bottomRow = (ceo && restExecs.length) ? groupBox(execLabel, restExecs) : "";
+    var subsRow = (!L.parent && subsidiaries.length) ? groupBox("Datterselskaper", subsidiaries, "Datterselskap") : "";
+
+    var treeHtml;
+    if (!tiers.length) {
+      treeHtml = '<span class="empty-hint">Ingen strukturdata registrert ennå.</span>';
+    } else {
+      treeHtml = '<div class="tree org-pyramid">' + tiers.map(function (t, i) { return (i ? stem : "") + node(t[0], t[1], t[2]); }).join("") + bottomRow + subsRow + '</div>';
+    }
+
+    var structureHtml = '<div class="card pad">' +
+      '<div class="hx-org-head"><div class="eyebrow" style="margin-bottom:4px;">Selskapsstruktur</div>' +
+      '<button type="button" class="btn btn-sm btn-ghost" id="openOrgExample" style="color:var(--text-mut);margin:-6px -6px 0 0;">Se eksempel</button></div>' +
+      statusLine +
+      treeHtml +
+    '</div>';
+
+    // Kort, generell forklaring på hva stillingen innebærer. Bygger på tittelen – ingen oppdiktede detaljer om personen.
+    function posDesc(p, kind) {
+      var r = p.role || "";
+      if (kind === "board") {
+        if (/observat/i.test(r)) return "Følger styremøtene og får innsyn i sakene, men har ikke stemmerett.";
+        if (/vara/i.test(r)) return "Reserve for et fast styremedlem. Møter og stemmer i styret bare når det faste medlemmet ikke kan delta (sykdom, inhabilitet eller annet fravær).";
+        if (/styreleder|styrets leder|chair/i.test(r) && !/nest|vice/i.test(r)) return "Leder styret og styremøtene, setter sakene som skal behandles, og er hovedkontakten mellom styret og toppsjefen. Har den avgjørende stemmen ved stemmelikhet.";
+        if (/nestleder|vice/i.test(r)) return "Tar over som leder av styret når styrelederen ikke kan, og støtter styrelederen i det løpende arbeidet.";
+        if (/ansatt/i.test(p.represents || "")) return "Representerer de ansatte i styret. Har samme stemmerett og ansvar som de andre medlemmene, men er valgt av de ansatte i stedet for av generalforsamlingen.";
+        return "Er med på å ta de viktige beslutningene: fastsetter strategien, godkjenner regnskapet og følger opp ledelsen. Velges av aksjonærene på generalforsamlingen.";
+      }
+      var m;
+      if (isCeoRole(r)) return "Har det øverste ansvaret for den daglige driften, leder resten av ledergruppen og rapporterer til styret.";
+      if (isCfoRole(r)) return "Har ansvar for økonomi, regnskap, finansiering og rapportering til markedet – og er sentral i kontakten med investorer og analytikere.";
+      if (/risiko|\bcro\b/i.test(r)) return "Har ansvar for å kartlegge, måle og følge opp risikoen i selskapet (som kreditt-, markeds- og operasjonell risiko), slik at den holdes innenfor rammene styret har satt.";
+      if (/compliance|etterlevelse/i.test(r)) return "Har ansvar for at selskapet følger lover, forskrifter og interne regler – og for kontrollen av dette, uavhengig av forretningsområdene.";
+      if (/teknologi|\bit\b|\bcto\b|digital/i.test(r)) return "Har ansvar for selskapets teknologi, IT-systemer og digitale løsninger, og at de er trygge og stabile.";
+      if (/mennesker|\bhr\b|personal|organisasjon|people/i.test(r)) return "Har ansvar for ansatte og organisasjon – som rekruttering, kompetanse og arbeidsmiljø" + (/kommunikasjon/i.test(r) ? " – samt intern og ekstern kommunikasjon." : ".");
+      if (/juridisk|legal|general counsel/i.test(r)) return "Har ansvar for juridiske spørsmål, kontrakter og rettslige saker som gjelder selskapet.";
+      if (/strategi/i.test(r)) return "Har ansvar for selskapets langsiktige strategi, oppkjøp og utvikling.";
+      if (/formuesforvaltning|kapitalforvaltning|asset/i.test(r)) return "Leder forretningsområdet som forvalter kunders formue (fond, kapitalforvaltning og rådgivning) og svarer for resultatet i området.";
+      if (/personmarked|retail|privatmarked/i.test(r)) return "Leder forretningsområdet mot privatkunder, med ansvar for produkter, kundeopplevelse og resultat i det markedet.";
+      if (/bedrift|store selskaper|corporate/i.test(r)) return "Leder forretningsområdet mot bedriftskunder, med ansvar for kundene, utlån og resultat i det markedet.";
+      if (/carnegie|markets|kapitalmarked|investment/i.test(r)) return "Leder forretningsområdet for kapitalmarkeder og investeringsbank: handel, rådgivning og finansiering for bedrifter og investorer.";
+      if (/\bcoo\b|drift|operasjon|produksjon/i.test(r)) return "Har ansvar for den daglige driften, slik at produksjon og leveranser fungerer effektivt.";
+      if (/salg|marked|kommersiell|commercial/i.test(r)) return "Har ansvar for salg, markedsføring og kunderelasjoner.";
+      if ((m = r.match(/^(?:konsern)?(?:direktør|leder|sjef)\s+for\s+(.+)$/i))) return "Har ansvar for området «" + m[1].trim() + "», sitter i ledergruppen og rapporterer til toppsjefen.";
+      return "Sitter i ledergruppen med ansvar for sitt område, og rapporterer til toppsjefen.";
+    }
+
+    // Pynter på bakgrunnsteksten: fjerner «<tittel> siden ÅÅÅÅ.» (står allerede i rammene) og kutter avkuttede setninger pent.
+    function cleanBg(t) {
+      t = String(t || "").trim();
+      t = t.replace(/^[^.]{0,160}?\bsiden\s+[\wæøåÆØÅ ]{0,12}\d{4}\.\s*/i, "");
+      t = t.replace(/^Annen ([A-ZÆØÅ][\wæøåÆØÅ-]*)-erfaring:\s*/, "Tidligere i $1: ");
+      t = t.replace(/\.\s*Annen erfaring:\s*/g, ". Utenfor selskapet: ");
+      t = t.replace(/^Annen erfaring:\s*/, "");
+      t = t.trim();
+      if (!t) return "";
+      t = t.charAt(0).toUpperCase() + t.slice(1);
+      if (!/[.!?]$/.test(t)) { var k = t.lastIndexOf(";"); t = (k > 40 ? t.slice(0, k) : t.replace(/[,;:\s]+\S*$/, "")) + "."; }
+      return t;
+    }
+
+    function frame(label, value, faded, title) {
+      return '<div class="pframe' + (faded ? " faded" : "") + '"' + (title ? ' title="' + esc(title) + '"' : "") + '><span class="pframe-l">' + esc(label) + '</span><span class="pframe-v">' + esc(value) + '</span></div>';
+    }
+
+    var ansattvalgte = board.filter(function (b) { return /ansatt/i.test(b.represents || ""); });
+
+    function personAccordion(list, kind) {
+      return list.map(function (p) {
+        var isVara = kind === "board" && /vara|observat/i.test(p.role || "");
+        var roleTxt = p.role || "Ikke funnet";
+        if (isVara) roleTxt = /observat/i.test(p.role) ? "Observatør (uten stemmerett)" : (/ansatt/i.test(p.represents || "") ? "Varamedlem for de ansattvalgte" : "Varamedlem for de faste medlemmene");
+        var frames = frame("Stilling", roleTxt, !p.role) +
+          '<div class="pframe pdescf"><span class="pframe-l">Beskrivelse</span><span class="pframe-d">' + esc(posDesc(p, kind)) + '</span></div>' +
+          (p.since ? frame("I stillingen siden", p.since, false) : frame("I stillingen siden", "Ikke funnet", true, p.gap || "Startår er ikke funnet i kildene"));
+        var pills = (p.independent === true ? '<span class="pill pill-outline">Uavhengig</span>' : p.independent === false ? '<span class="pill pill-outline">Ikke uavhengig</span>' : '') +
+          (p.represents ? '<span class="pill pill-outline">' + esc(p.represents) + '</span>' : '');
+        var bg = cleanBg(p.background);
+        return '<div class="accordion-item">' +
+          '<div class="accordion-head">' +
+            '<div class="phead">' +
+              '<div class="pname"><span style="font-size:14px;font-weight:700;">' + esc(p.name) + '</span>' +
+                (pills ? '<div class="row gap-6 wrap" style="align-items:center;">' + pills + '</div>' : '') + '</div>' +
+              '<div class="pinfo"><div class="pframes">' + frames + '</div></div>' +
+            '</div>' +
+            '<svg class="accordion-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:3px;"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</div>' +
+          '<div class="accordion-body col gap-6">' +
+            '<div class="eyebrow" style="margin-bottom:2px;">Bakgrunn</div>' +
+            (bg ? '<span style="font-size:12.5px;line-height:1.55;">' + esc(bg) + '</span>' : '<span class="muted" style="font-size:12.5px;">Bakgrunn er ikke lagt inn ennå.</span>') +
+            (p.shares ? '<span class="muted" style="font-size:12px;display:block;margin-top:8px;">Eier ' + Number(p.shares).toLocaleString("nb-NO") + ' aksjer</span>' : '') +
+            (p.url ? '<a class="muted" style="font-size:12px;display:block;margin-top:8px;" href="' + esc(p.url) + '" target="_blank" rel="noopener">Kilde: ' + esc(p.srcName || "selskapets side") + '</a>' : '<span class="muted" style="font-size:12px;display:block;margin-top:8px;">Kilde: Foretaksregisteret (Brønnøysund)</span>') +
+          '</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    var checkedTxt = "";
+    if (L.checkedAt) { var cd = new Date(L.checkedAt); if (!isNaN(cd)) checkedTxt = "Sist kontrollert mot Foretaksregisteret og selskapets sider: " + cd.toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" }) + ". Personer som har sluttet vises ikke."; }
+
+    var deputyAllEmp = deputies.length && deputies.every(function (d) { return /ansatt/i.test(d.represents || ""); });
+    var deputyDesc = "Varamedlemmer er reserver for de faste styremedlemmene. De møter og stemmer i styret bare når et fast medlem ikke kan delta (sykdom, inhabilitet eller annet fravær). " +
+      (deputyAllEmp
+        ? "Varamedlemmene her er valgt av de ansatte, og er dermed reserver for de ansattvalgte styremedlemmene" + (ansattvalgte.length ? " (" + ansattvalgte.map(function (b) { return b.name; }).join(", ") + ")" : "") + ". "
+        : "") +
+      "Observatører følger møtene uten stemmerett. Ingen av dem teller med i antall styremedlemmer over.";
+
+    var execDesc = isKonsern
+      ? "Dette er personene som driver konsernet i det daglige – ansatt av og rapporterer til styret."
+      : "Dette er personene som driver selskapet i det daglige – ansatt av og rapporterer til styret.";
+    var boardDesc = "Velges av aksjonærene og fører tilsyn med selskapet og ledelsen. Styret som organ er ikke med i den daglige driften – men et styremedlem kan også sitte i ledergruppen, og er da med i driften gjennom den rollen.";
+
+    document.getElementById("panel-leadership").innerHTML =
+      structureHtml +
+      '<div class="card pad">' +
+        '<div class="eyebrow" style="margin-bottom:4px;">' + esc(execLabel) + '</div>' +
+        '<span class="muted" style="font-size:12px;">' + esc(execDesc) + '</span>' +
+        '<div style="margin-top:10px;">' + personAccordion(execs, "exec") + '</div>' +
+        (checkedTxt ? '<div class="muted" style="font-size:11.5px;margin-top:10px;">' + esc(checkedTxt) + '</div>' : '') +
+      '</div>' +
+      '<div class="card pad">' +
+        '<div class="eyebrow" style="margin-bottom:4px;">Styre</div>' +
+        '<span class="muted" style="font-size:12px;">' + esc(boardDesc) + '</span>' +
+        '<div style="margin-top:10px;">' + personAccordion(board, "board") + '</div>' +
+      '</div>' +
+      (deputies.length ? '<div class="card pad">' +
+        '<div class="eyebrow" style="margin-bottom:4px;">Varamedlemmer og observatører</div>' +
+        '<span class="muted" style="font-size:12px;">' + esc(deputyDesc) + '</span>' +
+        '<div style="margin-top:10px;">' + personAccordion(deputies, "board") + '</div>' +
+      '</div>' : '');
+
+    App.initAccordions(document.getElementById("panel-leadership"));
+    var orgBtn = document.getElementById("openOrgExample");
+    if (orgBtn) orgBtn.addEventListener("click", function () { document.getElementById("modalOrgExample").classList.add("open"); });
+  }
+
+  // ---------- TESE & RISIKO ----------
+  function chipListEditor(items, key) {
+    return '<div class="chip-row" data-chiplist="' + key + '">' +
+      items.map(function (it, i) { return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;">' + esc(it) + '<button class="btn-ghost" style="padding:0;font-size:13px;line-height:1;" data-remove-chip="' + key + '" data-idx="' + i + '">✕</button></span>'; }).join("") +
+      '<span class="row gap-6"><input class="input" style="width:180px;height:30px;" id="add-' + key + '" placeholder="+ Legg til..."><button class="btn btn-sm" data-add-chip="' + key + '">Legg til</button></span>' +
+    '</div>';
+  }
+
+  // Grov mock-oversettelse fra nyhetskategori + retning til en tematisk overskrift –
+  // simulerer at AI-en beskriver HVA mønsteret faktisk handler om, ikke bare at det er positivt/negativt.
+  var CATEGORY_THEME = {
+    "Analyse": { pos: "Styrket analytikersyn", neg: "Svekket analytikersyn" },
+    "Fornybar": { pos: "Fremgang i fornybarsatsingen", neg: "Forsinkelser i fornybarsatsingen" },
+    "Kapital": { pos: "Styrket kapitalbilde", neg: "Svekket kapitalbilde" },
+    "Kostnader": { pos: "Lavere kostnadspress", neg: "Økende kostnadspress" },
+    "Kredittrisiko": { pos: "Bedre kredittbilde", neg: "Svekket kredittbilde" },
+    "Ledelse": { pos: "Styrket ledelse", neg: "Uro i ledelsen" },
+    "M&A": { pos: "Økt oppkjøpsspekulasjon", neg: "Avtagende oppkjøpsspekulasjon" },
+    "Marked": { pos: "Bedre markedsforhold", neg: "Svekkede markedsforhold" },
+    "Partnerskap": { pos: "Styrket samarbeid", neg: "Svekket samarbeid" },
+    "Produksjon": { pos: "Styrket produksjon", neg: "Svekket produksjon" },
+    "Regulatorisk": { pos: "Lettelser i reguleringer", neg: "Økende regulatorisk press" },
+    "Rentemargin": { pos: "Styrket rentemargin", neg: "Svekket rentemargin" },
+    "Utbytte": { pos: "Styrket utbyttebilde", neg: "Svekket utbyttebilde" },
+    "Vekst": { pos: "Sterkere vekstsignaler", neg: "Svakere vekstsignaler" }
+  };
+
+  function dominantCategory(items) {
+    var counts = {}, best = null, bestCount = 0;
+    items.forEach(function (n) {
+      var c = n.category || "Annet";
+      counts[c] = (counts[c] || 0) + 1;
+    });
+    Object.keys(counts).forEach(function (c) {
+      if (counts[c] > bestCount) { best = c; bestCount = counts[c]; }
+    });
+    return best || "Annet";
+  }
+
+  function patternHeading(p) {
+    var isPos = p.direction === "positive";
+    var theme = CATEGORY_THEME[p.category];
+    if (theme) return isPos ? theme.pos : theme.neg;
+    return (isPos ? "Flere positive signaler – " : "Flere negative signaler – ") + p.category.toLowerCase();
+  }
+
+  function patternRationale(p, C) {
+    var isPos = p.direction === "positive";
+    var basis = p.single ? "én enkelt, sterk nyhet" : p.count + " av de siste nyhetene";
+    var verb = isPos ? "styrker" : "svekker";
+    return "AI-en tolker dette som et " + (isPos ? "positivt" : "negativt") + " mønster knyttet til " + p.category.toLowerCase() +
+      ", basert på " + basis + " med snittstyrke " + (Math.round(Math.abs(p.avgImpact) * 10) / 10) + "/10. " +
+      "Fortsetter det, vil det trolig " + verb + " bildet for " + C.name + " fremover. Følg utviklingen videre før du eventuelt endrer bull-, base- eller bear-casen.";
+  }
+
+  // Ett mønster kan enten være én enkelt sterk nyhet (impact +7/-7 eller mer), eller et flertall
+  // av flere nyheter som peker samme vei uten at noen alene er sterk nok. Begge vises likt.
+  // Ren mock-heuristikk – uavhengig av hva som står i bull/base/bear-tekstene.
+  function detectPatterns(C) {
+    var STRONG = 8;
+    var items = (C.news || [])
+      .filter(function (n) { return typeof n.impact === "number"; })
+      .slice()
+      .sort(function (a, b) { return new Date(b.date) - new Date(a.date); })
+      .slice(0, 6);
+    if (!items.length) return [];
+
+    var patterns = [];
+
+    items.filter(function (n) { return Math.abs(n.impact) >= STRONG; }).forEach(function (n) {
+      patterns.push({
+        direction: n.impact > 0 ? "positive" : "negative",
+        count: 1,
+        total: items.length,
+        avgImpact: n.impact,
+        probability: Math.min(90, 55 + Math.abs(n.impact) * 3),
+        horizon: "de neste 2–4 ukene",
+        category: dominantCategory([n]),
+        items: [n],
+        single: true
+      });
+    });
+
+    var rest = items.filter(function (n) { return Math.abs(n.impact) < STRONG; });
+    var pos = rest.filter(function (n) { return n.impact > 0; });
+    var neg = rest.filter(function (n) { return n.impact < 0; });
+
+    function buildGroup(group, direction) {
+      var avg = group.reduce(function (s, n) { return s + n.impact; }, 0) / group.length;
+      var probability = Math.min(85, 35 + group.length * 10 + Math.round(Math.abs(avg) * 2));
+      var horizon = group.length >= 3 ? "de neste 1–3 månedene" : "de neste 2–4 ukene";
+      return {
+        direction: direction,
+        count: group.length,
+        total: items.length,
+        avgImpact: avg,
+        probability: probability,
+        horizon: horizon,
+        category: dominantCategory(group),
+        items: group,
+        single: false
+      };
+    }
+
+    if (pos.length >= 2 && pos.length > neg.length) patterns.push(buildGroup(pos, "positive"));
+    if (neg.length >= 2 && neg.length > pos.length) patterns.push(buildGroup(neg, "negative"));
+    return patterns;
+  }
+
+  // Gjør eksempel-mønstre (mock) om til samme form som ekte funn fra databasen, slik at én og samme visning brukes.
+  function mockSignals(C) {
+    return detectPatterns(C).map(function (p) {
+      var neg = p.direction !== "positive";
+      return { id: "mock", title: patternHeading(p), kind: p.single ? "single" : "pattern", effect: Math.round(p.avgImpact), likelihood: Math.max(1, Math.min(10, Math.round(p.probability / 10))),
+        horizonText: "Sannsynligvis innen " + p.horizon.replace(/^de neste /, ""), horizonBasis: "Eksempeldata – ikke et ekte anslag", rationale: patternRationale(p, C), status: p.single ? "new" : "confirmed", tag: p.category,
+        items: p.items.map(function (n) { return { headline: n.headline, source: n.source, time: n.time, stance: "supports" }; }) };
+    });
+  }
+
+  var SIGNAL_STATUS = { "new": "Nytt funn – én sterk nyhet", confirmed: "Bekreftet av flere nyheter", weakened: "Svekket av nyere nyheter" };
+  // Sannsynlighet vises med bare tre ord. Tallet i databasen er 2 / 5 / 8, men vi tåler også andre tall.
+  function likWord(v) { return v <= 3 ? "Lite sannsynlig" : (v >= 7 ? "Sannsynlig" : "Middels"); }
+  // Kort pill for sannsynlighet. Hvis selskap/børsmelding/myndighet har bekreftet, vises "Bekreftet" i stedet.
+  function likPill(p) {
+    if (p.confirmation === "will_happen") return '<span class="pill" style="color:#fff;background:#111;font-size:12.5px;font-weight:700;">Bekreftet skal skje</span>';
+    if (p.confirmation === "will_not_happen") return '<span class="pill" style="color:#111;background:#e5e7eb;font-size:12.5px;font-weight:700;">Bekreftet skal ikke skje</span>';
+    return '<span class="pill pill-outline" style="font-size:12.5px;">' + likWord(p.likelihood) + '</span>';
+  }
+
+  // Eksempeldata som vises til det kommer ekte funn: ett positivt og ett negativt, så man ser hvordan boksen ser ut.
+  function exampleSignals(C) {
+    var nm = C.name || "selskapet";
+    return [
+      { id: "ex-pos", title: "Ny bransje begynner å bruke produktene", kind: "pattern", effect: 7, likelihood: 5, likelihoodBasis: "2 kilder · ikke offisielt bekreftet · konkret dato: pilotstart i løpet av neste halvår", horizonText: "Sannsynligvis innen 3–6 måneder",
+        horizonBasis: "Eksempel: to av nyhetene nevner pilotkontrakter som starter i løpet av neste halvår", status: "confirmed", tag: "Marked og etterspørsel",
+        rationale: "Eksempel: Flere nyheter viser at kundene til " + nm + " øker bestillingene fordi en ny bransje tar produktet i bruk. Dette sto ikke i tesen din, og passer ikke under noen av driverne dine, men kan likevel løfte kursen. Derfor vises det her, slik at du vet hvorfor.",
+        items: [ { headline: "Eksempel: Stor kunde dobler rammeavtalen med " + nm, source: "Eksempelkilde", time: "for 3 dager siden", stance: "supports" },
+                 { headline: "Eksempel: Analytiker peker på sterkere ordreinngang i bransjen", source: "Eksempelkilde", time: "for 9 dager siden", stance: "supports" } ] },
+      { id: "ex-neg", title: "Nytt regelverk som kan ramme driften", kind: "single", effect: -8, likelihood: 8, confirmation: "will_happen", likelihoodBasis: "1 kilde · bekreftet av myndighet · konkret dato: høringsfrist slutten av året", horizonText: "Sannsynligvis innen 6–12 måneder",
+        horizonBasis: "Eksempel: høringsfristen er satt til slutten av året, og ikrafttredelse skjer vanligvis et halvt år etter", status: "new", tag: "Regulering og politikk",
+        rationale: "Eksempel: Én enkelt nyhet omtaler et lovforslag som kan gi " + nm + " høyere kostnader. Dette er noe tesen din ikke hadde sett for seg, og saken er stor nok til å vises alene.",
+        items: [ { headline: "Eksempel: Myndighetene sender nytt regelverk på høring", source: "Eksempelkilde", time: "for 2 dager siden", stance: "supports" } ] }
+    ];
+  }
+
+  function patternsHtml(C) {
+    var real = (C.live && C.thesis) ? (C.thesis.signals || []) : [];
+    var isExample = !real.length;
+    var signals = isExample ? exampleSignals(C) : real;
+    if (!signals.length) {
+      return '<p class="empty-hint" style="margin-top:2px;">Ingen funn utenfor tesen din akkurat nå. Nyheter som ikke har noe med tesen å gjøre blir merket med en tagg og en begrunnelse, og dukker bare opp her hvis én av dem er sterk nok alene, eller hvis flere peker samme vei.</p>';
+    }
+    return '<div class="col gap-10" style="margin-top:2px;">' +
+      (isExample ? '<div class="pill pill-outline" style="align-self:flex-start;white-space:normal;">Eksempeldata – slik ser boksen ut. Erstattes av ekte funn når nyheter kommer inn.</div>' : '') +
+      signals.map(function (p, idx) {
+        var isPos = p.effect >= 0;
+        var color = isPos ? "var(--pos)" : "var(--neg)";
+        var w = Math.min(Math.abs(p.effect) * 6, 60), left = isPos ? 60 : 60 - w;
+        var listId = "patternArticles-" + idx;
+        var n = p.items.length, articleWord = n === 1 ? "nyhet" : "nyheter";
+        var articlesHtml = p.items.map(function (x) {
+          return '<div class="col gap-2" style="padding:6px 0;border-bottom:1px solid var(--border-soft);">' +
+            '<span style="font-size:12px;font-weight:600;">' + esc(x.headline) + '</span>' +
+            '<span class="faint" style="font-size:11px;">' + esc(x.source) + (x.time ? ' · ' + esc(x.time) : '') + (x.stance === "weakens" ? ' · taler mot funnet' : '') + '</span>' +
+          '</div>';
+        }).join("");
+        var eff = (p.effect > 0 ? "+" : p.effect < 0 ? "−" : "") + Math.abs(p.effect);
+        return '<div class="col gap-8" style="padding:12px;border-radius:10px;border:1.5px solid ' + color + ';background:var(--card);">' +
+          '<div class="row between center wrap gap-8">' +
+            '<span style="font-size:13.5px;font-weight:700;color:' + color + ';">' + esc(p.title) + '</span>' +
+            '<span class="pill pill-outline" style="flex-shrink:0;">' + esc(SIGNAL_STATUS[p.status] || "Funn") + '</span>' +
+          '</div>' +
+          (p.tag ? '<span style="font-size:12px;color:var(--text-mut);">Tema: ' + esc(p.tag) + ' · ' + n + ' ' + articleWord + '</span>' : '') +
+          '<div class="sig-scales">' +
+            '<div class="sig-scale"><span class="faint" style="font-size:11px;">Effekt hvis det skjer</span>' +
+              (SCORE_DETAIL
+                ? '<div class="impact-bar-wrap"><div class="impact-bar"><div class="mid"></div><div class="fill" style="left:' + left + 'px;width:' + w + 'px;background:' + color + ';"></div></div><span style="font-size:13px;font-weight:700;color:' + color + ';">' + eff + '</span><span class="faint" style="font-size:11px;">av +/-10</span></div>'
+                : '<div><span class="pill" style="color:' + simpleTier(p.effect).color + ';background:' + simpleTier(p.effect).bg + ';font-size:12.5px;">' + simpleTier(p.effect).label + ' effekt</span></div>') + '</div>' +
+            '<div class="sig-scale"><span class="faint" style="font-size:11px;">Sannsynlighet for at det skjer</span>' +
+              '<div>' + likPill(p) + '</div>' +
+              (p.likelihoodBasis ? '<span class="faint" style="font-size:11px;line-height:1.5;">Grunnlag: ' + esc(p.likelihoodBasis) + '</span>' : '') + '</div>' +
+          '</div>' +
+          '<div class="col gap-2"><span class="faint" style="font-size:11px;">Når slår dette inn?</span><span style="font-size:12.5px;font-weight:600;">' + esc(p.horizonText || "Tidspunkt uklart") + '</span>' +
+            (p.horizonBasis ? '<span class="faint" style="font-size:11.5px;">Grunnlag: ' + esc(p.horizonBasis) + '</span>' : '') + '</div>' +
+          '<div class="col gap-2"><span class="faint" style="font-size:11px;">Hvorfor vises dette?</span><span style="font-size:12px;color:var(--text-dim);line-height:1.6;">' + esc(p.rationale) + '</span></div>' +
+          (n ? '<button class="btn btn-sm btn-ghost" data-toggle-pattern="' + listId + '" style="align-self:flex-start;margin-top:2px;">Vis ' + articleWord + '</button>' +
+          '<div id="' + listId + '" class="col" style="display:none;margin-top:2px;">' + articlesHtml + '</div>' : '') +
+        '</div>';
+      }).join("") +
+      '<span class="faint" style="font-size:10.5px;">Effekt, sannsynlighet og tidsanslag er plattformens vurdering av nyhetene, basert på det som står i datagrunnlaget. De er ikke råd om å kjøpe eller selge, og ikke en prognose.</span>' +
+    '</div>';
+  }
+
+  function renderThesis() {
+    var T = C.thesis;
+    var patternHtml = patternsHtml(C);
+    var notesHtml = T.notes.slice().reverse().map(function (n) {
+      return '<div class="col gap-2" style="padding:8px 0;border-bottom:1px solid var(--border-soft);"><span class="faint" style="font-size:11px;">' + App.fmtDate(n.date) + '</span><span style="font-size:12.5px;">' + esc(n.text) + '</span></div>';
+    }).join("") || '<p class="empty-hint">Ingen notater ennå.</p>';
+
+    document.getElementById("panel-thesis").innerHTML =
+      '<div class="card pad col gap-10"><div class="row between" style="align-items:flex-start;"><div class="eyebrow">Hvorfor jeg følger/eier selskapet</div><button type="button" class="btn btn-sm btn-ghost" id="openThesisGuide" style="color:var(--text-mut);margin:-6px -6px 0 0;">Se guide</button></div><textarea class="ta" id="thesisWhy" rows="2">' + esc(T.whyFollow) + '</textarea></div>' +
+      '<div class="row wrap gap-16">' +
+        '<div class="card pad col gap-8" style="flex:1;min-width:260px;">' +
+          '<div class="eyebrow" style="color:var(--pos);">Bull case</div>' +
+          '<textarea class="ta" id="thesisBull" rows="4">' + esc(T.bull) + '</textarea>' +
+          '<div class="faint" style="font-size:11px;margin-top:4px;">Spesifikke drivere for dette scenarioet</div>' +
+          chipListEditor(T.bullDrivers, "bullDrivers") +
+        '</div>' +
+        '<div class="card pad col gap-8" style="flex:1;min-width:260px;">' +
+          '<div class="eyebrow">Base case</div>' +
+          '<textarea class="ta" id="thesisBase" rows="4">' + esc(T.base) + '</textarea>' +
+          '<div class="faint" style="font-size:11px;margin-top:4px;">Spesifikke drivere for dette scenarioet</div>' +
+          chipListEditor(T.baseDrivers, "baseDrivers") +
+        '</div>' +
+        '<div class="card pad col gap-8" style="flex:1;min-width:260px;">' +
+          '<div class="eyebrow" style="color:var(--neg);">Bear case</div>' +
+          '<textarea class="ta" id="thesisBear" rows="4">' + esc(T.bear) + '</textarea>' +
+          '<div class="faint" style="font-size:11px;margin-top:4px;">Spesifikke drivere for dette scenarioet</div>' +
+          chipListEditor(T.bearDrivers, "bearDrivers") +
+        '</div>' +
+      '</div>' +
+      '<div class="card pad col gap-8"><div class="eyebrow">Krysser bull- eller bear-casen?</div>' +
+        '<span class="muted" style="font-size:12px;">Hver gang en ny nyhet kommer inn, blir den automatisk sortert mot tesen din (bull, base eller bear). Det som styrker eller svekker et av scenarioene dine, er en vanlig nyhet og får poeng mot tesen – det hører <b>ikke</b> hjemme her. Hit kommer bare det <b>uventede</b>: nyheter som ikke passer inn i tesen din, men som likevel kan flytte kursen, enten opp eller ned. Da vet du hvorfor det beveger seg, selv om du ikke hadde sett det komme. Nyheter utenfor tesen får en bred tagg og en kort begrunnelse. Det vises som funn først når én nyhet er sterk nok alene, eller flere peker samme vei. Kommer det flere nyheter som bekrefter funnet, styrkes det. Kommer det motsatte, svekkes det.</span>' +
+        patternHtml +
+      '</div>' +
+      '<div class="card pad col gap-10"><div class="eyebrow">Egne notater</div>' + notesHtml +
+        '<div class="row gap-8" style="margin-top:8px;"><input class="input" id="newNote" placeholder="Skriv et notat..."><button class="btn btn-sm btn-primary" id="addNoteBtn">Legg til</button></div>' +
+      '</div>' +
+      '<div class="card pad col gap-14">' +
+        '<div class="row between wrap gap-10">' +
+          '<div class="col gap-4">' +
+            '<div class="eyebrow">AI-analyse av tesen</div>' +
+            '<span class="muted" style="font-size:12.5px;max-width:520px;">AI-en gjør et grundig søk på nettet om selskapet og sammenligner det den finner med det du har skrevet over – og gir deg en liste med konklusjoner.</span>' +
+          '</div>' +
+          '<button class="btn btn-primary" id="runThesisAnalysisBtn" style="flex-shrink:0;">Kjør grundig AI-analyse</button>' +
+        '</div>' +
+        '<div id="thesisAnalysisArea"></div>' +
+      '</div>';
+
+    // Live-selskaper lagrer tesen i databasen (per bruker); eksempelselskaper lagres bare lokalt.
+    function saveThesis(patch) {
+      Object.assign(T, patch);
+      if (C.live && window.LiveCompany) window.LiveCompany.saveThesis(C, T); else persist({ thesis: T });
+    }
+    var gBtn = document.getElementById("openThesisGuide");
+    if (gBtn) gBtn.addEventListener("click", function () { document.getElementById("modalThesisGuide").classList.add("open"); });
+
+    ["thesisWhy", "thesisBull", "thesisBase", "thesisBear"].forEach(function (id) {
+      document.getElementById(id).addEventListener("blur", function (e) {
+        var map = { thesisWhy: "whyFollow", thesisBull: "bull", thesisBase: "base", thesisBear: "bear" };
+        var p = {}; p[map[id]] = e.target.value; saveThesis(p);
+      });
+    });
+
+    App.qsa("[data-toggle-pattern]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var list = document.getElementById(btn.getAttribute("data-toggle-pattern"));
+        var open = list.style.display !== "none";
+        list.style.display = open ? "none" : "block";
+        btn.textContent = btn.textContent.replace(open ? "Skjul" : "Vis", open ? "Vis" : "Skjul");
+      });
+    });
+
+    App.qsa("[data-add-chip]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = btn.getAttribute("data-add-chip");
+        var input = document.getElementById("add-" + key);
+        if (!input.value.trim()) return;
+        T[key].push(input.value.trim());
+        saveThesis({});
+        renderThesis();
+      });
+    });
+    App.qsa("[data-remove-chip]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = btn.getAttribute("data-remove-chip"), idx = parseInt(btn.getAttribute("data-idx"), 10);
+        T[key].splice(idx, 1);
+        saveThesis({});
+        renderThesis();
+      });
+    });
+    document.getElementById("addNoteBtn").addEventListener("click", function () {
+      var input = document.getElementById("newNote");
+      if (!input.value.trim()) return;
+      var txt = input.value.trim();
+      if (C.live && window.LiveCompany) {
+        window.LiveCompany.addThesisNote(C, T, txt).then(function (n) { if (n) { T.notes.push(n); renderThesis(); } });
+        return;
+      }
+      T.notes.push({ id: MOCK.uid(), date: new Date().toISOString().slice(0, 10), text: txt });
+      saveThesis({});
+      renderThesis();
+    });
+
+    // ---- AI-analyse av tesen (mock – erstattes med ekte nettsøk + AI-vurdering) ----
+    var ANALYSIS_META = {
+      confirmed: { label: "Bekreftet", pill: "pill-pos" },
+      partial: { label: "Delvis avvik", pill: "pill-warn" },
+      missing: { label: "Ikke støttet", pill: "pill-neg" },
+      blindspot: { label: "Blindsone", pill: "pill-outline" }
+    };
+
+    function generateThesisAnalysis() {
+      var topNews = materialityList().filter(function (n) { return !n.synthetic; })[0];
+      var items = [];
+      items.push({ type: "confirmed", text: "Nettsøket finner støtte for tesen din («" + (T.whyFollow || "hovedcaset") + "») – dette samsvarer med det AI-en fant av ferske tall og nyheter om selskapet." });
+      if (topNews) {
+        items.push({ type: "confirmed", text: "Siste vesentlige nyhet («" + topNews.headline + "») trekker i samme retning som tesen din." });
+      }
+      items.push({ type: "partial", text: "Målet i bull case er foreløpig ikke fullt bekreftet av tallene AI-en fant – utviklingen ligger per nå nærmere base case." });
+      items.push({ type: "missing", text: "Fant ingen uavhengige kilder utover det du selv har lagt inn som støtter frem mot «" + (C.nextEvent ? C.nextEvent.label : "neste rapport") + "» – bør følges opp videre når mer informasjon kommer." });
+      items.push({ type: "blindspot", text: "Nettsøket avdekket forhold i " + C.sector.toLowerCase() + "-sektoren generelt som du ikke har nevnt i risikofeltene dine – vurder om noe bør legges til." });
+      return items;
+    }
+
+    function renderThesisAnalysisResult(items, whenText) {
+      var confirmedCount = items.filter(function (i) { return i.type === "confirmed"; }).length;
+      var rows = items.map(function (i) {
+        var m = ANALYSIS_META[i.type];
+        return '<div class="row gap-12" style="padding:10px 0;border-bottom:1px solid var(--border-soft);">' +
+          '<span class="pill ' + m.pill + '" style="flex-shrink:0;height:fit-content;">' + m.label + '</span>' +
+          '<span style="font-size:12.5px;color:var(--text-dim);line-height:1.6;">' + esc(i.text) + '</span>' +
+        '</div>';
+      }).join("");
+      document.getElementById("thesisAnalysisArea").innerHTML =
+        '<div class="row between center wrap gap-10" style="margin-top:4px;"><span class="faint" style="font-size:11.5px;">Sist kjørt: ' + whenText + '</span></div>' +
+        '<div class="col" style="margin-top:6px;">' + rows + '</div>' +
+        '<p class="muted" style="margin:10px 0 0;font-size:12px;">Samlet vurdering: ' + confirmedCount + ' av ' + items.length + ' punkter støttes av det AI-en fant på nettet. Resten bør du følge ekstra med på fremover.</p>';
+    }
+
+    var runBtn = document.getElementById("runThesisAnalysisBtn");
+    var savedRun = overrides.thesisAnalysisRun;
+    if (savedRun) renderThesisAnalysisResult(generateThesisAnalysis(), savedRun);
+    else document.getElementById("thesisAnalysisArea").innerHTML = '<p class="empty-hint" style="margin-top:6px;">Ikke kjørt ennå. Trykk «Kjør grundig AI-analyse» for å se et mock-resultat.</p>';
+
+    runBtn.addEventListener("click", function () {
+      runBtn.disabled = true;
+      runBtn.textContent = "Analyserer...";
+      document.getElementById("thesisAnalysisArea").innerHTML = '<p class="empty-hint" style="margin-top:6px;">AI-en søker på nettet og sammenligner med tesen din...</p>';
+      setTimeout(function () {
+        var when = "nå nettopp";
+        persist({ thesisAnalysisRun: when });
+        renderThesisAnalysisResult(generateThesisAnalysis(), when);
+        runBtn.disabled = false;
+        runBtn.textContent = "Kjør grundig AI-analyse";
+      }, 900);
+    });
+  }
+
+  // ---------- KILDER & AI (per selskap) ----------
+  function catName(id) {
+    var c = G.sourceCategories.filter(function (x) { return x.id === id; })[0];
+    return c ? c.name : id;
+  }
+
+  // Holder styr på hvilken handling bekreftelses-popupen skal utføre hvis brukeren trykker "Ja".
+  var sourcePendingAction = { id: null, type: null };
+
+  function openSourceConfirm(id, type) {
+    sourcePendingAction = { id: id, type: type };
+    var isDelete = type === "delete";
+    document.getElementById("confirmSourceTitle").textContent = isDelete ? "Slette kilden?" : "Deaktivere kilden?";
+    document.getElementById("confirmSourceText").textContent = isDelete
+      ? "Er du sikker på at du vil slette denne kilden? Dette kan ikke angres."
+      : "Er du sikker på at du vil deaktivere denne kilden? AI-en slutter da å overvåke den.";
+    document.getElementById("confirmSourceBtn").textContent = isDelete ? "Ja, slett" : "Ja, deaktiver";
+    document.getElementById("modalConfirmSource").classList.add("open");
+  }
+
+  // Kilder-siden har to seksjoner: «Nyheter og oppdateringer» øverst, og «Annet» med alle lenkene assistenten har brukt
+  // (rapporter, kalender, aksjonærer, ledelse, kurser, registre osv.). Hver lenke i «Annet» har en «Hva hentes her»-forklaring.
+  var SOURCE_GROUPS = [
+    {
+      id: "news", step: "1", title: "Nyheter og oppdateringer",
+      intro: "Løpende kilder AI-en overvåker for nyheter og oppdateringer om selskapet.",
+      where: [
+        "<b>Nyhetsbyråer og finanspresse</b> – f.eks. Reuters, Bloomberg, E24 og Dagens Næringsliv.",
+        "<b>Selskapets pressemeldinger</b> og børsmeldinger, samt <b>offentlige registre</b> som Finanstilsynets innsideregister.",
+        "<b>Sosiale medier og bransjekilder</b> som kan fange opp saker før de når mediene."
+      ],
+      tip: "",
+      addLabel: "+ Legg til kilde", modalTitle: "Ny nyhetskilde",
+      namePh: "F.eks. Offshore Energy Today", urlLabel: "URL / lenke", urlPh: "https://...",
+      empty: "Ingen nyhetskilder lagt inn ennå.", needsUrl: false, showCategory: true, defaultCategory: "custom"
+    },
+    {
+      id: "other", step: "2", title: "Annet",
+      intro: "Alle lenker assistenten har brukt for å finne informasjon om selskapet: rapporter, finanskalender, aksjonærer, ledelse, kurser og offentlige registre. Trykk «Hva hentes her» på en lenke for å se hva som hentes derfra, og hvorfor.",
+      where: [], tip: "",
+      addLabel: "+ Legg til lenke", modalTitle: "Ny lenke",
+      namePh: "F.eks. DNB – finanskalender", urlLabel: "Lenke", urlPh: "https://…",
+      empty: "Ingen lenker lagt inn ennå.", needsUrl: true, showCategory: false, defaultCategory: "ir", showWhat: true
+    }
+  ];
+  // Gamle kilder lagret som «reports»/«events» hører nå til «Annet».
+  function srcGroupOf(src) { return src.group === "news" ? "news" : "other"; }
+  var srcInfoOpen = {};
+  var sourceAddGroup = "news";
+
+  // Tillater kun http(s)-lenker (aldri javascript: osv.).
+  function safeUrl(u) {
+    u = (u || "").trim();
+    if (!u) return "";
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = "https://" + u;
+    return /^https?:\/\//i.test(u) ? u : "";
+  }
+
+  function sourceInfoPanel(src) {
+    var what = (src.what || "").trim(), why = (src.why || "").trim();
+    var body = (what || why)
+      ? (what ? '<div><b>Hva som hentes:</b> ' + esc(what) + '</div>' : '') + (why ? '<div style="margin-top:6px;"><b>Hvorfor:</b> ' + esc(why) + '</div>' : '')
+      : '<div class="muted">Ingen beskrivelse lagt inn for denne lenken ennå.</div>';
+    return '<div style="margin:0 0 10px;padding:10px 12px;background:var(--bg-soft, #fafafa);border:1px solid var(--border-soft);border-radius:10px;font-size:12.5px;line-height:1.55;">' + body + '</div>';
+  }
+
+  function sourceRow(src, group) {
+    var href = safeUrl(src.url);
+    var isOther = group.id === "other", open = !!srcInfoOpen[src.id];
+    return '<div style="border-bottom:1px solid var(--border-soft);">' +
+      '<div class="row between center wrap gap-10" style="padding:10px 0;">' +
+      '<div class="row center gap-10" style="min-width:0;flex-wrap:wrap;">' +
+        '<span style="font-size:13px;font-weight:600;' + (src.on ? '' : 'opacity:.55;') + '">' + esc(src.name) + '</span>' +
+        (src.on ? '' : '<span class="pill pill-outline" style="flex-shrink:0;">Deaktivert</span>') +
+        (src.on && group.id === "news" && src.checkStatus === "attention" ? '<span class="pill" style="flex-shrink:0;background:var(--neg);color:#fff;" title="Kilden har feilet flere ganger på rad. Siden kan være endret eller blokkere oss.">Trenger oppmerksomhet</span>' : '') +
+        (src.on && group.id === "news" ? '<span class="faint" style="font-size:11px;flex-shrink:0;">' + (src.checkedAt ? 'Sist sjekket ' + App.fmtDate(String(src.checkedAt).slice(0, 10)) + ' ' + new Date(src.checkedAt).toLocaleTimeString("nb-NO", { hour: "2-digit", minute: "2-digit" }) : 'Ikke sjekket ennå') + '</span>' : '') +
+        (group.showCategory ? '<span class="tag">' + esc(catName(src.category)) + '</span>' : '') +
+        (src.origin === "ai" ? '<span class="pill pill-outline" title="Denne lenken ble funnet av assistenten under første innhenting. Sjekk at den er riktig." style="flex-shrink:0;">AI hentet lenke</span>' : '') +
+        (isOther ? '<button type="button" class="pill pill-outline" data-source-info="' + esc(src.id) + '" aria-expanded="' + (open ? "true" : "false") + '" style="cursor:pointer;flex-shrink:0;">Hva hentes her ' + (open ? "▴" : "▾") + '</button>' : '') +
+        (href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer" style="font-size:11.5px;color:var(--accent);text-decoration:underline;word-break:break-all;">' + esc(href) + '</a>' : '<span class="faint" style="font-size:11.5px;">Ingen lenke lagt inn</span>') +
+      '</div>' +
+      '<div class="row center gap-8" style="flex-shrink:0;">' +
+        '<button class="btn btn-sm ' + (src.on ? "btn-danger" : "btn-primary") + '" data-source-toggle="' + src.id + '">' + (src.on ? "Deaktiver" : "Aktiver") + '</button>' +
+        '<button class="btn btn-sm btn-ghost" data-source-delete="' + src.id + '">Slett</button>' +
+      '</div>' +
+      '</div>' +
+      (isOther && open ? sourceInfoPanel(src) : '') +
+    '</div>';
+  }
+
+  function sourceGroupCard(group) {
+    var items = C.sources.filter(function (x) { return srcGroupOf(x) === group.id; });
+    var activeCount = items.filter(function (x) { return x.on; }).length;
+    var rows = items.map(function (x) { return sourceRow(x, group); }).join("") || '<p class="empty-hint" style="margin:8px 0;">' + group.empty + '</p>';
+    return '<div class="card pad col gap-12" data-source-group="' + group.id + '">' +
+      '<div class="row between center wrap gap-8">' +
+        '<div class="row center gap-10"><span style="width:24px;height:24px;border-radius:50%;background:var(--text);color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">' + group.step + '</span>' +
+        '<span style="font-size:15px;font-weight:700;">' + group.title + '</span></div>' +
+        '<span class="muted" style="font-size:12px;">' + activeCount + ' av ' + items.length + ' aktive</span>' +
+      '</div>' +
+      '<p class="muted" style="margin:0;font-size:12.5px;line-height:1.55;">' + group.intro + '</p>' +
+      (group.where.length ? '<div style="background:var(--bg-soft, #fafafa);border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px;">' +
+        '<div class="eyebrow" style="margin-bottom:6px;">Hvor hentes dette vanligvis?</div>' +
+        '<ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.6;">' + group.where.map(function (w) { return '<li>' + w + '</li>'; }).join("") + '</ul>' +
+        (group.tip ? '<p class="muted" style="margin:8px 0 0;font-size:12px;">' + group.tip + '</p>' : '') +
+      '</div>' : '') +
+      '<div class="col gap-2">' + rows + '</div>' +
+      '<div style="padding-top:8px;border-top:1px solid var(--border-soft);"><button class="btn btn-primary" data-source-add="' + group.id + '">' + group.addLabel + '</button></div>' +
+    '</div>';
+  }
+
+  function openAddSourceModal(groupId) {
+    var group = SOURCE_GROUPS.filter(function (g) { return g.id === groupId; })[0];
+    if (!group) return;
+    sourceAddGroup = groupId;
+    document.getElementById("srcModalTitle").textContent = group.modalTitle;
+    document.getElementById("srcModalHint").textContent = group.intro;
+    document.getElementById("srcName").placeholder = group.namePh;
+    document.getElementById("srcUrlLabel").textContent = group.urlLabel + (group.needsUrl ? " (påkrevd)" : "");
+    document.getElementById("srcUrl").placeholder = group.urlPh;
+    document.getElementById("srcCategoryWrap").style.display = group.showCategory ? "" : "none";
+    document.getElementById("srcWhatWrap").style.display = group.showWhat ? "" : "none";
+    document.getElementById("srcWhat").value = "";
+    document.getElementById("srcName").value = ""; document.getElementById("srcUrl").value = "";
+    document.getElementById("srcName").style.borderColor = ""; document.getElementById("srcUrl").style.borderColor = "";
+    document.getElementById("modalNewSource").classList.add("open");
+  }
+
+  function renderSourcesAI() {
+    document.getElementById("panel-sourcesai").innerHTML =
+      '<div class="card pad col gap-4"><span style="font-size:12.5px;">Disse innstillingene gjelder kun <b>' + esc(C.name) + '</b>, og påvirker ingen andre selskaper. Kildene er delt i to: <b>nyheter og oppdateringer</b>, og <b>annet</b> (alle lenker assistenten har brukt for å finne informasjon).</span></div>' +
+      SOURCE_GROUPS.map(sourceGroupCard).join("");
+
+    var root = document.getElementById("panel-sourcesai");
+
+    App.qsa("[data-source-info]", root).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-source-info");
+        srcInfoOpen[id] = !srcInfoOpen[id];
+        renderSourcesAI();
+      });
+    });
+
+    App.qsa("[data-source-add]", root).forEach(function (btn) {
+      btn.addEventListener("click", function () { openAddSourceModal(btn.getAttribute("data-source-add")); });
+    });
+
+    // -- aktiver/deaktiver: deaktivering krever bekreftelse i popup, aktivering skjer direkte
+    App.qsa("[data-source-toggle]", root).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-source-toggle");
+        var src = C.sources.filter(function (x) { return x.id === id; })[0];
+        if (src.on) {
+          openSourceConfirm(id, "deactivate");
+        } else {
+          src.on = true;
+          persist({ sources: C.sources });
+          renderSourcesAI();
+        }
+      });
+    });
+
+    // -- slett: krever bekreftelse i popup
+    App.qsa("[data-source-delete]", root).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        openSourceConfirm(btn.getAttribute("data-source-delete"), "delete");
+      });
+    });
+  }
+
+  document.getElementById("confirmSourceBtn").addEventListener("click", function () {
+    var id = sourcePendingAction.id, type = sourcePendingAction.type;
+    if (!id) return;
+    if (type === "delete") {
+      C.sources = C.sources.filter(function (x) { return x.id !== id; });
+    } else if (type === "deactivate") {
+      var s = C.sources.filter(function (x) { return x.id === id; })[0];
+      if (s) s.on = false;
+    }
+    persist({ sources: C.sources });
+    sourcePendingAction = { id: null, type: null };
+    document.getElementById("modalConfirmSource").classList.remove("open");
+    renderSourcesAI();
+  });
+
+  document.getElementById("srcSaveBtn").addEventListener("click", function () {
+    var group = SOURCE_GROUPS.filter(function (g) { return g.id === sourceAddGroup; })[0] || SOURCE_GROUPS[0];
+    var nameEl = document.getElementById("srcName"), urlEl = document.getElementById("srcUrl");
+    var name = nameEl.value.trim();
+    var rawUrl = urlEl.value.trim();
+    var url = safeUrl(rawUrl);
+    nameEl.style.borderColor = ""; urlEl.style.borderColor = "";
+    if (!name) { nameEl.style.borderColor = "var(--neg)"; nameEl.focus(); return; }
+    // Kvartalsrapporter og hendelser handler om selve lenken, så den må være en gyldig http(s)-adresse.
+    if ((group.needsUrl && !url) || (rawUrl && !url)) { urlEl.style.borderColor = "var(--neg)"; urlEl.focus(); return; }
+    C.sources.push({
+      id: MOCK.uid(), name: name, url: url,
+      category: group.showCategory ? document.getElementById("srcCategory").value : group.defaultCategory,
+      group: group.id, on: true, custom: true,
+      what: group.showWhat ? document.getElementById("srcWhat").value.trim() : "", why: ""
+    });
+    persist({ sources: C.sources });
+    document.getElementById("modalNewSource").classList.remove("open");
+    nameEl.value = ""; urlEl.value = "";
+    renderSourcesAI();
+  });
+
+  function openTestPrompt(source, promptText) {
+    var sample = C.news.filter(function (n) { return n.source === source.name; })[0] || C.news[0];
+    document.getElementById("testPromptBody").innerHTML =
+      '<div class="col gap-6"><span class="eyebrow">Prompt (' + esc(source.name) + ')</span><div class="card pad-sm" style="background:#fafafa;font-size:12px;white-space:pre-wrap;">' + esc(promptText) + '</div></div>' +
+      '<div class="col gap-6"><span class="eyebrow">Eksempelartikkel</span><div class="card pad-sm" style="background:#fafafa;"><b style="font-size:12.5px;">' + esc(sample.headline) + '</b><p style="margin:6px 0 0;font-size:12px;color:var(--text-mut);">' + esc(sample.aiSummary) + '</p></div></div>' +
+      '<div class="col gap-6" id="testResultArea"><span class="eyebrow">Resultat</span><p class="empty-hint">Trykk «Kjør test» for å se et mock-resultat.</p></div>';
+
+    document.getElementById("runTestBtn").onclick = function () {
+      var w = Math.min(Math.abs(sample.impact) * 6, 60), left = sample.impact >= 0 ? 60 : 60 - w;
+      var tier = impactTier(sample.impact);
+      document.getElementById("testResultArea").innerHTML =
+        '<span class="eyebrow">Resultat (mock)</span>' +
+        '<div class="card pad-sm col gap-6" style="background:#fafafa;">' +
+          '<span style="font-size:12.5px;"><b>Påvirkning:</b> <span style="color:' + tier.color + ';">' + scoreText(sample.impact) + (SCORE_DETAIL ? '/10 – ' + tier.label : '') + '</span></span>' +
+          (SCORE_DETAIL ? '<div class="impact-bar-wrap"><div class="impact-bar"><div class="mid"></div><div class="fill" style="left:' + left + 'px;width:' + w + 'px;background:' + tier.color + ';"></div></div></div>' : '') +
+          '<span style="font-size:12.5px;"><b>Berører:</b> ' + (sample.caseAreas.join(", ") || "Ingen direkte kobling") + '</span>' +
+          '<span style="font-size:12.5px;"><b>Begrunnelse:</b> ' + esc(sample.rationale) + '</span>' +
+          '<span style="font-size:12.5px;"><b>Tese påvirket:</b> ' + (sample.caseAreas.length ? "Ja" : "Nei") + '</span>' +
+          '<span style="font-size:12.5px;"><b>Kilde:</b> ' + sample.source + '</span>' +
+        '</div>';
+    };
+    document.getElementById("modalTestPrompt").classList.add("open");
+  }
+
+
+  // ---------- init ----------
+  document.getElementById("srcCategory").innerHTML = G.sourceCategories.map(function (c) {
+    return '<option value="' + c.id + '">' + c.name + '</option>';
+  }).join("");
+
+  function renderAll() {
+    renderHeader(); renderOverview(); renderNews(); renderFinancials(); renderValuation();
+    renderEstimates(); renderEvents(); renderOwnership(); renderLeadership(); renderThesis(); renderSourcesAI();
+  }
+  renderAll();
+  loadLiveQuote();
+  App.initTabs(document);
+  App.initModals(document);
+  document.addEventListener("click", function (e) {
+    var goto = e.target.closest && e.target.closest("[data-goto-tab]");
+    if (goto) {
+      var target = goto.getAttribute("data-goto-tab");
+      App.qsa('.tab', document.getElementById("companyTabbar")).forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-tab") === target); });
+      App.qsa('[data-tabpanel="company"]').forEach(function (p) { p.classList.toggle("active", p.getAttribute("data-panel") === target); });
+      syncOverviewLock();
+      if (target !== "overview") window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+}
+(function () {
+  var t = new URLSearchParams(location.search).get("ticker");
+  if (!t || !window.LiveCompany) { __startCompanyPage(); return; }
+  window.LiveCompany.install(t).then(__startCompanyPage, function (e) { console.error("[Innsikt] Kunne ikke hente selskapet fra databasen:", e); __startCompanyPage(); });
+})();
+</script>
+</body>
+</html>

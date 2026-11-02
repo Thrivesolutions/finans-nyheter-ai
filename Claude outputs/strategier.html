@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Strategier – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .strategy-card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: #fff; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 320px; }
+  .strategy-card.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .weight-row { display: flex; align-items: center; gap: 10px; }
+  .weight-label { font-size: 12px; color: var(--text-dim); width: 168px; flex-shrink: 0; }
+  .weight-track { flex-grow: 1; height: 7px; border-radius: 4px; background: var(--neu-bg); position: relative; overflow: hidden; }
+  .weight-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--accent); }
+  .weight-val { font-size: 11px; font-weight: 700; color: var(--text-faint); width: 16px; text-align: right; flex-shrink: 0; }
+  .company-chip { padding: 5px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid var(--border); background: #fff; color: var(--text-dim); cursor: pointer; }
+  .company-chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm">EO</div><div class="col" style="line-height:1.2;min-width:0;"><span style="font-size:13px;font-weight:600;">Emil</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> <span class="now">Strategier</span></div>
+      <div class="row center gap-14">
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div>
+        <h1 class="h1">Investeringsstrategier</h1>
+        <p class="muted" style="margin:6px 0 0;font-size:13.5px;max-width:760px;">Velg hvilken linse du ser porteføljen din gjennom. Hver strategi vekter ulike datapunkter forskjellig – disse vektene brukes ennå ikke til å beregne noe automatisk, men datamodellen er forberedt slik at fremtidige versjoner kan bruke dem til å prioritere hva som fremheves per selskap.</p>
+      </div>
+
+      <div class="card pad row between center wrap gap-10">
+        <div class="row center gap-10">
+          <span class="eyebrow">Aktiv hovedstrategi</span>
+          <span class="pill pill-dark" id="activeStrategyPill">Ingen valgt</span>
+        </div>
+        <span class="muted" style="font-size:12px;">Gjelder som standard-linse på tvers av porteføljen din, med mindre et selskap er koblet til en annen strategi under.</span>
+      </div>
+
+      <div class="row wrap gap-16" id="strategyGrid"></div>
+
+      <div class="strategy-card" style="min-width:100%;">
+        <div class="row between center wrap gap-10">
+          <div>
+            <div class="h3">Egendefinert strategi</div>
+            <span class="muted" style="font-size:12px;">Bygg din egen vekting av de viktigste faktorene.</span>
+          </div>
+          <button class="btn btn-primary" id="activateCustomBtn">Aktiver egendefinert</button>
+        </div>
+        <div class="col gap-10" id="customWeights"></div>
+        <div class="row gap-8 wrap" id="customCompanyChips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+
+  var LABELS = {
+    revenueGrowth: "Omsetningsvekst", estimateRevisions: "Estimatrevisjoner", margins: "Marginer",
+    valuation: "Verdsettelse (lave multipler)", dividend: "Utbytte", fcfYield: "FCF yield",
+    returnOnCapital: "Avkastning på kapital", debt: "Gjeldsnivå", fcf: "Fri kontantstrøm",
+    pricemomentum: "Kursmomentum", newsFlow: "Nyhetsstrøm/momentum", catalysts: "Kommende katalysatorer",
+    guidance: "Guiding", marginTrend: "Margintrend", debtTrend: "Gjeldstrend", guidanceTrend: "Guidingtrend"
+  };
+  var CUSTOM_KEYS = ["revenueGrowth", "valuation", "margins", "dividend", "pricemomentum"];
+
+  var activeStrategy = App.store.get("activeStrategy", null);
+  var strategyCompanies = App.store.get("strategyCompanies", {}); // { stratId: [tickers] }
+  var customStrategy = App.store.get("customStrategy", { weights: { revenueGrowth: 3, valuation: 3, margins: 3, dividend: 2, pricemomentum: 2 } });
+
+  function weightBar(key, val) {
+    return '<div class="weight-row"><span class="weight-label">' + (LABELS[key] || key) + '</span>' +
+      '<div class="weight-track"><div class="weight-fill" style="width:' + (val / 5 * 100) + '%;"></div></div>' +
+      '<span class="weight-val">' + val + '</span></div>';
+  }
+
+  function companyChips(stratId) {
+    var chosen = strategyCompanies[stratId] || [];
+    return MOCK.companyOrder.map(function (t) {
+      var co = MOCK.companies[t];
+      return '<span class="company-chip' + (chosen.indexOf(t) > -1 ? " on" : "") + '" data-strat-company="' + stratId + '" data-ticker="' + t + '">' + co.ticker + '</span>';
+    }).join("");
+  }
+
+  function renderPill() {
+    var name = "Ingen valgt";
+    if (activeStrategy === "custom") name = "Egendefinert";
+    else if (activeStrategy) {
+      var s = MOCK.strategies.filter(function (x) { return x.id === activeStrategy; })[0];
+      if (s) name = s.name;
+    }
+    document.getElementById("activeStrategyPill").textContent = name;
+  }
+
+  function renderGrid() {
+    document.getElementById("strategyGrid").innerHTML = MOCK.strategies.map(function (s) {
+      var weights = Object.keys(s.weights).map(function (k) { return weightBar(k, s.weights[k]); }).join("");
+      return '<div class="strategy-card' + (activeStrategy === s.id ? " active" : "") + '" data-strategy="' + s.id + '">' +
+        '<div class="row between center">' +
+          '<div><div class="h3">' + s.name + (activeStrategy === s.id ? ' <span class="pill pill-dark">Aktiv</span>' : '') + '</div></div>' +
+          '<button class="btn btn-sm' + (activeStrategy === s.id ? " btn-primary" : "") + '" data-activate="' + s.id + '">' + (activeStrategy === s.id ? "Aktivert ✓" : "Aktiver") + '</button>' +
+        '</div>' +
+        '<p class="muted" style="margin:0;font-size:12.5px;line-height:1.55;">' + s.desc + '</p>' +
+        '<div class="col gap-8">' + weights + '</div>' +
+        '<div class="col gap-6" style="padding-top:8px;border-top:1px solid var(--border-soft);">' +
+          '<span class="faint" style="font-size:11px;">Bruk for disse selskapene i porteføljen:</span>' +
+          '<div class="row gap-6 wrap" data-company-chip-list="' + s.id + '">' + companyChips(s.id) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    App.qsa("[data-activate]", document.getElementById("strategyGrid")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activeStrategy = btn.getAttribute("data-activate");
+        App.store.set("activeStrategy", activeStrategy);
+        renderGrid(); renderPill();
+      });
+    });
+    App.qsa("[data-strat-company]", document.getElementById("strategyGrid")).forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        var stratId = chip.getAttribute("data-strat-company"), ticker = chip.getAttribute("data-ticker");
+        var list = strategyCompanies[stratId] || [];
+        var idx = list.indexOf(ticker);
+        if (idx > -1) list.splice(idx, 1); else list.push(ticker);
+        strategyCompanies[stratId] = list;
+        App.store.set("strategyCompanies", strategyCompanies);
+        chip.classList.toggle("on");
+      });
+    });
+  }
+
+  function renderCustom() {
+    document.getElementById("customWeights").innerHTML = CUSTOM_KEYS.map(function (k) {
+      return '<div class="col gap-4"><div class="row between"><span style="font-size:12.5px;font-weight:600;">' + LABELS[k] + '</span><span style="font-size:12px;font-weight:700;color:var(--warn);" id="cwVal-' + k + '">' + customStrategy.weights[k] + '/5</span></div>' +
+        '<input type="range" min="0" max="5" step="1" value="' + customStrategy.weights[k] + '" data-custom-weight="' + k + '" style="width:100%;"></div>';
+    }).join("");
+    document.getElementById("customCompanyChips").innerHTML =
+      '<span class="faint" style="font-size:11px;align-self:center;">Bruk for:</span>' + companyChips("custom");
+
+    App.qsa("[data-custom-weight]", document.getElementById("customWeights")).forEach(function (input) {
+      input.addEventListener("input", function () {
+        var k = input.getAttribute("data-custom-weight");
+        customStrategy.weights[k] = parseInt(input.value, 10);
+        document.getElementById("cwVal-" + k).textContent = input.value + "/5";
+        App.store.set("customStrategy", customStrategy);
+      });
+    });
+    App.qsa("[data-strat-company='custom']", document.getElementById("customCompanyChips")).forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        var ticker = chip.getAttribute("data-ticker");
+        var list = strategyCompanies.custom || [];
+        var idx = list.indexOf(ticker);
+        if (idx > -1) list.splice(idx, 1); else list.push(ticker);
+        strategyCompanies.custom = list;
+        App.store.set("strategyCompanies", strategyCompanies);
+        chip.classList.toggle("on");
+      });
+    });
+  }
+
+  document.getElementById("activateCustomBtn").addEventListener("click", function () {
+    activeStrategy = "custom";
+    App.store.set("activeStrategy", activeStrategy);
+    renderGrid(); renderPill();
+  });
+
+  renderGrid(); renderCustom(); renderPill();
+})();
+</script>
+</body>
+</html>

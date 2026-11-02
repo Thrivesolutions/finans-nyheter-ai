@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Oversikt – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<style>
+  th.sortable { cursor: pointer; }
+  th.sortable .arrow { font-size: 9px; margin-left: 3px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<script>Auth.requireAuth();</script>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="varsler.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="konto.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm" id="sidebarAvatar">··</div><div class="col" style="line-height:1.2;min-width:0;flex:1;"><span style="font-size:13px;font-weight:600;" id="sidebarName">…</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div><button type="button" class="icon-btn plain" id="signOutBtn" title="Logg ut"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> <span class="now">Oversikt</span></div>
+      <div class="row center gap-14">
+        <div class="search-wrap">
+          <label for="topsearch" class="visually-hidden">Søk</label>
+          <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+          <input id="topsearch" class="input" type="text" placeholder="Søk etter selskap, ticker..." style="width:260px;">
+        </div>
+        <button class="icon-btn" aria-label="Varsler" style="position:relative;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          <span style="position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:#dc2626;"></span>
+        </button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="row wrap between" style="align-items:flex-start;gap:12px;">
+        <div>
+          <h1 class="h1">Velkommen tilbake, Emil</h1>
+          <p class="muted" style="margin:4px 0 0;font-size:13.5px;" id="pageSubtitle">Her er markedsbildet for de overvåkede selskapene dine.</p>
+        </div>
+        <div class="row center gap-10">
+          <div style="position:relative;">
+            <button class="btn" id="periodBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              <span id="periodBtnLabel">Denne uken</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="card col" id="periodMenu" style="display:none;position:absolute;right:0;top:42px;z-index:30;min-width:170px;padding:6px;">
+              <button class="btn-ghost" data-period="today" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">I dag</button>
+              <button class="btn-ghost" data-period="week" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">Denne uken</button>
+              <button class="btn-ghost" data-period="month" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">Denne måneden</button>
+              <button class="btn-ghost" data-period="year" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">Hele året</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="row wrap gap-16" id="kpiRow"></div>
+
+      <!-- TABLE -->
+      <div class="card pad col gap-14">
+        <div class="row between center wrap gap-10">
+          <span style="font-size:13.5px;font-weight:700;">Siste nyheter <span class="muted" style="font-weight:500;" id="newsCountLabel"></span></span>
+          <div class="row center gap-10">
+            <div class="fdrop" id="fdropCompanySel">
+              <button type="button" class="fdrop-btn" data-fdrop-toggle="companysel">
+                <span id="companySelLabel">Selskap</span>
+                <span class="fdrop-clear" id="companySelClear" title="Fjern filter" style="display:none;">✕</span>
+                <svg class="fdrop-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="fdrop-panel" id="companySelPanel" style="min-width:230px;">
+                <div style="padding:2px 4px 8px;"><input class="input" id="companySearchInput" type="text" placeholder="Søk selskap..." style="height:30px;font-size:12px;"></div>
+                <div id="companySelOptions"></div>
+              </div>
+            </div>
+            <div class="fdrop" id="fdropNewsFilter">
+              <button type="button" class="fdrop-btn" data-fdrop-toggle="newsfilter">
+                <span id="newsFilterLabel">Filter</span>
+                <span class="fdrop-clear" id="newsFilterClear" title="Fjern filter" style="display:none;">✕</span>
+                <svg class="fdrop-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="fdrop-panel" id="newsFilterPanel" style="min-width:230px;"></div>
+            </div>
+            <div class="search-wrap">
+              <label for="newssearch" class="visually-hidden">Søk i nyheter</label>
+              <svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+              <input id="newssearch" class="input" type="text" placeholder="Søk i nyheter..." style="width:200px;height:32px;">
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="tbl" style="min-width:820px;">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="company">Selskap<span class="arrow"></span></th>
+                <th class="sortable" data-sort="headline">Overskrift<span class="arrow"></span></th>
+                <th class="sortable" data-sort="source">Kilde<span class="arrow"></span></th>
+                <th class="sortable" data-sort="date">Publisert<span class="arrow"></span></th>
+                <th class="sortable" data-sort="impact">Påvirkning<span class="arrow"></span></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="newsTableBody"></tbody>
+          </table>
+        </div>
+        <p class="empty-hint" id="newsEmptyHint" style="display:none;">Ingen nyheter matcher filtrene dine.</p>
+      </div>
+
+      <!-- ALERT RULES -->
+      <div class="card pad col gap-10" id="alertRulesCard" style="display:none;">
+        <div class="row between center"><span class="eyebrow">Dine varselregler</span></div>
+        <div class="col gap-2" id="alertRulesList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+  var TODAY = "2026-09-18";
+
+  // ---------- merged per-company state (base + localStorage overrides) ----------
+  function getCompanyMerged(ticker) {
+    var base = MOCK.companies[ticker];
+    var overrides = App.store.get("company:" + ticker, {});
+    var C = { ticker: base.ticker, name: base.name, color: base.color, initials: base.initials, price: base.price, changePct: base.changePct, sector: base.sector };
+    C.inPortfolio = overrides.inPortfolio !== undefined ? overrides.inPortfolio : base.inPortfolio;
+    C.sources = overrides.sources || base.sources || [];
+    C.news = base.news.map(function (n) {
+      var copy = Object.assign({}, n);
+      if (overrides.newsMeta && overrides.newsMeta[n.id]) Object.assign(copy, overrides.newsMeta[n.id]);
+      return copy;
+    });
+    return C;
+  }
+
+  var companies = MOCK.companyOrder.map(getCompanyMerged);
+
+  // ---------- period handling ----------
+  var currentPeriod = App.store.get("dashboardPeriod", "week");
+  var PERIOD_LABELS = { today: "I dag", week: "Denne uken", month: "Denne måneden", year: "Hele året" };
+
+  function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+  function inPeriod(dateStr, period) {
+    var diff = daysBetween(dateStr, TODAY);
+    if (diff < 0) return false;
+    if (period === "today") return diff === 0;
+    if (period === "week") return diff <= 7;
+    if (period === "month") return diff <= 31;
+    return diff <= 366;
+  }
+
+  // ---------- flattened news across companies ----------
+  function allNews(period) {
+    var out = [];
+    companies.forEach(function (c) {
+      c.news.forEach(function (n) {
+        if (!period || inPeriod(n.date, period)) out.push(Object.assign({}, n, { ticker: c.ticker, companyName: c.name, color: c.color, initials: c.initials }));
+      });
+    });
+    return out;
+  }
+
+  function esc(s) { return App.escapeHtml(s); }
+
+  // Foreløpig vises bare Positiv / Nøytral / Negativ med flate farger. Den detaljerte skalaen (-10..+10 med måler og tall)
+  // ligger klar og slås på igjen ved å sette SCORE_DETAIL = true.
+  var SCORE_DETAIL = false;
+  function impactColor(v) { return v > 0 ? "var(--pos)" : v < 0 ? "var(--neg)" : "var(--neu)"; }
+  function impactWord(v) { return v > 0 ? "Positiv" : v < 0 ? "Negativ" : "Nøytral"; }
+  function impactMeterHtml(v) {
+    var color = impactColor(v);
+    if (!SCORE_DETAIL) return '<span class="impact-word" style="color:' + color + ';">' + impactWord(v) + '</span>';
+    var clamped = Math.max(-10, Math.min(10, v));
+    var pct = clamped / 10 * 50; // -50..50
+    var barLeft = pct >= 0 ? 50 : 50 + pct;
+    var barWidth = Math.abs(pct);
+    var sign = v > 0 ? "+" : v < 0 ? "−" : "";
+    return '<div class="row center gap-10">' +
+      '<div class="impact-meter"><div class="impact-meter-fill" style="left:' + barLeft + '%;width:' + barWidth + '%;background:' + color + ';"></div><div class="impact-meter-mid"></div></div>' +
+      '<span class="impact-score" style="color:' + color + ';">' + sign + Math.abs(v) + '</span>' +
+    '</div>';
+  }
+
+  // ---------- KPI (plattform- og kostnadsoversikt) ----------
+  function renderKpis() {
+    var allSources = [];
+    companies.forEach(function (c) { allSources = allSources.concat(c.sources); });
+    var totalSources = allSources.length;
+    var activeSources = allSources.filter(function (s) { return s.on; }).length;
+    var inactiveSources = totalSources - activeSources;
+
+    var usage = MOCK.aiUsage;
+    var avgCost = usage.totalRuns ? usage.totalCostNOK / usage.totalRuns : 0;
+
+    function kpi(label, value, deltaText, deltaPos, icon) {
+      return '<div class="card pad col gap-12" style="flex:1;min-width:220px;">' +
+        '<div class="row between center"><span class="eyebrow">' + label + '</span>' + icon + '</div>' +
+        '<div style="font-size:27px;font-weight:700;letter-spacing:-0.02em;">' + value + '</div>' +
+        '<div class="row center gap-5" style="font-size:12px;font-weight:600;color:' + (deltaPos ? "var(--pos)" : "var(--warn)") + ';">' + deltaText + '</div>' +
+      '</div>';
+    }
+    document.getElementById("kpiRow").innerHTML =
+      kpi("Kilder overvåket", activeSources + '<span style="font-size:16px;color:var(--text-faint);font-weight:600;"> / ' + totalSources + '</span>',
+        inactiveSources === 0 ? "Alle kilder aktive" : inactiveSources + " kilde" + (inactiveSources === 1 ? "" : "r") + " ikke aktivert", inactiveSources === 0, "") +
+      kpi("AI-kjøringer totalt", usage.totalRuns.toLocaleString("nb-NO"), "+" + usage.runsToday + " i dag", true, "") +
+      kpi("Snitt kostnad per kjøring", avgCost.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " kr", "Basert på " + usage.totalRuns.toLocaleString("nb-NO") + " kjøringer", true, "") +
+      kpi("AI API-kostnad hittil", MOCK.fmtNOK(usage.totalCostNOK) + " kr", "Estimert, alle kjøringer", true, "");
+  }
+
+  // ---------- news table ----------
+  var sortKey = "impact", sortDir = -1, searchQuery = "";
+  var companyFilters = [];                                  // tickers, eller [] = alle selskaper
+  var signFilter = "";                                      // "", "positive" eller "negative"
+  var thresholdActive = false, thresholdDir = "over", thresholdValue = 0; // terskel-glidebryter
+  var companySearchQuery = "";
+
+  function matchesImpactFilter(n) {
+    if (signFilter === "positive" && n.impact <= 0) return false;
+    if (signFilter === "negative" && n.impact >= 0) return false;
+    if (signFilter === "neutral" && n.impact !== 0) return false;
+    if (thresholdActive) {
+      if (thresholdDir === "over" && !(n.impact > thresholdValue)) return false;
+      if (thresholdDir === "under" && !(n.impact < thresholdValue)) return false;
+    }
+    return true;
+  }
+  function hasActiveImpactFilter() { return signFilter !== "" || thresholdActive; }
+
+  // Rad-farge på høyre side av raden (fra og med «Påvirkning»): én flat farge, grønn for positiv, rød for negativ og grå for nøytral.
+  // (Den gamle gradvise fargen, sterkere jo høyere score, brukes når SCORE_DETAIL = true.)
+  function impactFadeStyles(v) {
+    if (!SCORE_DETAIL) {
+      var flat = v > 0 ? "rgba(22,163,74,0.13)" : v < 0 ? "rgba(220,38,38,0.13)" : "rgba(113,113,122,0.10)";
+      return { impactTd: ' style="background:' + flat + ';"', actionTd: ' style="background:' + flat + ';"' };
+    }
+    if (!v) return { impactTd: "", actionTd: "" };
+    var rgb = v > 0 ? "22,163,74" : "220,38,38";
+    var alpha = (0.08 + Math.min(Math.abs(v), 10) / 10 * 0.30).toFixed(2);
+    return {
+      impactTd: ' style="background:linear-gradient(to right, rgba(' + rgb + ',0), rgba(' + rgb + ',' + alpha + '));"',
+      actionTd: ' style="background:rgba(' + rgb + ',' + alpha + ');"'
+    };
+  }
+
+  // Generisk åpne/lukk-logikk for alle .fdrop-nedtrekk på siden (Selskap og Filter).
+  function closeAllFdrops(except) {
+    App.qsa(".fdrop.open").forEach(function (d) { if (d !== except) d.classList.remove("open"); });
+  }
+  document.addEventListener("click", function () { closeAllFdrops(); });
+  function wireFdrop(id) {
+    var drop = document.getElementById(id);
+    var btn = drop.querySelector("[data-fdrop-toggle]");
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var wasOpen = drop.classList.contains("open");
+      closeAllFdrops();
+      drop.classList.toggle("open", !wasOpen);
+    });
+  }
+
+  // ---------- Selskap: eget felt ved siden av Filter (flervalg) ----------
+  function updateCompanySelButton() {
+    var label = document.getElementById("companySelLabel");
+    var clearBtn = document.getElementById("companySelClear");
+    if (companyFilters.length === 0) { label.textContent = "Selskap"; clearBtn.style.display = "none"; }
+    else if (companyFilters.length === 1) { label.textContent = companyFilters[0]; clearBtn.style.display = "inline-flex"; }
+    else { label.textContent = companyFilters.length + " selskaper"; clearBtn.style.display = "inline-flex"; }
+  }
+  function renderCompanySelPanel() {
+    var panel = document.getElementById("companySelOptions");
+    var q = companySearchQuery.toLowerCase();
+    var list = companies.filter(function (c) {
+      return !q || c.ticker.toLowerCase().indexOf(q) > -1 || c.name.toLowerCase().indexOf(q) > -1;
+    });
+    panel.innerHTML = list.length ? list.map(function (c) {
+      var checked = companyFilters.indexOf(c.ticker) > -1;
+      return '<label class="fdrop-check"><input type="checkbox" data-company-pick="' + c.ticker + '"' + (checked ? " checked" : "") + '>' + c.ticker + ' – ' + esc(c.name) + '</label>';
+    }).join("") : '<div class="muted" style="padding:8px 10px;font-size:12px;">Ingen treff.</div>';
+    App.qsa("[data-company-pick]", panel).forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var ticker = cb.getAttribute("data-company-pick");
+        if (cb.checked) { if (companyFilters.indexOf(ticker) === -1) companyFilters.push(ticker); }
+        else { companyFilters = companyFilters.filter(function (t) { return t !== ticker; }); }
+        updateCompanySelButton();
+        renderNewsTable();
+      });
+    });
+  }
+  // Klikk inni panelet (avkrysningsbokser, søkefelt) skal ikke lukke dropdownen -
+  // bare et klikk utenfor skal gjøre det, slik at man kan velge flere selskaper på rad.
+  document.getElementById("companySelPanel").addEventListener("click", function (e) { e.stopPropagation(); });
+  document.getElementById("companySearchInput").addEventListener("input", App.debounce(function (e) {
+    companySearchQuery = e.target.value.trim();
+    renderCompanySelPanel();
+  }, 150));
+  document.getElementById("companySelClear").addEventListener("click", function (e) {
+    e.stopPropagation();
+    companyFilters = [];
+    updateCompanySelButton();
+    renderCompanySelPanel();
+    renderNewsTable();
+  });
+  wireFdrop("fdropCompanySel");
+
+  // ---------- Filter (påvirkning): Positiv/Negativ + terskel-glidebryter ----------
+  function updateNewsFilterButton() {
+    var label = document.getElementById("newsFilterLabel");
+    var clearBtn = document.getElementById("newsFilterClear");
+    if (hasActiveImpactFilter()) {
+      var parts = [];
+      if (signFilter === "positive") parts.push("Positiv");
+      if (signFilter === "negative") parts.push("Negativ");
+      if (signFilter === "neutral") parts.push("Nøytral");
+      if (thresholdActive) parts.push((thresholdDir === "over" ? "Over " : "Under ") + (thresholdValue > 0 ? "+" : "") + thresholdValue);
+      label.textContent = parts.join(", ");
+      clearBtn.style.display = "inline-flex";
+    } else { label.textContent = "Filter"; clearBtn.style.display = "none"; }
+  }
+  function renderNewsFilterPanel() {
+    var panel = document.getElementById("newsFilterPanel");
+    panel.innerHTML =
+      '<div class="fdrop-panel-label">Påvirkning</div>' +
+      '<button type="button" class="fdrop-opt' + (signFilter === "positive" ? " active" : "") + '" data-sign-pick="positive">Positiv</button>' +
+      '<button type="button" class="fdrop-opt' + (signFilter === "negative" ? " active" : "") + '" data-sign-pick="negative">Negativ</button>' +
+      '<button type="button" class="fdrop-opt' + (signFilter === "neutral" ? " active" : "") + '" data-sign-pick="neutral">Nøytral</button>' +
+      (!SCORE_DETAIL ? '' : '<div class="fdrop-panel-label" style="margin-top:6px;border-top:1px solid var(--border-soft);padding-top:8px;">Terskel</div>' +
+      '<div style="padding:2px 10px 8px;">' +
+        '<div class="row gap-6 center" style="margin-bottom:8px;">' +
+          '<button type="button" class="chip' + (thresholdActive && thresholdDir === "over" ? " active" : "") + '" id="thresholdOverBtn">Over</button>' +
+          '<button type="button" class="chip' + (thresholdActive && thresholdDir === "under" ? " active" : "") + '" id="thresholdUnderBtn">Under</button>' +
+          '<b id="thresholdValLabel" style="margin-left:auto;font-size:13px;">' + (thresholdValue > 0 ? "+" : "") + thresholdValue + '</b>' +
+        '</div>' +
+        '<input type="range" min="-10" max="10" step="1" value="' + thresholdValue + '" class="threshold-slider" id="thresholdSlider">' +
+        '<div class="threshold-scale"><span>-10</span><span>0</span><span>+10</span></div>' +
+      '</div>');
+
+    App.qsa("[data-sign-pick]", panel).forEach(function (opt) {
+      opt.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var val = opt.getAttribute("data-sign-pick");
+        signFilter = signFilter === val ? "" : val;
+        renderNewsFilterPanel();
+        updateNewsFilterButton();
+        renderNewsTable();
+      });
+    });
+    if (!SCORE_DETAIL) return;
+    document.getElementById("thresholdOverBtn").addEventListener("click", function (e) {
+      e.stopPropagation();
+      thresholdDir = "over";
+      thresholdActive = true;
+      renderNewsFilterPanel();
+      updateNewsFilterButton();
+      renderNewsTable();
+    });
+    document.getElementById("thresholdUnderBtn").addEventListener("click", function (e) {
+      e.stopPropagation();
+      thresholdDir = "under";
+      thresholdActive = true;
+      renderNewsFilterPanel();
+      updateNewsFilterButton();
+      renderNewsTable();
+    });
+    var slider = document.getElementById("thresholdSlider");
+    slider.addEventListener("click", function (e) { e.stopPropagation(); });
+    slider.addEventListener("input", function (e) {
+      thresholdValue = parseInt(e.target.value, 10);
+      thresholdActive = true;
+      document.getElementById("thresholdValLabel").textContent = (thresholdValue > 0 ? "+" : "") + thresholdValue;
+      document.getElementById("thresholdOverBtn").classList.toggle("active", thresholdDir === "over");
+      document.getElementById("thresholdUnderBtn").classList.toggle("active", thresholdDir === "under");
+      updateNewsFilterButton();
+      renderNewsTable();
+    });
+  }
+  document.getElementById("newsFilterClear").addEventListener("click", function (e) {
+    e.stopPropagation();
+    signFilter = ""; thresholdActive = false; thresholdDir = "over"; thresholdValue = 0;
+    renderNewsFilterPanel();
+    updateNewsFilterButton();
+    renderNewsTable();
+  });
+  // Samme beskyttelse som for Selskap-panelet: klikk inni Filter-panelet skal ikke lukke det.
+  document.getElementById("newsFilterPanel").addEventListener("click", function (e) { e.stopPropagation(); });
+  wireFdrop("fdropNewsFilter");
+
+  function renderNewsTable() {
+    var rows = allNews(currentPeriod);
+    if (companyFilters.length) rows = rows.filter(function (n) { return companyFilters.indexOf(n.ticker) > -1; });
+    rows = rows.filter(matchesImpactFilter);
+    if (searchQuery) {
+      var q = searchQuery.toLowerCase();
+      rows = rows.filter(function (n) { return n.headline.toLowerCase().indexOf(q) > -1 || n.source.toLowerCase().indexOf(q) > -1 || n.companyName.toLowerCase().indexOf(q) > -1 || n.ticker.toLowerCase().indexOf(q) > -1; });
+    }
+    rows.sort(function (a, b) {
+      var av, bv;
+      if (sortKey === "company") { av = a.ticker; bv = b.ticker; }
+      else if (sortKey === "headline") { av = a.headline; bv = b.headline; }
+      else if (sortKey === "source") { av = a.source; bv = b.source; }
+      else if (sortKey === "date") { av = a.date; bv = b.date; }
+      else { av = a.impact; bv = b.impact; }
+      if (av < bv) return -1 * sortDir; if (av > bv) return 1 * sortDir; return 0;
+    });
+
+    document.getElementById("newsCountLabel").textContent = "(" + rows.length + ")";
+    document.getElementById("newsEmptyHint").style.display = rows.length ? "none" : "block";
+    document.getElementById("newsTableBody").innerHTML = rows.slice(0, 40).map(function (n) {
+      var fade = impactFadeStyles(n.impact);
+      return '<tr>' +
+        '<td><a href="selskap.html?ticker=' + n.ticker + '#news" style="color:inherit;font-size:12.5px;font-weight:600;white-space:nowrap;">' + n.ticker + ' - ' + esc(n.companyName) + '</a></td>' +
+        '<td><a href="selskap.html?ticker=' + n.ticker + '#news" style="color:var(--text-dim);">' + esc(n.headline) + '</a></td>' +
+        '<td>' + n.source + '</td>' +
+        '<td>' + n.time + '</td>' +
+        '<td' + fade.impactTd + '>' + impactMeterHtml(n.impact) + '</td>' +
+        '<td style="text-align:right;"' + fade.actionTd + '><a class="icon-btn plain" href="selskap.html?ticker=' + n.ticker + '#news" aria-label="Åpne"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></a></td>' +
+      '</tr>';
+    }).join("");
+  }
+
+  App.qsa("th.sortable").forEach(function (th) {
+    th.addEventListener("click", function () {
+      var key = th.getAttribute("data-sort");
+      if (sortKey === key) sortDir = -sortDir; else { sortKey = key; sortDir = key === "date" || key === "impact" ? -1 : 1; }
+      App.qsa("th.sortable .arrow").forEach(function (a) { a.textContent = ""; });
+      th.querySelector(".arrow").textContent = sortDir === 1 ? "▲" : "▼";
+      renderNewsTable();
+    });
+  });
+  document.getElementById("newssearch").addEventListener("input", App.debounce(function (e) {
+    searchQuery = e.target.value.trim();
+    renderNewsTable();
+  }, 200));
+
+  // ---------- period menu ----------
+  var periodBtn = document.getElementById("periodBtn"), periodMenu = document.getElementById("periodMenu");
+  periodBtn.addEventListener("click", function (e) { e.stopPropagation(); periodMenu.style.display = periodMenu.style.display === "none" ? "flex" : "none"; });
+  document.addEventListener("click", function () { periodMenu.style.display = "none"; });
+  App.qsa("[data-period]", periodMenu).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      currentPeriod = btn.getAttribute("data-period");
+      App.store.set("dashboardPeriod", currentPeriod);
+      document.getElementById("periodBtnLabel").textContent = PERIOD_LABELS[currentPeriod];
+      document.getElementById("pageSubtitle").textContent = "Her er markedsbildet for de overvåkede selskapene dine (" + PERIOD_LABELS[currentPeriod].toLowerCase() + ").";
+      renderKpis(); renderNewsTable();
+    });
+  });
+  document.getElementById("periodBtnLabel").textContent = PERIOD_LABELS[currentPeriod];
+  document.getElementById("pageSubtitle").textContent = "Her er markedsbildet for de overvåkede selskapene dine (" + PERIOD_LABELS[currentPeriod].toLowerCase() + ").";
+
+  // ---------- varselregler ----------
+  function getAlertRules() { return App.store.get("alertRules", []); }
+  function saveAlertRules(list) { App.store.set("alertRules", list); }
+  function renderAlertRules() {
+    var rules = getAlertRules();
+    document.getElementById("alertRulesCard").style.display = rules.length ? "flex" : "none";
+    document.getElementById("alertRulesList").innerHTML = rules.map(function (r, i) {
+      var coLabel = r.ticker ? (MOCK.companies[r.ticker] ? MOCK.companies[r.ticker].name : r.ticker) : "Alle selskaper";
+      return '<div class="row between center" style="padding:8px 0;border-bottom:1px solid var(--border-soft);">' +
+        '<span style="font-size:12.5px;">Varsle for <b>' + esc(coLabel) + '</b> ved påvirkning +/- ' + r.threshold + ' eller høyere' + (r.keyword ? ' og nøkkelord «' + esc(r.keyword) + '»' : '') + '</span>' +
+        '<button class="icon-btn plain" data-remove-rule="' + i + '" aria-label="Fjern">✕</button>' +
+      '</div>';
+    }).join("");
+    App.qsa("[data-remove-rule]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.getAttribute("data-remove-rule"), 10);
+        var rules = getAlertRules(); rules.splice(idx, 1); saveAlertRules(rules); renderAlertRules();
+      });
+    });
+  }
+  // ---------- init ----------
+  updateCompanySelButton(); renderCompanySelPanel();
+  updateNewsFilterButton(); renderNewsFilterPanel();
+  renderKpis(); renderNewsTable(); renderAlertRules();
+})();
+</script>
+</body>
+</html>

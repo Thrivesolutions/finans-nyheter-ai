@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Selskaper – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<style>
+  .company-card { position: relative; cursor: pointer; }
+  .company-card:hover { border-color: #d4d4d8; }
+  .fav-btn { position: absolute; top: 16px; right: 16px; background: transparent; border: none; cursor: pointer; padding: 2px; line-height: 1; }
+  .extra-card { border-style: dashed; }
+  .wiz-box { max-width: 780px; }
+  .lukk-btn { font-weight: 700; font-size: 13px; padding: 7px 16px; border: 1.5px solid var(--text-dim); background: #fff; color: var(--text); border-radius: 9px; cursor: pointer; flex-shrink: 0; }
+  .lukk-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+  /* kandidatkort */
+  .wc-top { display: flex; gap: 12px; align-items: center; }
+  .wc-logo { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; letter-spacing: .04em; flex-shrink: 0; }
+  .wc-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .wc-name { font-size: 16px; font-weight: 800; line-height: 1.2; }
+  .wc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .wc-chip { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: var(--neu-bg); color: #52525b; }
+  .wc-price { text-align: right; font-size: 18px; font-weight: 800; white-space: nowrap; }
+  .wc-price small { font-size: 11px; font-weight: 600; color: var(--text-faint); margin-left: 3px; }
+  .wc-desc { font-size: 13px; color: var(--text-dim); line-height: 1.55; margin: 0; }
+  .wc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+  .wc-grid > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .wc-grid span { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); }
+  .wc-grid b, .wc-grid a { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wc-grid a { color: var(--text); text-decoration: underline; text-decoration-color: #d4d4d8; }
+  .wc-grid .muted-v { color: var(--text-faint); font-weight: 500; }
+  /* kostnadsboks */
+  .wiz-cost { border: 1.5px solid var(--text); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
+  .wiz-cost-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .wiz-cost-big { font-size: 28px; font-weight: 800; line-height: 1.1; }
+  .wiz-cost-sub { font-size: 12px; color: var(--text-mut); text-align: right; line-height: 1.5; }
+  /* sikker-dialog */
+  #sureOverlay { position: fixed; inset: 0; background: rgba(24,24,27,.55); display: none; align-items: center; justify-content: center; z-index: 300; padding: 20px; }
+  #sureOverlay.open { display: flex; }
+  #sureBox { background: #fff; border-radius: 16px; max-width: 440px; width: 100%; padding: 22px; box-shadow: 0 24px 60px rgba(0,0,0,.3); display: flex; flex-direction: column; gap: 10px; }
+  /* levende fremdrift */
+  @keyframes lvpulse { 0%,100% { box-shadow: 0 0 0 0 rgba(15,118,110,.45); } 50% { box-shadow: 0 0 0 12px rgba(15,118,110,0); } }
+  @keyframes lvshimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+  @keyframes lvpop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.25); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes lvslide { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  @keyframes lvdots { 0%,20% { content: ""; } 40% { content: "."; } 60% { content: ".."; } 80%,100% { content: "..."; } }
+  @keyframes lvfloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .lv { display: flex; flex-direction: column; gap: 16px; }
+  .lv-hero { display: flex; gap: 20px; align-items: center; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, #0f172a, #134e4a); color: #fff; }
+  .lv-ring { position: relative; width: 112px; height: 112px; flex-shrink: 0; }
+  .lv-ring svg { transform: rotate(-90deg); }
+  .lv-ring circle { fill: none; stroke-width: 9; }
+  .lv-ring .bg { stroke: rgba(255,255,255,.14); }
+  .lv-ring .fg { stroke: #5eead4; stroke-linecap: round; transition: stroke-dashoffset .9s ease; }
+  .lv-ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+  .lv-ring .mid b { font-size: 26px; font-weight: 800; }
+  .lv-ring .mid span { font-size: 10.5px; opacity: .7; letter-spacing: .08em; text-transform: uppercase; }
+  .lv-hero-txt { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1; }
+  .lv-who { display: flex; align-items: center; gap: 10px; }
+  .lv-logo { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; animation: lvpulse 2s infinite; flex-shrink: 0; }
+  .lv-name { font-size: 16px; font-weight: 800; }
+  .lv-now { font-size: 14px; font-weight: 600; color: #ccfbf1; line-height: 1.4; min-height: 20px; }
+  .lv-now::after { content: ""; animation: lvdots 1.4s infinite; display: inline-block; width: 14px; text-align: left; }
+  .lv-tip { font-size: 12px; color: rgba(255,255,255,.62); line-height: 1.5; min-height: 36px; transition: opacity .4s; }
+  .lv-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .lv-stat { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .lv-stat b { font-size: 22px; font-weight: 800; line-height: 1.1; }
+  .lv-stat span { font-size: 11px; color: var(--text-faint); font-weight: 600; letter-spacing: .04em; }
+  .lv-meter { height: 5px; border-radius: 9px; background: #ececef; overflow: hidden; margin-top: 3px; }
+  .lv-meter > i { display: block; height: 100%; background: linear-gradient(90deg, #14b8a6, #0f766e); transition: width .8s ease; }
+  .lv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .lv-h { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+  .lv-step { display: flex; gap: 11px; align-items: flex-start; padding: 9px 11px; border-radius: 11px; border: 1px solid transparent; transition: background .3s, border-color .3s; }
+  .lv-step + .lv-step { margin-top: 3px; }
+  .lv-step .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: #ececef; color: var(--text-faint); flex-shrink: 0; transition: background .3s, color .3s; }
+  .lv-step .lbl { font-size: 13px; font-weight: 600; color: var(--text-faint); line-height: 1.3; }
+  .lv-step .msg { font-size: 11.5px; color: var(--text-mut); line-height: 1.4; margin-top: 2px; }
+  .lv-step.running { background: #f0fdfa; border-color: #99f6e4; }
+  .lv-step.running .dot { background: #0f766e; color: #fff; animation: lvpulse 1.6s infinite; }
+  .lv-step.running .lbl { color: var(--text); font-weight: 800; }
+  .lv-step .bar { display: none; }
+  .lv-step.running .bar { display: block; height: 4px; border-radius: 9px; margin-top: 7px; background: linear-gradient(90deg, #ccfbf1 0%, #5eead4 50%, #ccfbf1 100%); background-size: 200px 100%; animation: lvshimmer 1.3s linear infinite; }
+  .lv-step.done .dot { background: var(--pos); color: #fff; animation: lvpop .45s; }
+  .lv-step.done .lbl { color: var(--text); }
+  .lv-step.skipped .lbl { text-decoration: line-through; }
+  .lv-step.failed .dot { background: var(--neg); color: #fff; }
+  .lv-step.failed .lbl { color: var(--neg); }
+  .lv-page { padding: 9px 12px; border: 1px solid var(--border); border-radius: 11px; display: flex; flex-direction: column; gap: 6px; }
+  .lv-page + .lv-page { margin-top: 6px; }
+  .lv-page .top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 700; }
+  .lv-page .top span { font-weight: 600; color: var(--text-mut); font-size: 12px; }
+  .lv-page .wiz-bar > span { transition: width .9s ease; }
+  .lv-page .wiz-bar.live { background: linear-gradient(90deg, #ececef 0%, #d9f3ec 50%, #ececef 100%); background-size: 220px 100%; animation: lvshimmer 1.3s linear infinite; }
+  .lv-page .top span em { font-style: normal; color: var(--text-faint); font-weight: 600; }
+  .lv-feed { border: 1px dashed var(--border); border-radius: 12px; padding: 11px 14px; display: flex; flex-direction: column; gap: 6px; min-height: 60px; }
+  .lv-feed div { font-size: 12.5px; color: var(--text-dim); animation: lvslide .4s; display: flex; gap: 8px; }
+  .lv-feed div i { font-style: normal; color: var(--pos); font-weight: 800; }
+  .lv-feed div:first-of-type { color: var(--text); font-weight: 600; }
+  @media (max-width: 640px) { .lv-cols { grid-template-columns: 1fr; } .lv-stats { grid-template-columns: 1fr; } .lv-hero { flex-direction: column; text-align: center; } .lv-who { justify-content: center; } }
+  @media (prefers-reduced-motion: reduce) { .lv *, .lv { animation: none !important; } }
+  .wiz-sub { font-size: 12.5px; color: var(--text-mut); line-height: 1.5; margin: 0; }
+  .wiz-cand { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; background: #fff; }
+  .wiz-cand:hover { border-color: #d4d4d8; }
+  .wiz-cand.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .wiz-cand.dis { opacity: .55; cursor: not-allowed; }
+  .wiz-cand input[type=radio] { margin-top: 4px; }
+  .wiz-err { background: #fef2f2; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45; }
+  .wiz-note { background: #f4f4f5; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; color: var(--text-dim); }
+  .wiz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .wiz-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .wiz-table td.r { text-align: right; white-space: nowrap; color: var(--text-dim); }
+  .wiz-step { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .wiz-ic { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; margin-top: 1px; }
+  .wiz-spin { width: 14px; height: 14px; border: 2px solid #d4d4d8; border-top-color: var(--accent); border-radius: 50%; animation: wizspin .8s linear infinite; }
+  @keyframes wizspin { to { transform: rotate(360deg); } }
+  .wiz-bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: #ececef; }
+  .wiz-bar > span { display: block; height: 100%; }
+  .wiz-page { display: grid; grid-template-columns: 150px 1fr 70px; gap: 10px; align-items: center; font-size: 12.5px; padding: 4px 0; }
+  .wiz-gap { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+  .wiz-gap + .wiz-gap { margin-top: 8px; }
+  .wiz-gap-h { font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .wiz-gap-t { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin-top: 4px; }
+  .wiz-gap-t b { color: var(--text); }
+  .wiz-link { font-size: 11.5px; color: var(--text-mut); text-decoration: underline; }
+  .wiz-details summary { cursor: pointer; font-size: 13px; font-weight: 600; padding: 6px 0; }
+  .wiz-stat { flex: 1; min-width: 110px; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+  .wiz-stat b { display: block; font-size: 20px; }
+  .wiz-stat span { font-size: 11.5px; color: var(--text-faint); }
+  .state-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 7px; border-radius: 99px; background: #fef3c7; color: #92400e; }
+  textarea.input { width: 100%; min-height: 70px; resize: vertical; font-family: inherit; }
+</style>
+</head>
+<body>
+<script>Auth.requireAuth();</script>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="varsler.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="konto.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm" id="sidebarAvatar">··</div><div class="col" style="line-height:1.2;min-width:0;flex:1;"><span style="font-size:13px;font-weight:600;" id="sidebarName">…</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div><button type="button" class="icon-btn plain" id="signOutBtn" title="Logg ut"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> <span class="now">Selskaper</span></div>
+      <div class="row center gap-14">
+        <div class="search-wrap">
+          <label for="topsearch2" class="visually-hidden">Søk</label>
+          <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+          <input id="topsearch2" class="input" type="text" placeholder="Søk etter selskap, ticker..." style="width:260px;">
+        </div>
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="row wrap between" style="align-items:flex-start;gap:12px;">
+        <div>
+          <h1 class="h1">Selskaper</h1>
+          <p class="muted" style="margin:4px 0 0;font-size:13.5px;" id="companyCountLabel"></p>
+        </div>
+        <div class="row gap-10 center wrap">
+          <div class="fdrop" id="fdropCompanyFilter">
+            <button type="button" class="fdrop-btn" data-fdrop-toggle="companyfilter"><span>Filter</span>
+              <svg class="fdrop-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="fdrop-panel" id="companyFilterPanel" style="min-width:200px;"></div>
+          </div>
+          <button class="btn btn-primary" data-modal-open="modalAddCompany">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Legg til selskap
+          </button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px,1fr));gap:16px;" id="companyGrid"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: legg til selskap -->
+<div class="modal-overlay" id="modalAddCompany" data-no-outside-close>
+  <div class="modal modal-wide">
+    <div class="modal-head"><h3 class="h3">Legg til selskap</h3><button class="lukk-btn" id="addCoClose" type="button">Lukk</button></div>
+    <div class="modal-body form-2col">
+      <div class="logo-preview span-all">
+        <div class="logo-preview-box" id="newCoPreviewBox">··</div>
+        <div class="col" style="line-height:1.3;min-width:0;">
+          <span class="eyebrow" style="margin-bottom:2px;">Forhåndsvisning</span>
+          <span style="font-size:13.5px;font-weight:700;" id="newCoPreviewTicker">TICKER</span>
+          <span style="font-size:11.5px;color:var(--text-faint);" id="newCoPreviewName">Selskapsnavn · Oslo Børs</span>
+        </div>
+      </div>
+      <p class="muted span-all" style="margin:0;font-size:12.5px;">Fyll inn grunnopplysningene om selskapet. På neste steg kontrollerer vi at det er riktig selskap, før noe hentes inn.</p>
+
+      <!-- Venstre kolonne: selskapsopplysninger -->
+      <div class="form-col">
+        <div class="form-pair">
+          <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Ticker</span><input class="input" id="newCoTicker" placeholder="F.eks. YAR" style="text-transform:uppercase;"></label>
+          <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Børs</span><input class="input" id="newCoExchange" placeholder="F.eks. Oslo Børs" value="Oslo Børs"></label>
+        </div>
+        <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskapsnavn</span><input class="input" id="newCoName" placeholder="F.eks. Yara International"></label>
+        <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Org.nr. eller ISIN <span class="faint" style="font-weight:500;">(valgfritt)</span></span>
+          <input class="input" id="newCoIdent" placeholder="F.eks. 984 851 006 eller NO0010161896" autocomplete="off" style="text-transform:uppercase;">
+          <span class="muted" style="font-size:11.5px;line-height:1.45;" id="newCoIdentHint">Org.nr. er 9 siffer (norske selskaper). ISIN er 12 tegn og finnes for alle børsnoterte selskaper. Brukes bare til å dobbeltsjekke at det er riktig selskap.</span></label>
+        <label class="col gap-6">
+          <span style="font-size:12.5px;font-weight:600;">Forkortelse – nøyaktig 2 bokstaver</span>
+          <span class="muted" style="font-size:11.5px;line-height:1.45;">Skriv akkurat <b>2 bokstaver</b> (f.eks. «YA» for Yara). Disse vises inne i den fargede logoboksen, slik du ser i forhåndsvisningen øverst.</span>
+          <span class="row center gap-10">
+            <input class="input" id="newCoInitials" placeholder="YA" maxlength="2" autocomplete="off" style="text-transform:uppercase;width:90px;text-align:center;font-weight:700;letter-spacing:.08em;">
+            <span class="faint" id="newCoInitialsCount" style="font-size:11.5px;">0 av 2 bokstaver</span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Høyre kolonne: farge -->
+      <div class="form-col">
+        <div class="col gap-8">
+          <span style="font-size:12.5px;font-weight:600;">Farge</span>
+          <span class="muted" style="font-size:11.5px;line-height:1.45;">Klikk eller dra i fargefeltet for å velge farge. Bruk fargelinjen under for å bytte grunnfarge.</span>
+          <div class="cp-area" id="cpArea" tabindex="0" role="slider" aria-label="Velg lysstyrke og metning"><div class="cp-cursor" id="cpCursor"></div></div>
+          <input type="range" class="cp-hue" id="cpHue" min="0" max="360" step="1" value="0" aria-label="Velg grunnfarge">
+          <div class="cp-hex-row">
+            <span class="cp-hex-swatch" id="cpHexSwatch"></span>
+            <input class="input cp-hex-input" id="cpHexInput" maxlength="7" spellcheck="false" aria-label="Fargekode">
+            <span class="faint" style="font-size:11.5px;">Fargekode (kan også skrives inn)</span>
+          </div>
+        </div>
+      </div>
+      <div class="wiz-err span-all" id="newCoError" style="display:none;"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" id="addCoCancel" type="button">Avbryt</button><button class="btn btn-primary" id="saveNewCoBtn">Gå videre</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="wizOverlay" data-no-outside-close>
+  <div class="modal modal-wide wiz-box">
+    <div class="modal-head"><h3 class="h3" id="wizTitle">Legg til selskap</h3><button class="lukk-btn" id="wizClose" type="button">Lukk</button></div>
+    <div class="modal-body" id="wizBody" style="display:flex;flex-direction:column;gap:14px;"></div>
+    <div class="modal-foot" id="wizFoot"></div>
+  </div>
+</div>
+
+
+<div id="sureOverlay"><div id="sureBox" role="alertdialog" aria-modal="true" aria-labelledby="sureTitle">
+  <h3 class="h3" id="sureTitle">Er du sikker?</h3>
+  <p class="wiz-sub" id="sureText" style="font-size:13.5px;line-height:1.55;"></p>
+  <div class="row gap-8" style="justify-content:flex-end;margin-top:6px;"><button class="btn" id="sureNo" type="button">Nei, bli her</button><button class="btn btn-primary" id="sureYes" type="button">Ja, lukk</button></div>
+</div></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/live-company.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+  var TODAY = "2026-09-18";
+
+  function esc(s) { return App.escapeHtml(s); }
+  function getExtraCompanies() { return App.store.get("extraCompanies", []); }
+  function saveExtraCompanies(list) { App.store.set("extraCompanies", list); }
+  function getFavorites() { return App.store.get("favorites", []); }
+  function saveFavorites(list) { App.store.set("favorites", list); }
+
+  // Ekte, live kurser fra finance_plattform.company_quote_snapshot (hentet av
+  // fetch-stock-prices-jobben hvert 15. minutt mens børsen er åpen). Fylles av
+  // loadLiveQuotes() nedenfor. Til vi har fått hentet en ekte kurs for et
+  // selskap (eller hvis Yahoo mangler kurs for det, f.eks. et avnotert selskap)
+  // viser vi fortsatt eksempeldata, slik at siden aldri står tom.
+  var liveQuotes = {};
+
+  function getCompanyMerged(ticker) {
+    var base = MOCK.companies[ticker];
+    var overrides = App.store.get("company:" + ticker, {});
+    var live = liveQuotes[ticker];
+    var news = base.news.map(function (n) {
+      var copy = Object.assign({}, n);
+      if (overrides.newsMeta && overrides.newsMeta[n.id]) Object.assign(copy, overrides.newsMeta[n.id]);
+      return copy;
+    });
+    var avgImpact = news.length ? news.reduce(function (s, n) { return s + n.impact; }, 0) / news.length : 0;
+    return {
+      ticker: base.ticker, name: base.name, exchange: base.exchange, sector: base.sector,
+      color: base.color, initials: base.initials,
+      price: live ? live.price : base.price,
+      changePct: live ? live.changePct : base.changePct,
+      isLive: !!live,
+      priceHistory: base.priceHistory,
+      inPortfolio: overrides.inPortfolio !== undefined ? overrides.inPortfolio : base.inPortfolio,
+      newsToday: news.filter(function (n) { return n.date === TODAY; }).length,
+      avgImpact: avgImpact,
+      isExtra: false
+    };
+  }
+
+  // Henter de ferskeste ekte kursene fra databasen og bytter dem inn der vi har
+  // dem, uten å blokkere første rendering (som skjer med eksempeldata med en gang).
+  function loadLiveQuotes() {
+    return Promise.all([
+      Auth.db("companies").select("id, ticker"),
+      Auth.db("company_quote_snapshot").select("company_id, price, change_pct, updated_at")
+    ]).then(function (results) {
+      var companiesRes = results[0], snapshotRes = results[1];
+      if (companiesRes.error || snapshotRes.error) {
+        console.error("[Innsikt] Kunne ikke hente live kurser:", (companiesRes.error || snapshotRes.error).message);
+        return;
+      }
+      var idToTicker = {};
+      (companiesRes.data || []).forEach(function (c) { idToTicker[c.id] = c.ticker; });
+      (snapshotRes.data || []).forEach(function (s) {
+        var ticker = idToTicker[s.company_id];
+        if (!ticker || s.price == null) return;
+        liveQuotes[ticker] = {
+          price: Number(s.price),
+          changePct: s.change_pct != null ? Number(s.change_pct) : 0,
+          updatedAt: s.updated_at
+        };
+      });
+      renderAll();
+    }).catch(function (err) {
+      console.error("[Innsikt] Feil ved henting av live kurser:", err);
+    });
+  }
+
+  var favorites = getFavorites();
+  var currentFilter = "all", searchQuery = "";
+
+  // Denne pillen viser IKKE kursutvikling - den viser den samlede retningen i nyhetsbildet
+  // for selskapet, vurdert opp mot investeringstesen (bull/bear/base-case). Derfor bruker
+  // den en mer presis, 5-delt skala i stedet for bare Positiv/Nøytral/Negativ.
+  function trendPill(avgImpact) {
+    if (avgImpact >= 4) return '<span class="pill pill-pos-strong">Svært positiv</span>';
+    if (avgImpact >= 1) return '<span class="pill pill-pos">Moderat positiv</span>';
+    if (avgImpact <= -4) return '<span class="pill pill-neg-strong">Svært negativ</span>';
+    if (avgImpact <= -1) return '<span class="pill pill-neg">Moderat negativ</span>';
+    return '<span class="pill pill-neu">Moderat</span>';
+  }
+
+  // Modern dropdown ("Filter") som samler filtreringsvalgene (Alle/Positiv trend/Negativ
+  // trend/Favoritter) og en snarvei for å sortere etter navn A-Å, i stedet for en fritt
+  // flytende rad med chips. Gjenbruker samme .fdrop-stil som Nyheter-siden på selskapet.
+  function closeAllFdrops(except) {
+    App.qsa(".fdrop.open").forEach(function (d) { if (d !== except) d.classList.remove("open"); });
+  }
+  function wireFilterDropdown() {
+    var drop = document.getElementById("fdropCompanyFilter");
+    var btn = drop.querySelector("[data-fdrop-toggle]");
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var wasOpen = drop.classList.contains("open");
+      closeAllFdrops();
+      drop.classList.toggle("open", !wasOpen);
+    });
+    document.addEventListener("click", function () { closeAllFdrops(); });
+  }
+
+  function renderChips(companies) {
+    var counts = {
+      all: companies.length,
+      positive: companies.filter(function (c) { return c.avgImpact > 1; }).length,
+      negative: companies.filter(function (c) { return c.avgImpact < -1; }).length,
+      favorites: companies.filter(function (c) { return favorites.indexOf(c.ticker) > -1; }).length
+    };
+    var defs = [["all", "Alle"], ["positive", "Positiv trend"], ["negative", "Negativ trend"], ["favorites", "Favoritter"]];
+    var panel = document.getElementById("companyFilterPanel");
+    panel.innerHTML = defs.map(function (d) {
+      return '<button type="button" class="fdrop-opt' + (currentFilter === d[0] ? " active" : "") + '" data-company-filter="' + d[0] + '">' + d[1] + ' (' + counts[d[0]] + ')</button>';
+    }).join("");
+
+    App.qsa("[data-company-filter]", panel).forEach(function (opt) {
+      opt.addEventListener("click", function (e) {
+        e.stopPropagation();
+        currentFilter = opt.getAttribute("data-company-filter");
+        closeAllFdrops();
+        renderAll();
+      });
+    });
+  }
+
+  function companyCard(c) {
+    var sparkColor = c.changePct >= 0 ? "var(--pos)" : "var(--neg)";
+    var isFav = favorites.indexOf(c.ticker) > -1;
+    return '<div class="company-card card" data-open="' + c.ticker + '">' +
+      '<button class="fav-btn" data-fav="' + c.ticker + '" aria-label="Favoritt">' +
+        '<svg width="17" height="17" viewBox="0 0 24 24" fill="' + (isFav ? "#18181b" : "none") + '" stroke="' + (isFav ? "#18181b" : "#d4d4d8") + '" stroke-width="1.6"><path d="m12 3 2.6 5.6 6 0.8-4.4 4.3 1 6.1L12 17l-5.2 2.8 1-6.1L3.4 9.4l6-.8Z"/></svg>' +
+      '</button>' +
+      '<div class="row" style="align-items:flex-start;gap:10px;margin-bottom:14px;padding-right:24px;">' +
+        '<div style="width:38px;height:38px;border-radius:10px;background:' + c.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;">' + c.initials + '</div>' +
+        '<div class="col" style="line-height:1.25;"><span style="font-size:13.5px;font-weight:700;">' + c.ticker + '</span><span style="font-size:11.5px;color:var(--text-faint);">' + esc(c.name) + ' · ' + c.exchange + '</span></div>' +
+      '</div>' +
+      '<div class="row" style="align-items:baseline;justify-content:space-between;margin-bottom:10px;">' +
+        '<span class="row" style="align-items:baseline;gap:6px;">' +
+          '<span style="font-size:20px;font-weight:700;">' + c.price.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span>' +
+          (c.isLive ? '<span title="Live kurs fra Yahoo Finance" style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--pos);text-transform:uppercase;letter-spacing:.04em;"><span style="width:6px;height:6px;border-radius:50%;background:var(--pos);display:inline-block;"></span>Live</span>' : '') +
+        '</span>' +
+        '<span style="font-size:12.5px;font-weight:700;color:' + sparkColor + ';">' + MOCK.fmtPct(c.changePct) + '</span></div>' +
+      App.sparklineSvg(c.priceHistory, sparkColor, 100, 28) +
+      '<div class="row center between" style="margin-top:12px;">' + trendPill(c.avgImpact) + '<span style="font-size:11px;color:var(--text-faint);">' + c.newsToday + ' nyheter i dag</span></div>' +
+    '</div>';
+  }
+
+  function extraCard(c, idx) {
+    var initials = (c.initials || c.ticker.slice(0, 2)).toUpperCase();
+    var color = c.color || "#52525b";
+    return '<div class="company-card card extra-card">' +
+      '<div class="row" style="align-items:flex-start;gap:10px;margin-bottom:14px;">' +
+        '<div style="width:38px;height:38px;border-radius:10px;background:' + color + ';color:' + contrastText(/^#[0-9a-f]{6}$/i.test(color) ? color : "#52525b") + ';display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;">' + esc(initials) + '</div>' +
+        '<div class="col" style="line-height:1.25;"><span style="font-size:13.5px;font-weight:700;">' + esc(c.ticker) + '</span><span style="font-size:11.5px;color:var(--text-faint);">' + esc(c.name) + ' · ' + esc(c.exchange) + '</span></div>' +
+      '</div>' +
+      '<p class="muted" style="margin:0 0 12px;font-size:12px;">Nylig lagt til – kobles til nyheter og markedsdata når kilder er konfigurert for dette selskapet.</p>' +
+      '<div class="row between center"><span class="tag">' + esc(c.sector) + '</span><button class="btn-danger-ghost" style="font-size:11.5px;font-weight:600;padding:0;" data-remove-extra="' + idx + '">Fjern</button></div>' +
+    '</div>';
+  }
+
+  function pendingCard(p) {
+    var color = p.color || "#52525b";
+    var txt = p.state === "running" ? "Henter data …" : p.state === "failed" ? "Innhentingen stoppet" : "Ikke startet";
+    var hint = p.state === "awaiting_start" ? "Selskapet er valgt, men innhentingen er ikke startet. Klikk for å fortsette." : p.state === "running" ? "Klikk for å se fremdriften." : "Klikk for å se hva som skjedde og prøve igjen.";
+    return '<div class="company-card card extra-card" data-resume="' + p.id + '">' +
+      '<div class="row" style="align-items:flex-start;gap:10px;margin-bottom:14px;">' +
+        '<div style="width:38px;height:38px;border-radius:10px;background:' + color + ';color:' + contrastText(/^#[0-9a-f]{6}$/i.test(color) ? color : "#52525b") + ';display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;">' + esc(p.initials || p.ticker.slice(0, 2).toUpperCase()) + '</div>' +
+        '<div class="col" style="line-height:1.25;"><span style="font-size:13.5px;font-weight:700;">' + esc(p.ticker) + '</span><span style="font-size:11.5px;color:var(--text-faint);">' + esc(p.name) + ' · ' + esc(p.exchange || "") + '</span></div>' +
+      '</div>' +
+      '<p style="margin:0 0 6px;"><span class="state-badge">' + txt + '</span></p>' +
+      '<p class="muted" style="margin:0 0 12px;font-size:12px;">' + hint + '</p>' +
+      '<div class="row between center"><span class="tag">' + esc(p.sector || "Ukategorisert") + '</span>' + (p.state === "awaiting_start" ? '<button class="btn-danger-ghost" style="font-size:11.5px;font-weight:600;padding:0;" data-drop-pending="' + p.id + '">Fjern</button>' : '') + '</div>' +
+    '</div>';
+  }
+
+  // ---------- "Legg til selskap": fargetavle + live forhåndsvisning ----------
+  // Fargen lagres som HSV (nyanse/metning/lysstyrke) mens man drar, og vises som hex.
+  var DEFAULT_NEW_COLOR = "#0f766e";
+  var cp = { h: 0, s: 1, v: 1 };
+  var cpEls = {
+    area: document.getElementById("cpArea"), cursor: document.getElementById("cpCursor"),
+    hue: document.getElementById("cpHue"), hexInput: document.getElementById("cpHexInput"),
+    hexSwatch: document.getElementById("cpHexSwatch")
+  };
+
+  function hsvToHex(h, s, v) {
+    var c = v * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = v - c, r = 0, g = 0, b = 0;
+    if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; } else if (h < 180) { g = c; b = x; }
+    else if (h < 240) { g = x; b = c; } else if (h < 300) { r = x; b = c; } else { r = c; b = x; }
+    function to2(n) { var t = Math.round((n + m) * 255).toString(16); return t.length < 2 ? "0" + t : t; }
+    return "#" + to2(r) + to2(g) + to2(b);
+  }
+  function hexToHsv(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+    if (!m) return null;
+    var n = parseInt(m[1], 16), r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min, h = 0;
+    if (d !== 0) {
+      if (max === r) h = 60 * (((g - b) / d) % 6);
+      else if (max === g) h = 60 * ((b - r) / d + 2);
+      else h = 60 * ((r - g) / d + 4);
+    }
+    if (h < 0) h += 360;
+    return { h: h, s: max === 0 ? 0 : d / max, v: max };
+  }
+  // Velger hvit eller mørk tekst, slik at bokstavene alltid er lesbare mot valgt farge.
+  function contrastText(hex) {
+    var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 170 ? "#18181b" : "#ffffff";
+  }
+  function currentNewCoColor() { return hsvToHex(cp.h, cp.s, cp.v); }
+
+  function cleanInitials(raw) { return (raw || "").replace(/[^A-Za-zÆØÅæøå]/g, "").toUpperCase().slice(0, 2); }
+
+  function updateNewCoPreview() {
+    var color = currentNewCoColor();
+    var tickerVal = document.getElementById("newCoTicker").value.trim().toUpperCase();
+    var nameVal = document.getElementById("newCoName").value.trim();
+    var exVal = document.getElementById("newCoExchange").value.trim() || "Oslo Børs";
+    var initials = cleanInitials(document.getElementById("newCoInitials").value);
+    var box = document.getElementById("newCoPreviewBox");
+    // Før man har skrevet egne bokstaver foreslår vi de to første i tickeren.
+    box.textContent = initials || (tickerVal.slice(0, 2) || "··");
+    box.style.opacity = initials ? "1" : (tickerVal ? ".75" : ".55");
+    box.style.background = color;
+    box.style.color = contrastText(color);
+    document.getElementById("newCoPreviewTicker").textContent = tickerVal || "TICKER";
+    document.getElementById("newCoPreviewName").textContent = (nameVal || "Selskapsnavn") + " · " + exVal;
+    document.getElementById("newCoInitialsCount").textContent = initials.length + " av 2 bokstaver" + (initials.length === 2 ? " ✓" : "");
+  }
+
+  function renderColorPicker(fromHexInput) {
+    var color = currentNewCoColor();
+    cpEls.area.style.setProperty("--cp-hue", hsvToHex(cp.h, 1, 1));
+    cpEls.hue.style.setProperty("--cp-hue", hsvToHex(cp.h, 1, 1));
+    cpEls.cursor.style.left = (cp.s * 100) + "%";
+    cpEls.cursor.style.top = ((1 - cp.v) * 100) + "%";
+    cpEls.hue.value = Math.round(cp.h);
+    cpEls.hexSwatch.style.background = color;
+    if (!fromHexInput) cpEls.hexInput.value = color.toUpperCase();
+    updateNewCoPreview();
+  }
+  function setNewCoColor(hex) {
+    var hsv = hexToHsv(hex);
+    if (!hsv) return;
+    cp = hsv;
+    renderColorPicker(false);
+  }
+
+  (function wireColorPicker() {
+    function pick(e) {
+      var rect = cpEls.area.getBoundingClientRect();
+      cp.s = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      cp.v = 1 - Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+      renderColorPicker(false);
+    }
+    var dragging = false;
+    cpEls.area.addEventListener("pointerdown", function (e) {
+      dragging = true;
+      try { cpEls.area.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      pick(e);
+      e.preventDefault();
+    });
+    cpEls.area.addEventListener("pointermove", function (e) { if (dragging) pick(e); });
+    cpEls.area.addEventListener("pointerup", function () { dragging = false; });
+    cpEls.area.addEventListener("pointercancel", function () { dragging = false; });
+    // Piltaster for tastaturbrukere
+    cpEls.area.addEventListener("keydown", function (e) {
+      var step = e.shiftKey ? 0.1 : 0.02, used = true;
+      if (e.key === "ArrowLeft") cp.s = Math.max(0, cp.s - step);
+      else if (e.key === "ArrowRight") cp.s = Math.min(1, cp.s + step);
+      else if (e.key === "ArrowUp") cp.v = Math.min(1, cp.v + step);
+      else if (e.key === "ArrowDown") cp.v = Math.max(0, cp.v - step);
+      else used = false;
+      if (used) { e.preventDefault(); renderColorPicker(false); }
+    });
+    cpEls.hue.addEventListener("input", function () { cp.h = parseFloat(cpEls.hue.value); renderColorPicker(false); });
+    cpEls.hexInput.addEventListener("input", function () {
+      var v = cpEls.hexInput.value.trim();
+      if (v.charAt(0) !== "#") v = "#" + v;
+      var hsv = hexToHsv(v);
+      if (hsv) { cp = hsv; renderColorPicker(true); }
+    });
+    cpEls.hexInput.addEventListener("blur", function () { cpEls.hexInput.value = currentNewCoColor().toUpperCase(); });
+
+    var initialsEl = document.getElementById("newCoInitials");
+    initialsEl.addEventListener("input", function () {
+      var cleaned = cleanInitials(initialsEl.value);
+      if (initialsEl.value !== cleaned) initialsEl.value = cleaned;
+      initialsEl.style.borderColor = "";
+      updateNewCoPreview();
+    });
+    ["newCoTicker", "newCoName", "newCoExchange"].forEach(function (id) {
+      document.getElementById(id).addEventListener("input", updateNewCoPreview);
+    });
+  })();
+  setNewCoColor(DEFAULT_NEW_COLOR);
+
+  // ===================================================================
+  // Veiviser etter «Gå videre»: riktig selskap? → kostnad → innhenting → hullrapport.
+  // Bruker de samme dialog-stilene som resten av siden.
+  // ===================================================================
+  // Liten «Er du sikker?»-dialog som ligger over alt annet.
+  var sureYes = null;
+  function askSure(title, text, yesLabel, onYes, noLabel) {
+    document.getElementById("sureTitle").textContent = title; document.getElementById("sureText").textContent = text;
+    document.getElementById("sureYes").textContent = yesLabel || "Ja"; document.getElementById("sureNo").textContent = noLabel || "Nei, bli her";
+    sureYes = onYes; document.getElementById("sureOverlay").classList.add("open");
+  }
+  document.getElementById("sureNo").addEventListener("click", function () { sureYes = null; document.getElementById("sureOverlay").classList.remove("open"); });
+  document.getElementById("sureYes").addEventListener("click", function () { var f = sureYes; sureYes = null; document.getElementById("sureOverlay").classList.remove("open"); if (f) f(); });
+  // «Lukk» på selve skjemaet: spør hvis noe er fylt inn.
+  (function wireAddCoClose() {
+    var ids = ["newCoTicker", "newCoName", "newCoIdent", "newCoInitials"];
+    function dirty() { return ids.some(function (id) { return document.getElementById(id).value.trim(); }); }
+    function closeIt() { document.getElementById("modalAddCompany").classList.remove("open"); }
+    function reset() { ids.forEach(function (id) { var e = document.getElementById(id); e.value = ""; e.dispatchEvent(new Event("input")); }); var er = document.getElementById("newCoError"); if (er) { er.style.display = "none"; er.textContent = ""; } }
+    function request() { if (!dirty()) { closeIt(); return; } askSure("Er du sikker?", "Alt du har fylt inn forsvinner, og du må begynne på nytt.", "Ja, lukk", function () { reset(); closeIt(); }, "Nei, bli her"); }
+    document.getElementById("addCoClose").addEventListener("click", request);
+    document.getElementById("addCoCancel").addEventListener("click", request);
+  })();
+
+  var Wizard = (function () {
+  var hooks = {};
+  var API_URL = "https://ikcikywavwcixozwjxdk.supabase.co/functions/v1/onboarding";
+  var API_KEY = "sb_publishable_nWHjYfw7hpxdhpAbjGN9NQ_mOn4wpui";
+  function $(id) { return document.getElementById(id); }
+  function nok(n) { return Number(n || 0).toLocaleString("nb-NO", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " kr"; }
+  function api(action, body) {
+    return Auth.client.auth.getSession().then(function (res) {
+      var s = res && res.data && res.data.session;
+      if (!s) throw new Error("Du er logget ut. Last siden på nytt og logg inn.");
+      return fetch(API_URL, { method: "POST", headers: { "Authorization": "Bearer " + s.access_token, "apikey": API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ action: action }, body || {})) });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || ("Noe gikk galt (" + r.status + ")")); return j; });
+    });
+  }
+  // ---------------------------------------------------------------- veiviser
+  var wiz = null, pollTimer = null;
+  function newWiz() { return { query: "", candidates: [], prev: [], feedbackHistory: [], sel: 0, kind: "standard", runId: null, companyId: null, estimate: null, itemsTotal: 0, itemsNA: 0, name: "", busy: false }; }
+  function stopPoll() { if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; } }
+  function openWiz() { $("wizOverlay").classList.add("open"); }
+  function closeWiz() { stopPoll(); stopTips(); $("wizOverlay").classList.remove("open"); wiz = null; if (hooks.onClose) hooks.onClose(); }
+  // «Lukk» oppe til høyre: spør alltid først, med en tekst som passer til hvor man er.
+  var CLOSE_TXT = {
+    lookup: "Søket avbrytes, og du må starte på nytt.",
+    verify: "Du mister søket og valget ditt, og må starte helt på nytt. Ingenting er hentet eller belastet ennå.",
+    estimate: "Selskapet blir liggende som «Ikke startet» på Selskaper-siden, og du kan fortsette derfra senere. Alt du har valgt her må gjøres på nytt.",
+    starting: "Selskapet blir opprettet og innhentingen starter uansett i bakgrunnen. Du finner det igjen som et kort på Selskaper-siden.",
+    progress: "Innhentingen fortsetter i bakgrunnen selv om du lukker, og kostnaden løper videre. Du finner selskapet som et kort på Selskaper-siden og kan åpne fremdriften derfra. Vil du stoppe helt, bruk «Stopp innhentingen» i stedet."
+  };
+  function requestCloseWiz() {
+    if (!wiz || !CLOSE_TXT[wiz.stage]) { closeWiz(); return; }
+    askSure("Er du sikker?", CLOSE_TXT[wiz.stage], "Ja, lukk", closeWiz, "Nei, bli her");
+  }
+  function setView(title, body, foot) { stopTips(); $("wizTitle").textContent = title; $("wizBody").innerHTML = body; $("wizFoot").innerHTML = foot || ""; $("wizOverlay").querySelector(".modal").scrollTop = 0; }
+  function loadingHtml(msg) { return '<div class="row center gap-12" style="padding:26px 4px;"><div class="wiz-spin"></div><span style="font-size:13.5px;">' + msg + '</span></div>'; }
+  function errHtml(msg) { return '<div class="wiz-err">' + esc(msg) + '</div>'; }
+
+  // --- steg 1 er den eksisterende «Legg til selskap»-dialogen. «Gå videre» kommer hit.
+  // Kontrollsiffer: fanger opp skrivefeil i org.nr. (norsk modulus 11) og ISIN (Luhn).
+  function orgnrOk(n) {
+    if (!/^\d{9}$/.test(n)) return false;
+    var w = [3, 2, 7, 6, 5, 4, 3, 2], sum = 0, i;
+    for (i = 0; i < 8; i++) sum += w[i] * parseInt(n[i], 10);
+    var k = 11 - (sum % 11); if (k === 11) k = 0; if (k === 10) return false;
+    return k === parseInt(n[8], 10);
+  }
+  function isinOk(v) {
+    if (!/^[A-Z]{2}[A-Z0-9]{9}\d$/.test(v)) return false;
+    var digits = v.split("").map(function (ch) { return /\d/.test(ch) ? ch : String(ch.charCodeAt(0) - 55); }).join("");
+    var sum = 0, dbl = false, i;
+    for (i = digits.length - 1; i >= 0; i--) { var d = parseInt(digits[i], 10); if (dbl) { d *= 2; if (d > 9) d -= 9; } sum += d; dbl = !dbl; }
+    return sum % 10 === 0;
+  }
+  // Tolker det brukeren skrev: { kind: "orgnr" | "isin" | "unknown" | "", value, valid }
+  function parseIdent(raw) {
+    var v = String(raw || "").replace(/[\s.\-]/g, "").toUpperCase();
+    if (!v) return { kind: "", value: "", valid: false };
+    if (/^\d{9}$/.test(v)) return { kind: "orgnr", value: v, valid: orgnrOk(v) };
+    if (/^[A-Z]{2}[A-Z0-9]{9,10}$/.test(v)) return { kind: "isin", value: v, valid: isinOk(v) };
+    return { kind: "unknown", value: v, valid: false };
+  }
+  function identBanner(c) {
+    var id = wiz.ident; if (!id || !id.kind) return "";
+    var box = function (col, bg, txt) { return '<div style="padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.5;color:' + col + ';background:' + bg + ';">' + txt + '</div>'; };
+    var fmt = function (n) { return n ? n.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3") : ""; };
+    if (id.kind === "orgnr") {
+      var typo = id.valid ? "" : " Nummeret du skrev ser også ut til å ha en skrivefeil.";
+      if (c.orgnr && c.orgnr === id.value) return box("var(--pos)", "var(--pos-bg)", "Org.nr. " + fmt(id.value) + " stemmer med Brønnøysundregistrene. Dette er riktig selskap.");
+      if (c.orgnr) return box("#92400e", "#fef3c7", "Org.nr. du skrev (" + esc(fmt(id.value)) + ") er ikke det samme som selskapets (" + esc(fmt(c.orgnr)) + "). Vi går ut fra at navnet og tickeren er riktig, men sjekk selv." + typo);
+      return box("var(--text-mut)", "var(--neu-bg)", "Fant ikke noe org.nr. å sammenligne med, så vi gikk på navn og ticker." + typo);
+    }
+    if (id.kind === "isin") {
+      if (wiz.foundByIdent) return box("var(--pos)", "var(--pos-bg)", "Funnet med ISIN " + esc(id.value) + ". Aksjen er identifisert nøyaktig.");
+      return box("#92400e", "#fef3c7", "Fant ingen treff på ISIN " + esc(id.value) + ", så vi søkte på navn og ticker i stedet." + (id.valid ? "" : " ISIN-en ser ut til å ha en skrivefeil."));
+    }
+    return box("#92400e", "#fef3c7", "«" + esc(id.value) + "» ser verken ut som et org.nr. (9 siffer) eller en ISIN (12 tegn). Vi søkte på navn og ticker i stedet.");
+  }
+  function start(info) {
+    wiz = newWiz(); wiz.label = info.query; wiz.ident = info.ident || null; wiz.foundByIdent = false;
+    wiz.alts = (info.alts || []).slice();
+    wiz.query = (wiz.ident && wiz.ident.kind === "isin" && wiz.ident.valid) ? wiz.ident.value : info.query;
+    if (wiz.query !== info.query) wiz.alts.unshift(info.query);
+    wiz.initials = info.initials || ""; wiz.color = info.color || "";
+    $("modalAddCompany").classList.remove("open");
+    openWiz(); doLookup("");
+  }
+  // Tilbake til første dialog (med eventuell feilmelding)
+  function viewSearch(errMsg) {
+    stopPoll(); $("wizOverlay").classList.remove("open");
+    var e = $("newCoError"); if (e) { e.textContent = errMsg || ""; e.style.display = errMsg ? "block" : "none"; }
+    $("modalAddCompany").classList.add("open"); wiz = null;
+  }
+
+  function doLookup(feedback) {
+    wiz.stage = "lookup";
+    setView("Søker …", loadingHtml("Søker i børsdata og på nettet. Dette tar vanligvis 15–40 sekunder."), "");
+    var body = { query: wiz.query };
+    if (feedback) { body.feedback = feedback; body.previous_symbols = wiz.prev; }
+    api("lookup", body).then(function (r) {
+      if (!(r.candidates || []).length && !feedback && wiz.alts.length) { wiz.query = wiz.alts.shift(); return doLookup(""); }
+      wiz.foundByIdent = !!(wiz.ident && wiz.ident.kind === "isin" && wiz.ident.valid && wiz.query === wiz.ident.value);
+      wiz.candidates = r.candidates || [];
+      wiz.candidates.forEach(function (c) { if (wiz.prev.indexOf(c.symbol) < 0) wiz.prev.push(c.symbol); });
+      wiz.sel = 0;
+      var first = wiz.candidates[0]; wiz.kind = first ? first.kind || "standard" : "standard";
+      loadSteps().then(function () { viewVerify(); });
+    }).catch(function (e) { viewSearch(e.message); });
+  }
+
+  // ---- visningshjelpere: norske ord og ryddig tekst
+  var SECT_NO = { "Financial Services": "Finans", "Technology": "Teknologi", "Healthcare": "Helse", "Consumer Cyclical": "Forbruk", "Consumer Defensive": "Dagligvarer og forbruk", "Industrials": "Industri", "Energy": "Energi", "Basic Materials": "Materialer", "Utilities": "Forsyning", "Real Estate": "Eiendom", "Communication Services": "Kommunikasjon" };
+  var IND_NO = { "Passenger Airlines": "Flyselskap (passasjerfly)", "Airlines": "Flyselskap", "Banks—Regional": "Regional bank", "Banks - Regional": "Regional bank", "Banks—Diversified": "Stor bank", "Banks - Diversified": "Stor bank", "Insurance—Diversified": "Forsikring", "Insurance - Diversified": "Forsikring", "Oil & Gas E&P": "Olje og gass (leting og produksjon)", "Oil & Gas Integrated": "Olje og gass", "Oil & Gas Midstream": "Olje og gass (transport)", "Oil & Gas Equipment & Services": "Olje og gass (utstyr og tjenester)", "Specialty Chemicals": "Spesialkjemikalier", "Agricultural Inputs": "Gjødsel og landbruksinnsats", "Farm Products": "Landbruksprodukter", "Packaged Foods": "Næringsmidler", "Telecom Services": "Telekom", "Software—Application": "Programvare", "Software - Application": "Programvare", "Aluminum": "Aluminium", "Steel": "Stål", "Shipping & Ports": "Shipping", "Marine Shipping": "Shipping", "Asset Management": "Kapitalforvaltning", "Real Estate—Development": "Eiendomsutvikling", "Real Estate - Development": "Eiendomsutvikling", "Electrical Equipment & Parts": "Elektrisk utstyr", "Utilities—Renewable": "Fornybar kraft", "Utilities - Renewable": "Fornybar kraft", "Biotechnology": "Bioteknologi", "Seafood": "Sjømat" };
+  var COUNTRY_NO = { "Norway": "Norge", "Sweden": "Sverige", "Denmark": "Danmark", "Finland": "Finland", "Iceland": "Island", "United States": "USA", "United Kingdom": "Storbritannia", "Germany": "Tyskland", "Netherlands": "Nederland", "France": "Frankrike", "Switzerland": "Sveits", "Bermuda": "Bermuda", "Singapore": "Singapore", "Luxembourg": "Luxembourg", "Ireland": "Irland", "Cayman Islands": "Caymanøyene", "Canada": "Canada", "Spain": "Spania", "Italy": "Italia", "Belgium": "Belgia" };
+  var LOGO_COLORS = ["#0f766e", "#1d4ed8", "#7c3aed", "#b45309", "#be123c", "#0369a1"];
+  function cleanDesc(t) {
+    t = String(t || "");
+    t = t.replace(/\[([^\]]*)\]\([^)]*\)/g, "").replace(/https?:\/\/\S+/g, "").replace(/\(\s*\)/g, "");
+    return t.replace(/\s+([.,;:])/g, "$1").replace(/\s{2,}/g, " ").trim();
+  }
+  function fmtOrg(n) { return String(n || "").replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3"); }
+  function logoColorFor(sym) { var h = 0, i; for (i = 0; i < String(sym).length; i++) h = (h * 31 + String(sym).charCodeAt(i)) >>> 0; return LOGO_COLORS[h % LOGO_COLORS.length]; }
+  function initialsFrom(name) {
+    var t = String(name || "").replace(/\b(asa|as|ab|plc|inc|ltd|corp|sa|nv|oyj|abp|group|holding|holdings)\b\.?/gi, "").trim();
+    return (t.replace(/[^A-Za-zÆØÅæøå]/g, "").slice(0, 2) || "??").toUpperCase();
+  }
+  function logoFor(c, i) {
+    var color = (i === wiz.sel && wiz.color && /^#[0-9a-f]{6}$/i.test(wiz.color)) ? wiz.color : logoColorFor(c.symbol);
+    var ini = (i === wiz.sel && wiz.initials) ? wiz.initials : initialsFrom(c.name);
+    return { color: color, ini: ini };
+  }
+
+  // --- steg 2: er dette riktig selskap? (og godkjenn kostnaden)
+  function candHtml(c, i) {
+    var dis = c.already_exists === "active";
+    var lg = logoFor(c, i);
+    var ind = (c.industry && IND_NO[c.industry]) || "", sec = (c.sector && SECT_NO[c.sector]) || "";
+    var field = ind || sec;
+    var country = c.country ? (COUNTRY_NO[c.country] || c.country) : "";
+    var desc = cleanDesc(c.description);
+    var web = c.website ? c.website.replace(/^https?:\/\//, "").replace(/\/$/, "") : "";
+    var grid = [
+      ["Land", country ? esc(country) : '<b class="muted-v">Ikke funnet</b>'],
+      ["Bransje", field ? esc(field) : '<b class="muted-v">Ikke funnet</b>'],
+      ["Org.nr.", c.orgnr ? esc(fmtOrg(c.orgnr)) : '<b class="muted-v">Ikke funnet</b>'],
+      ["Nettside", web ? '<a href="' + esc(c.website) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' + esc(web) + ' ↗</a>' : '<b class="muted-v">Ikke funnet</b>']
+    ].map(function (g) { return '<div><span>' + g[0] + '</span>' + (/^<(b|a)/.test(g[1]) ? g[1] : '<b>' + g[1] + '</b>') + '</div>'; }).join("");
+    return '<label class="wiz-cand' + (i === wiz.sel ? " sel" : "") + (dis ? " dis" : "") + '" data-cand="' + i + '">' +
+      '<input type="radio" name="wizCand" ' + (i === wiz.sel ? "checked " : "") + (dis ? "disabled" : "") + '>' +
+      '<div class="col" style="gap:12px;min-width:0;flex:1;">' +
+        '<div class="wc-top">' +
+          '<div class="wc-logo" style="background:' + lg.color + ';color:' + contrastText(lg.color) + ';">' + esc(lg.ini) + '</div>' +
+          '<div class="wc-titles"><span class="wc-name">' + esc(c.name) + '</span><div class="wc-tags">' +
+            [c.ticker, c.exchange, c.currency].filter(Boolean).map(function (x) { return '<span class="wc-chip">' + esc(x) + '</span>'; }).join("") + '</div></div>' +
+          '<div class="wc-price">' + (c.price != null ? Number(c.price).toLocaleString("nb-NO", { maximumFractionDigits: 2 }) + '<small>' + esc(c.currency || "") + '</small>' : '') + '</div>' +
+        '</div>' +
+        (desc ? '<p class="wc-desc">' + esc(desc) + '</p>' : '') +
+        '<div class="wc-grid">' + grid + '</div>' +
+        (c.parent ? '<span style="font-size:12px;color:var(--text-mut);">Datterselskap av ' + esc(c.parent) + '</span>' : '') +
+        (c.already_exists ? '<span><span class="state-badge">' + (dis ? "Allerede lagt til" : "Påbegynt tidligere") + '</span></span>' : '') +
+      '</div></label>';
+  }
+
+  function estTotals(steps, priceOnly, insiders) {
+    var lo = 0, hi = 0;
+    steps.forEach(function (s) {
+      if (priceOnly && ["identity", "verify"].indexOf(s.step_key) < 0) return;
+      if (s.optional && !insiders) return;
+      lo += s.low; hi += s.high;
+    });
+    return { lo: lo, hi: hi };
+  }
+  function costRange(t) { return t.hi === 0 ? "ca. 0 kr" : "ca. " + Math.max(1, Math.round(t.lo)) + "–" + Math.max(2, Math.round(t.hi)) + " kr"; }
+  function costBoxHtml() {
+    if (!wiz.steps) return '<div class="wiz-note">Kostnaden for å hente all informasjon vises på neste steg, før noe starter.</div>';
+    var t = estTotals(wiz.steps, false, true);
+    return '<div class="wiz-cost">' +
+      '<div class="eyebrow">Kostnad for å hente all nødvendig informasjon</div>' +
+      '<div class="wiz-cost-row"><div class="wiz-cost-big" id="wizCostBig">' + costRange(t) + '</div>' +
+        '<div class="wiz-cost-sub">Tar vanligvis 4–8 minutter<br>Hard grense: 30 kr for hele innhentingen</div></div>' +
+      '<p class="wiz-sub" style="font-size:13px;color:var(--text-dim);">Dette er hva AI-bruken koster for å lese selskapets rapporter og nettsider og fylle ut alle punktene i plattformen. Når du trykker «Godkjenn og start» godkjenner du denne kostnaden, og innhentingen starter med en gang. Ingenting hentes eller belastes før da. Blir det dyrere enn grensen, stopper jeg av meg selv.</p>' +
+      '<details class="wiz-details"><summary>Se hva som koster hva, eller velg bort deler</summary><div class="col gap-8" style="margin-top:8px;">' +
+        '<label class="row gap-10" style="align-items:flex-start;cursor:pointer;"><input type="radio" name="wizMode" value="full" checked style="margin-top:3px;"><span><b style="font-size:13px;">Full innhenting</b><br><span class="muted" style="font-size:12px;">Profil, kurs, rapporter, nøkkeltall, verdsettelse, eiere, ledelse og kommende hendelser.</span></span></label>' +
+        '<label class="row gap-10" style="align-items:flex-start;cursor:pointer;"><input type="radio" name="wizMode" value="price" style="margin-top:3px;"><span><b style="font-size:13px;">Bare kurs og profil</b><br><span class="muted" style="font-size:12px;">Raskt og nesten gratis. Resten kan hentes senere.</span></span></label>' +
+        '<table class="wiz-table" id="wizEstTable"></table></div></details>' +
+    '</div>';
+  }
+  function wireCostBox() {
+    if (!wiz.steps || !$("wizEstTable")) return;
+    function redraw() {
+      var priceOnly = document.querySelector('input[name="wizMode"]:checked').value === "price";
+      var insEl = $("wizIns"), insiders = insEl ? insEl.checked : true;
+      $("wizEstTable").innerHTML = wiz.steps.filter(function (s) { return !(priceOnly && ["identity", "verify"].indexOf(s.step_key) < 0); }).map(function (s) {
+        var range = s.high === 0 ? "gratis" : nok(s.low) + " – " + nok(s.high);
+        if (s.optional) return '<tr><td><label style="cursor:pointer;"><input type="checkbox" id="wizIns" ' + (insiders ? "checked" : "") + '> ' + esc(s.label) + ' <span class="muted" style="font-size:11.5px;">(valgfritt)</span></label></td><td class="r">' + range + '</td></tr>';
+        return '<tr><td>' + esc(s.label) + '</td><td class="r">' + range + '</td></tr>';
+      }).join("");
+      if ($("wizIns")) $("wizIns").onchange = redraw;
+      $("wizCostBig").textContent = costRange(estTotals(wiz.steps, priceOnly, insiders));
+    }
+    App.qsa('input[name="wizMode"]').forEach(function (r) { r.onchange = redraw; });
+    redraw();
+  }
+  function loadSteps() {
+    if (wiz.steps) return Promise.resolve();
+    return Promise.resolve(Auth.db("onboarding_step_defs").select("step_key,label,optional,est_cost_low_nok,est_cost_high_nok").order("step_order")).then(function (r) {
+      var d = (r && r.data) || [];
+      if (d.length) wiz.steps = d.map(function (s) { return { step_key: s.step_key, label: s.label, optional: !!s.optional, low: Number(s.est_cost_low_nok), high: Number(s.est_cost_high_nok) }; });
+    }).catch(function () {});
+  }
+
+  function viewVerify(errMsg) {
+    wiz.stage = "verify";
+    var cs = wiz.candidates;
+    if (!cs.length) {
+      setView("Fant ingen treff",
+        '<p class="wiz-sub">Jeg fant ikke noe selskap som passer med «' + esc(wiz.label) + '». Prøv selskapets fulle navn, eller tickeren på børsen.</p>' + (errMsg ? errHtml(errMsg) : ""),
+        '<button class="btn" id="wizCancel">Lukk</button><button class="btn btn-primary" id="wizAgain">Søk på nytt</button>');
+      $("wizCancel").onclick = closeWiz; $("wizAgain").onclick = function () { viewSearch(); };
+      return;
+    }
+    var c = cs[wiz.sel] || cs[0];
+    setView("Er dette riktig selskap?",
+      '<p class="wiz-sub">Jeg fant dette på «' + esc(wiz.label) + '». Sjekk at det stemmer, og godkjenn kostnaden nederst for å starte innhentingen.</p>' +
+      '<div id="wizIdent">' + identBanner(c) + '</div>' +
+      '<div class="col gap-8" id="wizCands">' + cs.map(candHtml).join("") + '</div>' +
+      costBoxHtml() +
+      '<div id="wizWrong" style="display:none;" class="col gap-8"><label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Hva er feil?</span>' +
+        '<textarea class="input" id="wizFb" placeholder="F.eks. «Jeg mener det norske selskapet, ikke det svenske» eller «Det skal være moderselskapet»"></textarea></label>' +
+        '<div><button class="btn" id="wizRetry">Søk på nytt med dette</button></div></div>' + (errMsg ? errHtml(errMsg) : ""),
+      '<button class="btn" id="wizBack">Tilbake</button><button class="btn" id="wizWrongBtn">Dette er feil selskap</button><button class="btn btn-primary" id="wizYes">' + (wiz.steps ? "Godkjenn kostnad og start innhenting" : "Ja, dette er riktig selskap") + '</button>');
+    wireCostBox();
+    App.qsa("[data-cand]", $("wizCands")).forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        if (e.target.closest("a")) return;
+        var i = parseInt(el.getAttribute("data-cand"), 10);
+        if (wiz.candidates[i].already_exists === "active") return;
+        wiz.sel = i; wiz.kind = wiz.candidates[i].kind || "standard";
+        $("wizCands").innerHTML = wiz.candidates.map(candHtml).join("");
+        $("wizIdent").innerHTML = identBanner(wiz.candidates[i]);
+        App.qsa("[data-cand]", $("wizCands")).forEach(function (el2) { el2.addEventListener("click", function (e2) { if (e2.target.closest("a")) return; var j = parseInt(el2.getAttribute("data-cand"), 10); if (wiz.candidates[j].already_exists === "active") return; wiz.sel = j; wiz.kind = wiz.candidates[j].kind || "standard"; viewVerify(); }); });
+      });
+    });
+    $("wizBack").onclick = function () { viewSearch(); };
+    $("wizWrongBtn").onclick = function () { var w = $("wizWrong"); w.style.display = w.style.display === "none" ? "flex" : "none"; if (w.style.display === "flex") $("wizFb").focus(); };
+    $("wizRetry").onclick = function () {
+      var fb = $("wizFb").value.trim();
+      if (!fb) { $("wizFb").style.borderColor = "var(--neg)"; $("wizFb").focus(); return; }
+      wiz.feedbackHistory.push(fb);
+      doLookup(fb);
+    };
+    $("wizYes").onclick = function () {
+      var cand = wiz.candidates[wiz.sel];
+      if (!cand || cand.already_exists === "active") return;
+      wiz.name = cand.name; wiz.kind = cand.kind || wiz.kind || "standard";
+      var modeEl = document.querySelector('input[name="wizMode"]:checked'), insEl = $("wizIns");
+      var priceOnly = modeEl ? modeEl.value === "price" : false, insiders = insEl ? insEl.checked : true;
+      var merged = !!wiz.steps;
+      wiz.stage = "starting";
+      setView("Gjør klar …", loadingHtml(merged ? "Oppretter selskapet og starter innhentingen." : "Oppretter selskapet og regner ut hva innhentingen vil koste."), "");
+      api("confirm", { candidate: cand, kind: wiz.kind, feedback_history: wiz.feedbackHistory, initials: wiz.initials || undefined, brand_color: wiz.color || undefined }).then(function (r) {
+        wiz.runId = r.run_id; wiz.companyId = r.company_id; wiz.estimate = r.estimate; wiz.itemsTotal = r.items_total; wiz.itemsNA = r.items_not_applicable;
+        if (!merged) return viewEstimate();
+        api("start", { run_id: wiz.runId, price_only: priceOnly, insiders: insiders }).then(function () { viewProgress(); poll(); }).catch(function (e) { viewEstimate(e.message); });
+      }).catch(function (e) { viewVerify(e.message); });
+    };
+  }
+
+  // --- steg 3: kostnadsestimat
+  function viewEstimate(errMsg) {
+    wiz.stage = "estimate";
+    var est = wiz.estimate, steps = est.steps || [];
+    function totals(priceOnly, insiders) {
+      var lo = 0, hi = 0;
+      steps.forEach(function (s) {
+        if (priceOnly && ["identity", "verify"].indexOf(s.step_key) < 0) return;
+        if (s.optional && !insiders) return;
+        lo += s.low; hi += s.high;
+      });
+      return { lo: lo, hi: hi };
+    }
+    setView("Dette kommer det til å koste",
+      '<p class="wiz-sub"><b>' + esc(wiz.name) + '</b> er klart til innhenting. Alt hentes fra selskapets egne rapporter og sider, og ingenting lagres før det er funnet. Du ser fremdriften underveis, og får en ærlig oversikt over det jeg ikke fant.</p>' +
+      '<div class="wiz-note">' + wiz.itemsTotal + ' punkter skal fylles ut' + (wiz.itemsNA ? ' (' + wiz.itemsNA + ' er ikke relevante for denne selskapstypen)' : '') + '. Nyheter og bull/bear-case hentes ikke nå.</div>' +
+      '<div class="col gap-8">' +
+        '<label class="row gap-10" style="align-items:flex-start;cursor:pointer;"><input type="radio" name="wizMode" value="full" checked style="margin-top:3px;"><span><b style="font-size:13.5px;">Full innhenting</b><br><span class="muted" style="font-size:12px;">Profil, kurs, rapporter, nøkkeltall, verdsettelse, eiere, ledelse og kommende hendelser.</span></span></label>' +
+        '<label class="row gap-10" style="align-items:flex-start;cursor:pointer;"><input type="radio" name="wizMode" value="price" style="margin-top:3px;"><span><b style="font-size:13.5px;">Bare kurs og profil</b><br><span class="muted" style="font-size:12px;">Raskt og nesten gratis. Resten kan hentes senere.</span></span></label>' +
+      '</div>' +
+      '<table class="wiz-table" id="wizEstTable"></table>' +
+      '<div class="row between center" style="font-size:14px;"><b>Beregnet kostnad</b><b id="wizTotal"></b></div>' +
+      '<div class="muted" style="font-size:12px;line-height:1.5;">Hard grense: ' + nok(est.cap) + ' for hele innhentingen. Blir det dyrere stopper jeg av meg selv og viser hva som er gjort. Tar vanligvis 4–8 minutter. Du kan lukke vinduet så lenge, innhentingen fortsetter.</div>' +
+      (errMsg ? errHtml(errMsg) : ""),
+      '<button class="btn" id="wizAbort">Avbryt</button><button class="btn btn-primary" id="wizStart">Start innhenting</button>');
+    function redraw() {
+      var priceOnly = document.querySelector('input[name="wizMode"]:checked').value === "price";
+      var insEl = $("wizIns"), insiders = insEl ? insEl.checked : true;
+      var rows = steps.filter(function (s) { return !(priceOnly && ["identity", "verify"].indexOf(s.step_key) < 0); }).map(function (s) {
+        var range = s.high === 0 ? "gratis" : nok(s.low) + " – " + nok(s.high);
+        if (s.optional) return '<tr><td><label style="cursor:pointer;"><input type="checkbox" id="wizIns" ' + (insiders ? "checked" : "") + '> ' + esc(s.label) + ' <span class="muted" style="font-size:11.5px;">(valgfritt)</span></label></td><td class="r">' + range + '</td></tr>';
+        return '<tr><td>' + esc(s.label) + '</td><td class="r">' + range + '</td></tr>';
+      });
+      $("wizEstTable").innerHTML = rows.join("");
+      if ($("wizIns")) $("wizIns").onchange = redraw;
+      var t = totals(priceOnly, insiders);
+      $("wizTotal").textContent = t.hi === 0 ? "ca. 0 kr" : nok(t.lo) + " – " + nok(t.hi);
+    }
+    App.qsa('input[name="wizMode"]').forEach(function (r) { r.onchange = redraw; });
+    redraw();
+    $("wizAbort").onclick = function () {
+      api("cancel", { run_id: wiz.runId }).catch(function () {}).then(closeWiz);
+    };
+    $("wizStart").onclick = function () {
+      var priceOnly = document.querySelector('input[name="wizMode"]:checked').value === "price";
+      var insEl = $("wizIns");
+      $("wizStart").disabled = true;
+      api("start", { run_id: wiz.runId, price_only: priceOnly, insiders: insEl ? insEl.checked : true }).then(function () {
+        viewProgress(); poll();
+      }).catch(function (e) { viewEstimate(e.message); });
+    };
+  }
+
+  // --- steg 4: levende fremdrift
+  var lastStatus = null, netFails = 0, tipTimer = null, clockTimer = null, tipI = 0;
+  var TIPS = [
+    "Alt du ser i plattformen får en kildelenke, så du alltid kan sjekke hvor tallene kommer fra.",
+    "Plattformen gir aldri kjøp- eller salgsråd. Den følger din egen tese og viser hva som styrker eller svekker den.",
+    "Nyheter sorteres automatisk mot bull-, base- og bear-casen din, slik at du ser hva som faktisk betyr noe for deg.",
+    "Det jeg ikke finner, fyller jeg ikke inn. Du får en ærlig oversikt over hullene når jeg er ferdig.",
+    "Under Målsetting samler vi selskapets mål fra de siste fem årene og viser hvor mange de faktisk nådde.",
+    "Du kan når som helst trykke «Lukk». Innhentingen fortsetter i bakgrunnen, og du finner selskapet igjen på Selskaper-siden."
+  ];
+  function stopTips() { if (tipTimer) { clearInterval(tipTimer); tipTimer = null; } if (clockTimer) { clearInterval(clockTimer); clockTimer = null; } }
+  function startTips() {
+    stopTips(); tipI = 0;
+    var el = $("lvTip"); if (el) el.textContent = TIPS[0];
+    tipTimer = setInterval(function () {
+      var e = $("lvTip"); if (!e) { stopTips(); return; }
+      e.style.opacity = 0;
+      setTimeout(function () { tipI = (tipI + 1) % TIPS.length; e.textContent = TIPS[tipI]; e.style.opacity = 1; }, 400);
+    }, 7000);
+    clockTimer = setInterval(function () {
+      var t = $("lvTime"); if (!t) { stopTips(); return; }
+      if (wiz && wiz.lv && wiz.lv.start) { var sec = Math.max(0, Math.round((Date.now() - wiz.lv.start) / 1000)); t.textContent = Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }
+    }, 1000);
+  }
+  function viewProgress() {
+    wiz.stage = "progress"; wiz.lv = { steps: {}, pages: {}, points: 0, start: null, first: true };
+    setView("Henter " + wiz.name,
+      '<div id="wizProg">' + loadingHtml("Starter …") + '</div>',
+      '<button class="btn btn-danger-ghost" id="wizStop" style="margin-right:auto;">Stopp innhentingen</button><span class="faint" style="font-size:12px;">Du kan trykke «Lukk». Innhentingen fortsetter i bakgrunnen.</span>');
+    $("wizStop").onclick = function () {
+      askSure("Stoppe innhentingen?", "Det som allerede er hentet blir ikke et ferdig selskap, og kostnaden som er brukt er allerede brukt. Du kan legge til selskapet på nytt senere.", "Ja, stopp", function () {
+        api("cancel", { run_id: wiz.runId }).then(function () { stopPoll(); wiz.stage = "end"; closeWiz(); }).catch(function (e) { alert(e.message); });
+      }, "Nei, fortsett");
+    };
+  }
+
+  function elapsed(run) {
+    if (!run.started_at) return "";
+    var end = run.finished_at ? new Date(run.finished_at) : new Date();
+    var sec = Math.max(0, Math.round((end - new Date(run.started_at)) / 1000));
+    return Math.floor(sec / 60) + " min " + (sec % 60) + " s";
+  }
+  function countTo(el, to) {
+    if (!el) return;
+    var from = parseInt(el.textContent, 10) || 0; if (from === to) return;
+    var t0 = Date.now(), dur = 700;
+    (function tick() { var k = Math.min(1, (Date.now() - t0) / dur); el.textContent = Math.round(from + (to - from) * k); if (k < 1) requestAnimationFrame(tick); })();
+  }
+  function feedAdd(txt, mark) {
+    var f = $("lvFeed"); if (!f) return;
+    var d = document.createElement("div"); d.innerHTML = '<i>' + (mark || "✓") + '</i><span>' + esc(txt) + '</span>';
+    var first = f.querySelector(".lv-empty"); if (first) first.remove();
+    f.insertBefore(d, f.querySelector("div"));
+    while (f.querySelectorAll("div").length > 6) f.removeChild(f.lastElementChild);
+  }
+  function buildLive(host, steps, pages) {
+    var C = 2 * Math.PI * 48;
+    var color = (wiz.color && /^#[0-9a-f]{6}$/i.test(wiz.color)) ? wiz.color : "#0f766e";
+    var ini = wiz.initials || initialsFrom(wiz.name);
+    host.innerHTML = '<div class="lv"><div id="lvErr"></div>' +
+      '<div class="lv-hero">' +
+        '<div class="lv-ring"><svg width="112" height="112" viewBox="0 0 112 112"><circle class="bg" cx="56" cy="56" r="48"/><circle class="fg" id="lvRing" cx="56" cy="56" r="48" stroke-dasharray="' + C + '" stroke-dashoffset="' + C + '" data-c="' + C + '"/></svg><div class="mid"><b id="lvPct">0%</b><span>ferdig</span></div></div>' +
+        '<div class="lv-hero-txt"><div class="lv-who"><div class="lv-logo" style="background:' + color + ';color:' + contrastText(color) + ';">' + esc(ini) + '</div><span class="lv-name">' + esc(wiz.name) + '</span></div>' +
+          '<div class="lv-now" id="lvNow">Starter</div><div class="lv-tip" id="lvTip"></div></div>' +
+      '</div>' +
+      '<div class="lv-stats">' +
+        '<div class="lv-stat"><b id="lvPts">0</b><span id="lvPtsOf">PUNKTER FUNNET</span></div>' +
+        '<div class="lv-stat"><b id="lvTime">0:00</b><span>TID BRUKT</span></div>' +
+        '<div class="lv-stat"><b id="lvCost">0,0 kr</b><span id="lvCostOf">KOSTNAD</span><div class="lv-meter"><i id="lvMeter" style="width:0%;"></i></div></div>' +
+      '</div>' +
+      '<div class="lv-cols">' +
+        '<div><div class="lv-h">Steg</div>' + steps.map(function (s, i) {
+          return '<div class="lv-step pending" id="lvS_' + s.step_key + '"><div class="dot">' + (i + 1) + '</div><div style="flex:1;min-width:0;"><div class="lbl">' + esc(s.label) + '</div><div class="msg"></div><div class="bar"></div></div></div>';
+        }).join("") + '</div>' +
+        '<div><div class="lv-h">Punkter per side</div>' + pages.map(function (p) {
+          return '<div class="lv-page" id="lvP_' + p.page_key + '"><div class="top">' + esc(p.page_title) + '<span id="lvPc_' + p.page_key + '"></span></div>' +
+            '<div class="wiz-bar"><span class="f" style="background:var(--pos);width:0;"></span><span class="p" style="background:#f59e0b;width:0;"></span><span class="n" style="background:#ef4444;width:0;"></span><span class="a" style="background:#d4d4d8;width:0;"></span></div></div>';
+        }).join("") +
+        '<div class="row gap-12 wrap" style="font-size:11px;color:var(--text-faint);margin-top:8px;"><span><span style="color:var(--pos);">■</span> funnet</span><span><span style="color:#f59e0b;">■</span> delvis</span><span><span style="color:#ef4444;">■</span> ikke funnet</span><span><span style="color:#d4d4d8;">■</span> ikke relevant</span></div></div>' +
+      '</div>' +
+      '<div><div class="lv-h">Det som skjer nå</div><div class="lv-feed" id="lvFeed"><div class="lv-empty" style="color:var(--text-faint);">Venter på første nyhet fra innhentingen …</div></div></div>' +
+    '</div>';
+    startTips();
+  }
+
+  function renderProgress(st) {
+    var run = st.run, steps = st.steps || [], pages = (st.pages || []).slice().sort(function (a, b) { return a.page_order - b.page_order; });
+    if (!$("lvRing")) buildLive($("wizProg"), steps, pages);
+    var lv = wiz.lv || (wiz.lv = { steps: {}, pages: {}, points: 0, start: null, first: true });
+    if (run.started_at) lv.start = new Date(run.started_at).getTime();
+    // ring + prosent
+    var n = Math.max(1, steps.length);
+    var finished = steps.filter(function (s) { return s.status === "done" || s.status === "skipped"; }).length;
+    var runningSteps = steps.filter(function (s) { return ["pending", "done", "skipped", "failed", null, undefined].indexOf(s.status) < 0; });
+    var pct = run.status === "completed" ? 100 : Math.min(99, Math.round(100 * (finished + (runningSteps.length ? 0.5 : 0)) / n));
+    var ring = $("lvRing"), C = parseFloat(ring.getAttribute("data-c"));
+    ring.style.strokeDashoffset = C * (1 - pct / 100);
+    $("lvPct").textContent = pct + "%";
+    // hva skjer nå
+    var cur = runningSteps[0];
+    $("lvNow").textContent = String(cur ? (cur.message || cur.active_label || cur.label) : (finished >= n ? "Gjør ferdig" : "Starter")).replace(/[.…\s]+$/, "");
+    // tall
+    var pts = 0, ptsOf = 0;
+    pages.forEach(function (p) { pts += p.filled_points + p.partial_points; ptsOf += p.total_points - p.not_applicable_points; });
+    countTo($("lvPts"), pts); $("lvPtsOf").textContent = "AV " + ptsOf + " PUNKTER FUNNET";
+    var cost = Number(run.actual_cost_nok || 0), cap = Number(run.cost_cap_nok || 30);
+    $("lvCost").textContent = nok(cost); $("lvCostOf").textContent = "AV MAKS " + nok(cap).toUpperCase();
+    $("lvMeter").style.width = Math.min(100, 100 * cost / cap) + "%";
+    // steg
+    steps.forEach(function (s) {
+      var el = $("lvS_" + s.step_key); if (!el) return;
+      var running = ["pending", "done", "skipped", "failed", null, undefined].indexOf(s.status) < 0;
+      var cls = s.status === "done" ? "done" : s.status === "skipped" ? "skipped" : s.status === "failed" ? "failed" : running ? "running" : "pending";
+      var prev = lv.steps[s.step_key];
+      el.className = "lv-step " + cls;
+      var dot = el.querySelector(".dot");
+      if (cls === "done") dot.textContent = "✓"; else if (cls === "failed") dot.textContent = "!"; else if (cls === "skipped") dot.textContent = "–";
+      var msg = running ? (s.message || s.active_label) : (s.status === "done" ? (s.message || "") : s.status === "failed" ? (s.error || s.message || "Feilet") : "");
+      if (s.cost_cap_hit) msg = "Stoppet av kostnadsgrensen. " + (msg || "");
+      el.querySelector(".msg").textContent = msg || "";
+      if (prev !== undefined && prev !== cls) {
+        if (cls === "done") feedAdd("Ferdig: " + s.label, "✓");
+        else if (cls === "running") feedAdd("Starter: " + (s.active_label || s.label), "→");
+        else if (cls === "failed") feedAdd("Feilet: " + s.label, "!");
+      } else if (prev === undefined && cls === "running" && lv.first) { feedAdd("Starter: " + (s.active_label || s.label), "→"); }
+      lv.steps[s.step_key] = cls;
+    });
+    lv.first = false;
+    // sider
+    pages.forEach(function (p) {
+      var el = $("lvP_" + p.page_key); if (!el) return;
+      var t = Math.max(1, p.total_points);
+      function w(x) { return (100 * x / t) + "%"; }
+      var b = el.querySelector(".wiz-bar");
+      var rem = Number(p.remaining_points || 0), active = run.status !== "completed" && run.status !== "failed" && run.status !== "cancelled";
+      b.classList.toggle("live", active && rem > 0);
+      b.querySelector(".f").style.width = w(p.filled_points); b.querySelector(".p").style.width = w(p.partial_points);
+      b.querySelector(".n").style.width = w(p.not_found_points); b.querySelector(".a").style.width = w(p.not_applicable_points);
+      $("lvPc_" + p.page_key).innerHTML = (p.filled_points + p.partial_points) + " av " + (p.total_points - p.not_applicable_points) + (active && rem > 0 ? ' <em>· ' + rem + ' igjen</em>' : (p.not_found_points ? ' <em>· ' + p.not_found_points + ' ikke funnet</em>' : ""));
+      var found = p.filled_points + p.partial_points, prevF = lv.pages[p.page_key];
+      if (prevF !== undefined && found > prevF) feedAdd("Fant " + (found - prevF) + (found - prevF === 1 ? " nytt punkt" : " nye punkter") + " på «" + p.page_title + "»", "+");
+      lv.pages[p.page_key] = found;
+    });
+    if (run.status === "failed") {
+      wiz.stage = "end"; stopTips();
+      $("lvErr").innerHTML = errHtml("Innhentingen stoppet på grunn av en feil. Det som allerede er hentet er beholdt. Trykk «Prøv igjen» for å fortsette der den stoppet.");
+      $("wizFoot").innerHTML = '<button class="btn btn-primary" id="wizRetryRun">Prøv igjen</button>';
+      $("wizRetryRun").onclick = function () { api("retry", { run_id: wiz.runId }).then(function () { viewProgress(); poll(); }).catch(function (e) { alert(e.message); }); };
+    }
+  }
+
+  function poll() {
+    stopPoll();
+    if (!wiz || !wiz.runId) return;
+    var rid = wiz.runId;
+    api("status", { run_id: rid }).then(function (st) {
+      if (!wiz || wiz.runId !== rid) return;
+      netFails = 0; lastStatus = st;
+      wiz.name = (st.company && st.company.name) || wiz.name; wiz.companyId = st.run.company_id; wiz.ticker = (st.company && st.company.ticker) || wiz.ticker;
+      if (st.run.status === "completed") { viewDone(st); return; }
+      if (st.run.status === "cancelled") { wiz.stage = "end"; setView("Innhentingen er stoppet", '<p class="wiz-sub">Innhentingen ble stoppet. Selskapet er ikke lagt til.</p>', '<button class="btn btn-primary" id="wizHide">Lukk</button>'); $("wizHide").onclick = closeWiz; return; }
+      if ($("wizProg")) renderProgress(st);
+      if (st.run.status !== "failed") pollTimer = setTimeout(poll, 2500);
+    }).catch(function (e) {
+      netFails++;
+      if ($("wizProg") && netFails > 2) $("wizProg").insertAdjacentHTML("afterbegin", '<div class="wiz-err" style="margin-bottom:8px;">Får ikke kontakt akkurat nå (' + esc(e.message) + '). Prøver igjen …</div>');
+      if (wiz) pollTimer = setTimeout(poll, 4000);
+    });
+  }
+
+  // --- steg 5: ferdig + ærlig hullrapport
+  var PAGE_PILL = { filled: ["Funnet", "pill-pos"], partial: ["Delvis", "pill-warn"], not_found: ["Ikke funnet", "pill-neg"], not_applicable: ["Ikke relevant", "pill-neu"], pending: ["Ikke hentet", "pill-neu"] };
+  function itemHtml(it, showGap) {
+    var p = PAGE_PILL[it.status] || PAGE_PILL.pending;
+    var t = "";
+    if (it.note) t += '<div class="wiz-gap-t">' + esc(it.note) + '</div>';
+    if (showGap && it.gap_reason) t += '<div class="wiz-gap-t"><b>Dette fant jeg ikke:</b> ' + esc(it.gap_reason) + '</div>';
+    if (showGap && it.suggested_fix) t += '<div class="wiz-gap-t"><b>Forslag til løsning:</b> ' + esc(it.suggested_fix) + '</div>';
+    if (it.source_url) t += '<div style="margin-top:4px;"><a class="wiz-link" href="' + esc(it.source_url) + '" target="_blank" rel="noopener">AI hentet lenke ↗</a></div>';
+    return '<div class="wiz-gap"><div class="wiz-gap-h"><span>' + esc(it.label) + '</span><span class="pill ' + p[1] + '">' + p[0] + (it.expected_count > 1 ? " " + (it.filled_count || 0) + "/" + it.expected_count : "") + '</span></div>' + t + '</div>';
+  }
+
+  function viewDone(st) {
+    stopPoll(); wiz.stage = "done";
+    var items = st.items || [], by = function (s) { return items.filter(function (i) { return i.status === s; }); };
+    var gaps = items.filter(function (i) { return i.status === "not_found" || i.status === "partial"; });
+    var filled = by("filled");
+    var pagesOrder = [], pageItems = {};
+    gaps.forEach(function (i) { if (!pageItems[i.page_key]) { pageItems[i.page_key] = { title: i.page_title, list: [] }; pagesOrder.push(i.page_key); } pageItems[i.page_key].list.push(i); });
+    var gapHtml = pagesOrder.map(function (k) { return '<div style="margin-top:12px;"><div class="eyebrow" style="margin-bottom:6px;">' + esc(pageItems[k].title) + '</div>' + pageItems[k].list.map(function (i) { return itemHtml(i, true); }).join("") + '</div>'; }).join("");
+    var filledHtml = filled.map(function (i) { return itemHtml(i, false); }).join("");
+    var run = st.run;
+    setView(esc(wiz.name) + " er lagt til",
+      '<div class="row gap-10 wrap">' +
+        '<div class="wiz-stat"><b style="color:var(--pos);">' + filled.length + '</b><span>fullt ut funnet</span></div>' +
+        '<div class="wiz-stat"><b style="color:#d97706;">' + by("partial").length + '</b><span>delvis funnet</span></div>' +
+        '<div class="wiz-stat"><b style="color:var(--neg);">' + by("not_found").length + '</b><span>ikke funnet</span></div>' +
+        '<div class="wiz-stat"><b>' + nok(run.actual_cost_nok) + '</b><span>kostnad · ' + elapsed(run) + '</span></div></div>' +
+      (gaps.length ? '<div><div style="font-size:15px;font-weight:700;">Dette fant jeg ikke, eller bare delvis</div><p class="wiz-sub" style="margin-top:2px;">Jeg viser det her i stedet for å fylle inn noe jeg ikke kunne dokumentere. Hvert punkt har en grunn og et forslag.</p>' + gapHtml + '</div>' : '<div class="wiz-note">Alle punktene ble funnet.</div>') +
+      (by("not_applicable").length ? '<p class="wiz-sub">' + by("not_applicable").length + ' punkter er ikke relevante for denne selskapstypen.</p>' : '') +
+      '<details class="wiz-details"><summary>Vis alt som ble funnet (' + filled.length + ')</summary><div style="margin-top:6px;">' + filledHtml + '</div></details>',
+      '<button class="btn" id="wizNew">Legg til et til</button><button class="btn btn-primary" id="wizOpen">Åpne selskapet</button>');
+    $("wizNew").onclick = function () { wiz = newWiz(); viewSearch(); };
+    $("wizOpen").onclick = function () { location.href = "selskap.html?ticker=" + encodeURIComponent(wiz.ticker || ""); };
+  }
+
+  // --- fortsett et påbegynt selskap fra kortet
+  function resume(p) {
+    var run = p.run; if (!run) return;
+    wiz = newWiz(); wiz.runId = run.id; wiz.companyId = p.id; wiz.name = p.name; wiz.ticker = p.ticker;
+    openWiz();
+    if (run.status === "awaiting_confirmation") {
+      setView("Gjør klar …", loadingHtml("Henter kostnadsestimatet."), "");
+      Promise.all([
+        Auth.db("onboarding_step_defs").select("step_key,label,optional,est_cost_low_nok,est_cost_high_nok").order("step_order"),
+        Auth.db("onboarding_run_items").select("status").eq("run_id", run.id)
+      ]).then(function (r) {
+        var steps = (r[0].data || []).map(function (s) { return { step_key: s.step_key, label: s.label, optional: !!s.optional, low: Number(s.est_cost_low_nok), high: Number(s.est_cost_high_nok) }; });
+        var its = r[1].data || [];
+        wiz.estimate = { steps: steps, cap: 30 };
+        wiz.itemsTotal = its.filter(function (i) { return i.status !== "not_applicable"; }).length; wiz.itemsNA = its.length - wiz.itemsTotal;
+        viewEstimate();
+      }).catch(function (e) { setView("Noe gikk galt", errHtml(e.message), '<button class="btn" id="wizHide">Lukk</button>'); $("wizHide").onclick = closeWiz; });
+    } else {
+      viewProgress(); poll();
+    }
+  }
+  function cancelRun(runId) { return api("cancel", { run_id: runId }); }
+
+  $("wizClose").onclick = requestCloseWiz;
+  return { parseIdent: parseIdent, start: start, resume: resume, cancelRun: cancelRun, setHooks: function (h) { hooks = h; } };
+})();
+
+  var pendingCompanies = [];
+  function renderAll() {
+    var companies = MOCK.companyOrder.map(getCompanyMerged);
+    var extra = getExtraCompanies();
+
+    renderChips(companies);
+
+    var filtered = companies.filter(function (c) {
+      if (currentFilter === "positive") return c.avgImpact > 1;
+      if (currentFilter === "negative") return c.avgImpact < -1;
+      if (currentFilter === "favorites") return favorites.indexOf(c.ticker) > -1;
+      return true;
+    });
+    if (searchQuery) {
+      var q = searchQuery.toLowerCase();
+      filtered = filtered.filter(function (c) { return c.name.toLowerCase().indexOf(q) > -1 || c.ticker.toLowerCase().indexOf(q) > -1; });
+    }
+    filtered.sort(function (a, b) { return b.avgImpact - a.avgImpact; });
+
+    document.getElementById("companyCountLabel").textContent = (companies.length + extra.length) + " selskaper under overvåkning · " + filtered.length + " vises";
+
+    var extraHtml = (currentFilter === "all" && !searchQuery) ? extra.map(extraCard).join("") : "";
+    var pendHtml = (currentFilter === "all" && !searchQuery) ? pendingCompanies.map(pendingCard).join("") : "";
+    document.getElementById("companyGrid").innerHTML = filtered.map(companyCard).join("") + extraHtml + pendHtml || '<p class="empty-hint">Ingen selskaper matcher filteret ditt.</p>';
+    App.qsa("[data-resume]", document.getElementById("companyGrid")).forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("[data-drop-pending]")) return;
+        var p = pendingCompanies.filter(function (x) { return x.id === card.getAttribute("data-resume"); })[0];
+        if (p) Wizard.resume(p);
+      });
+    });
+    App.qsa("[data-drop-pending]", document.getElementById("companyGrid")).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var p = pendingCompanies.filter(function (x) { return x.id === btn.getAttribute("data-drop-pending"); })[0];
+        if (p && p.run) Wizard.cancelRun(p.run.id).then(refreshFromDb).catch(function (err) { alert(err.message); });
+      });
+    });
+
+    App.qsa("[data-open]", document.getElementById("companyGrid")).forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("[data-fav]")) return;
+        location.href = "selskap.html?ticker=" + card.getAttribute("data-open");
+      });
+    });
+    App.qsa("[data-fav]", document.getElementById("companyGrid")).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var t = btn.getAttribute("data-fav");
+        var idx = favorites.indexOf(t);
+        if (idx > -1) favorites.splice(idx, 1); else favorites.push(t);
+        saveFavorites(favorites);
+        renderAll();
+      });
+    });
+    App.qsa("[data-remove-extra]", document.getElementById("companyGrid")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.getAttribute("data-remove-extra"), 10);
+        var list = getExtraCompanies(); list.splice(idx, 1); saveExtraCompanies(list);
+        renderAll();
+      });
+    });
+  }
+
+  document.getElementById("topsearch2").addEventListener("input", App.debounce(function (e) { searchQuery = e.target.value.trim(); renderAll(); }, 200));
+  wireFilterDropdown();
+
+  (function wireIdentHint() {
+    var inp = document.getElementById("newCoIdent"), hint = document.getElementById("newCoIdentHint");
+    var base = hint.textContent;
+    inp.addEventListener("input", function () {
+      var id = Wizard.parseIdent(inp.value);
+      if (!id.kind) { hint.textContent = base; hint.style.color = ""; return; }
+      if (id.kind === "orgnr") { hint.textContent = id.valid ? "Ser ut som et riktig org.nr." : "Ser ut som et org.nr., men kontrollsifferet stemmer ikke. Sjekk for skrivefeil. Du kan likevel gå videre."; }
+      else if (id.kind === "isin") { hint.textContent = id.valid ? "Ser ut som en riktig ISIN." : "Ser ut som en ISIN, men kontrollsifferet stemmer ikke. Sjekk for skrivefeil. Du kan likevel gå videre."; }
+      else { hint.textContent = "Dette ser verken ut som org.nr. (9 siffer) eller ISIN (12 tegn). Du kan likevel gå videre."; }
+      hint.style.color = id.valid ? "var(--pos)" : "#b45309";
+    });
+  })();
+
+  document.getElementById("saveNewCoBtn").addEventListener("click", function () {
+    var ticker = document.getElementById("newCoTicker").value.trim().toUpperCase();
+    var name = document.getElementById("newCoName").value.trim();
+    if (!ticker || !name) return;
+    var initialsEl = document.getElementById("newCoInitials");
+    var typedInitials = cleanInitials(initialsEl.value);
+    if (typedInitials.length === 1) {
+      // Kun én bokstav er skrevet - be om nøyaktig to i stedet for å gjette.
+      initialsEl.style.borderColor = "var(--neg)";
+      initialsEl.focus();
+      document.getElementById("newCoInitialsCount").textContent = "Skriv nøyaktig 2 bokstaver";
+      return;
+    }
+    var errEl = document.getElementById("newCoError"); if (errEl) { errEl.style.display = "none"; errEl.textContent = ""; }
+    Wizard.start({ query: name, alts: [ticker], ident: Wizard.parseIdent((document.getElementById("newCoIdent") || {}).value), initials: typedInitials.length === 2 ? typedInitials : "", color: currentNewCoColor().toLowerCase() !== DEFAULT_NEW_COLOR.toLowerCase() ? currentNewCoColor() : "" });
+  });
+
+  function refreshFromDb() {
+    return window.LiveCompany.installList().then(function (r) { pendingCompanies = r.pending || []; renderAll(); return loadLiveQuotes(); })
+      .catch(function (e) { console.error("[Innsikt] Kunne ikke hente selskaper fra databasen:", e); });
+  }
+  Wizard.setHooks({ onClose: refreshFromDb });
+  renderAll();
+  refreshFromDb();
+  App.initModals(document);
+})();
+</script>
+</body>
+</html>

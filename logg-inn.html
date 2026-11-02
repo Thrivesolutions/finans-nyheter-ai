@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logg inn – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/styles.css">
+<script>document.documentElement.classList.add("auth-ready");</script>
+<style>
+  body.authbody { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg); padding: 20px; }
+  .auth-card { width: 100%; max-width: 380px; }
+  .auth-brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 26px; }
+  .auth-brand .brand-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .auth-field label { font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; display: block; }
+  .auth-msg { font-size: 12.5px; padding: 10px 12px; border-radius: var(--radius-sm); }
+  .auth-msg.err { background: var(--neg-bg); color: var(--neg); }
+  .auth-msg.ok { background: var(--pos-bg); color: var(--pos); }
+  .auth-toggle { text-align: center; font-size: 12.5px; color: var(--text-mut); }
+  .auth-toggle button { background: none; border: none; color: var(--text); font-weight: 600; cursor: pointer; padding: 0; font-size: 12.5px; text-decoration: underline; }
+  .btn-full { width: 100%; justify-content: center; }
+</style>
+</head>
+<body class="authbody">
+
+<div class="auth-card col gap-20">
+  <div class="auth-brand">
+    <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+    <div class="col" style="line-height:1.15;">
+      <span style="font-size:10.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;">Aksjeovervåkning</span>
+      <span style="font-size:15px;font-weight:700;">Innsikt</span>
+    </div>
+  </div>
+
+  <div class="card pad col gap-16">
+    <div class="col gap-2">
+      <h1 class="h2" id="formTitle">Logg inn</h1>
+      <span class="muted" style="font-size:12.5px;" id="formSub">Logg inn for å se overvåkningslisten og varslene dine.</span>
+    </div>
+
+    <div id="authMsg" style="display:none;"></div>
+
+    <form id="authForm" class="col gap-14">
+      <div class="auth-field">
+        <label for="email">E-post</label>
+        <input class="input" type="email" id="email" autocomplete="email" required>
+      </div>
+      <div class="auth-field">
+        <label for="password">Passord</label>
+        <input class="input" type="password" id="password" autocomplete="current-password" required minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Logg inn</button>
+    </form>
+
+    <div class="auth-toggle" id="toggleWrap">
+      Ny her? <button type="button" id="toggleMode">Opprett konto</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<script>
+(function () {
+  "use strict";
+  var mode = "signin"; // eller "signup"
+  var form = document.getElementById("authForm");
+  var emailEl = document.getElementById("email");
+  var passEl = document.getElementById("password");
+  var submitBtn = document.getElementById("submitBtn");
+  var msgEl = document.getElementById("authMsg");
+  var toggleBtn = document.getElementById("toggleMode");
+  var title = document.getElementById("formTitle");
+  var sub = document.getElementById("formSub");
+
+  function showMsg(text, kind) {
+    msgEl.textContent = text;
+    msgEl.className = "auth-msg " + (kind === "ok" ? "ok" : "err");
+    msgEl.style.display = "block";
+  }
+  function hideMsg() { msgEl.style.display = "none"; }
+
+  function setMode(next) {
+    mode = next;
+    hideMsg();
+    if (mode === "signup") {
+      title.textContent = "Opprett konto";
+      sub.textContent = "Lag en konto for å komme i gang med Innsikt.";
+      submitBtn.textContent = "Opprett konto";
+      document.getElementById("toggleWrap").innerHTML = 'Har du allerede konto? <button type="button" id="toggleMode">Logg inn</button>';
+    } else {
+      title.textContent = "Logg inn";
+      sub.textContent = "Logg inn for å se overvåkningslisten og varslene dine.";
+      submitBtn.textContent = "Logg inn";
+      document.getElementById("toggleWrap").innerHTML = 'Ny her? <button type="button" id="toggleMode">Opprett konto</button>';
+    }
+    document.getElementById("toggleMode").addEventListener("click", function () {
+      setMode(mode === "signin" ? "signup" : "signin");
+    });
+  }
+  toggleBtn.addEventListener("click", function () { setMode(mode === "signin" ? "signup" : "signin"); });
+
+  function redirectTarget() {
+    var params = new URLSearchParams(location.search);
+    var target = params.get("redirect");
+    return target ? decodeURIComponent(target) : "app-shell.html";
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    hideMsg();
+    submitBtn.disabled = true;
+    var email = emailEl.value.trim();
+    var password = passEl.value;
+
+    var client = Auth.client;
+    var action = mode === "signup"
+      ? client.auth.signUp({ email: email, password: password })
+      : client.auth.signInWithPassword({ email: email, password: password });
+
+    action.then(function (res) {
+      submitBtn.disabled = false;
+      if (res.error) {
+        showMsg(res.error.message, "err");
+        return;
+      }
+      if (mode === "signup" && res.data && res.data.user && !res.data.session) {
+        showMsg("Konto opprettet. Sjekk e-posten din for å bekrefte kontoen før du logger inn.", "ok");
+        return;
+      }
+      showMsg("Logget inn, sender deg videre …", "ok");
+      setTimeout(function () { location.href = redirectTarget(); }, 400);
+    });
+  });
+
+  // Allerede innlogget? Send rett videre.
+  Auth.init().then(function (user) {
+    if (user) location.href = redirectTarget();
+  });
+})();
+</script>
+</body>
+</html>

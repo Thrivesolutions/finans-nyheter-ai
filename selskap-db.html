@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Selskapsprofil – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<style>
+  .dtbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .dtbl th { text-align: right; font-size: 11px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .dtbl th:first-child, .dtbl td:first-child { text-align: left; position: sticky; left: 0; background: #fff; }
+  .dtbl td { padding: 9px 10px; border-bottom: 1px solid #f1f1f3; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dtbl td.na { color: var(--text-faint); }
+  .dtbl tr.nrow td { color: var(--text-faint); }
+  .tscroll { overflow-x: auto; }
+  .gapbox { border: 1px solid #fde68a; background: #fffbeb; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; color: #78350f; }
+  .gapbox b { color: #78350f; }
+  .gapbox ul { margin: 6px 0 0; padding-left: 18px; }
+  .emptybox { border: 1px dashed var(--border); border-radius: 14px; padding: 22px; text-align: center; color: var(--text-mut); font-size: 13px; line-height: 1.55; }
+  .srclink { font-size: 11.5px; color: var(--text-mut); text-decoration: underline; white-space: nowrap; }
+  .chart-wrap { position: relative; }
+  .chart-tip { position: absolute; pointer-events: none; background: #18181b; color: #fff; font-size: 11.5px; padding: 4px 8px; border-radius: 6px; display: none; white-space: nowrap; transform: translate(-50%, -120%); }
+  .rng { display: flex; gap: 4px; }
+  .rng button { border: 1px solid var(--border); background: #fff; border-radius: 8px; padding: 3px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer; color: var(--text-mut); }
+  .rng button.on { background: #18181b; color: #fff; border-color: #18181b; }
+  .fact { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f1f3; font-size: 13px; }
+  .fact span:first-child { color: var(--text-mut); }
+  .fact span:last-child { font-weight: 600; text-align: right; }
+  .person { padding: 12px 0; border-bottom: 1px solid #f1f1f3; }
+  .seg2 { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+  .seg2 button { background: #fff; border: 0; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-mut); }
+  .seg2 button.on { background: #18181b; color: #fff; }
+</style>
+</head>
+<body>
+<script>Auth.requireAuth();</script>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="varsler.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="konto.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm" id="sidebarAvatar">··</div><div class="col" style="line-height:1.2;min-width:0;flex:1;"><span style="font-size:13px;font-weight:600;" id="sidebarName">…</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div><button type="button" class="icon-btn plain" id="signOutBtn" title="Logg ut"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> Selskaper <span class="sep">/</span> <b id="crumbCompany">…</b></div>
+      <div class="row center gap-14">
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <a href="selskaper.html" class="row center gap-6" style="font-size:12.5px;color:var(--text-mut);font-weight:600;width:fit-content;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Selskaper
+      </a>
+
+      <div id="companyHeader"><p class="empty-hint">Laster selskapet …</p></div>
+
+      <div class="tabbar" data-tabbar="company" id="companyTabbar">
+        <div class="tab active" data-tab="overview">Oversikt</div>
+        <div class="tab" data-tab="news">Nyheter</div>
+        <div class="tab" data-tab="financials">Finans</div>
+        <div class="tab" data-tab="valuation">Verdsettelse</div>
+        <div class="tab" data-tab="estimates">Estimater</div>
+        <div class="tab" data-tab="events">Hendelser</div>
+        <div class="tab" data-tab="ownership">Eierskap</div>
+        <div class="tab" data-tab="leadership">Ledelse og struktur</div>
+        <div class="tab" data-tab="thesis">Tese &amp; risiko</div>
+        <div class="tab" data-tab="sources">Kilder</div>
+      </div>
+
+      <div class="tabpanel active" data-tabpanel="company" data-panel="overview" id="panel-overview"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="news" id="panel-news"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="financials" id="panel-financials"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="valuation" id="panel-valuation"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="estimates" id="panel-estimates"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="events" id="panel-events"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="ownership" id="panel-ownership"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="leadership" id="panel-leadership"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="thesis" id="panel-thesis"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="sources" id="panel-sources"></div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App;
+  var id = new URLSearchParams(location.search).get("id");
+  var PALETTE = ["#0F766E", "#1D4ED8", "#7C3AED", "#B45309", "#BE123C", "#0369A1", "#4D7C0F", "#9333EA", "#C2410C", "#0E7490"];
+  var KIND_LABEL = { standard: "Vanlig selskap", bank: "Bank", insurance: "Forsikring" };
+  var TAB_OF_PAGE = { profile: "overview", overview: "overview", financials: "financials", valuation: "valuation", estimates: "estimates", events: "events", ownership: "ownership", leadership: "leadership", sources: "sources" };
+  var STOCK = ["net_debt", "cash", "debt", "cet1_ratio", "solvency_ratio", "shares_out", "customer_deposits", "gross_loans", "insurance_liabilities", "investment_portfolio"];
+  var D = {};
+  var ORDER = ["fin_revenue","fin_revenue_growth","fin_ebitda","fin_ebit","fin_net_income","fin_eps","fin_gross_margin","fin_op_margin","fin_fcf","fin_capex","fin_debt","fin_net_debt","fin_cash","fin_shares_out","val_pe","val_ev_ebitda","val_ev_ebit","val_ps","val_pb","val_fcf_yield","val_div_yield"];
+  function byOrder(a, b) { return ORDER.indexOf(a.slot_key) - ORDER.indexOf(b.slot_key); }
+
+  function esc(s) { return App.escapeHtml(s); }
+  function $(x) { return document.getElementById(x); }
+  function num(v, d) { return Number(v).toLocaleString("nb-NO", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function colorOf(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return PALETTE[h % PALETTE.length]; }
+  function fmtVal(v, uk) {
+    if (v == null || v === "") return "–";
+    v = Number(v);
+    if (uk === "pct") return num(v, 1) + " %";
+    if (uk === "ratio") return num(v, 1) + "x";
+    if (uk === "per_share") return num(v, 2);
+    if (uk === "count") return num(v, 1);
+    return Math.abs(v) >= 1000 ? num(v, 0) : num(v, 1);
+  }
+  function fmtDate(d) { if (!d) return "–"; var x = new Date(d); return isNaN(x) ? esc(d) : x.toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" }); }
+  function pkey(p) {
+    var m = /^Q(\d) (\d\d)/.exec(p); if (m) return (2000 + Number(m[2])) * 10 + Number(m[1]);
+    m = /^(\d{4})/.exec(p); if (m) return Number(m[1]) * 10 + (/nå/.test(p) ? 9 : 5);
+    return 0;
+  }
+  function link(url) { return url ? '<a class="srclink" href="' + esc(url) + '" target="_blank" rel="noopener">AI hentet lenke ↗</a>' : ""; }
+  function empty(msg) { return '<div class="emptybox">' + msg + '</div>'; }
+
+  function fetchAll(table, cols, filter) {
+    var out = [];
+    function page(from) {
+      var q = Auth.db(table).select(cols); q = filter(q);
+      return q.range(from, from + 999).then(function (r) {
+        if (r.error) throw r.error;
+        out = out.concat(r.data || []);
+        return (r.data && r.data.length === 1000) ? page(from + 1000) : out;
+      });
+    }
+    return page(0);
+  }
+
+  // ---------------------------------------------------------------- hent alt
+  function load() {
+    if (!id) { $("companyHeader").innerHTML = empty("Mangler selskap i adressen. Gå tilbake til <a href='selskaper.html'><b>Selskaper</b></a>."); return; }
+    Auth.db("companies").select("*").eq("id", id).maybeSingle().then(function (r) {
+      if (r.error || !r.data) throw new Error(r.error ? r.error.message : "Fant ikke selskapet.");
+      D.c = r.data;
+      var kind = D.c.reporting_kind || D.c.kind || "standard";
+      var one = function (t, cols, f) { return fetchAll(t, cols, f); };
+      return Promise.all([
+        Auth.db("company_quote_snapshot").select("*").eq("company_id", id).maybeSingle(),
+        one("company_price_data", "price_timestamp,price", function (q) { return q.eq("company_id", id).eq("resolution", "daily").order("price_timestamp", { ascending: true }); }),
+        one("company_financials", "period,period_type,metric_key,metric_value,unit,source,source_url,is_estimate", function (q) { return q.eq("company_id", id); }),
+        Auth.db("company_valuation_history").select("*").eq("company_id", id),
+        Auth.db("metric_definitions").select("*").eq("kind", kind),
+        Auth.db("reporting_kinds").select("*").eq("kind", kind).maybeSingle(),
+        Auth.db("company_guidance_goals").select("*").eq("company_id", id),
+        Auth.db("company_events").select("*").eq("company_id", id).order("event_date", { ascending: true }),
+        Auth.db("company_shareholders").select("*").eq("company_id", id).order("ownership_pct", { ascending: false }),
+        Auth.db("company_insider_trades").select("*").eq("company_id", id).order("trade_date", { ascending: false }),
+        Auth.db("company_people").select("*").eq("company_id", id),
+        Auth.db("company_subsidiaries").select("*").eq("company_id", id).order("name"),
+        Auth.db("company_sources").select("*").eq("company_id", id),
+        Auth.db("onboarding_runs").select("id,status,finished_at,actual_cost_nok").eq("company_id", id).order("created_at", { ascending: false }).limit(1)
+      ]);
+    }).then(function (res) {
+      function d(i) { if (res[i].error) throw res[i].error; return res[i].data; }
+      D.q = d(0); D.px = res[1]; D.fin = res[2]; D.val = d(3) || []; D.defs = d(4) || []; D.kind = d(5); D.goals = d(6) || [];
+      D.events = d(7) || []; D.holders = d(8) || []; D.insiders = d(9) || []; D.people = d(10) || []; D.subs = d(11) || []; D.csrc = d(12) || []; D.run = (d(13) || [])[0];
+      var gids = D.goals.map(function (g) { return g.id; });
+      var sids = D.csrc.map(function (s) { return s.source_id; });
+      return Promise.all([
+        gids.length ? Auth.db("company_guidance_goal_updates").select("*").in("goal_id", gids).order("update_date", { ascending: false }) : { data: [] },
+        sids.length ? Auth.db("sources").select("id,name,url,trust_score").in("id", sids) : { data: [] },
+        D.run ? Auth.db("onboarding_run_items").select("item_key,status,filled_count,expected_count,note,gap_reason,suggested_fix,source_url").eq("run_id", D.run.id) : { data: [] },
+        Auth.db("onboarding_checklist_items").select("item_key,page_key,page_title,label").eq("counted", true).eq("retired", false)
+      ]);
+    }).then(function (r2) {
+      D.upd = r2[0].data || []; D.srcs = {}; (r2[1].data || []).forEach(function (s) { D.srcs[s.id] = s; });
+      var chk = {}; (r2[3].data || []).forEach(function (c) { chk[c.item_key] = c; });
+      D.items = (r2[2].data || []).map(function (i) { return Object.assign({}, chk[i.item_key] || {}, i); });
+      render();
+    }).catch(function (e) {
+      console.error(e);
+      $("companyHeader").innerHTML = empty("Kunne ikke hente selskapet: " + esc(e.message || e));
+    });
+  }
+
+  // ---------------------------------------------------------------- hjelpere for tall
+  function annual(metric) { return D.fin.filter(function (f) { return f.metric_key === metric && f.period_type === "annual"; }); }
+  function latestOf(metric, preferQuarter) {
+    var rows = D.fin.filter(function (f) { return f.metric_key === metric && f.metric_value != null; });
+    var q = rows.filter(function (f) { return f.period_type === "quarterly"; }), a = rows.filter(function (f) { return f.period_type === "annual"; });
+    var pick = (preferQuarter && q.length) ? q : (a.length ? a : q);
+    pick.sort(function (x, y) { return pkey(y.period) - pkey(x.period); });
+    return pick[0] || null;
+  }
+  function latestVal(col) {
+    var rows = D.val.filter(function (v) { return v[col] != null; }).sort(function (a, b) { return pkey(b.period) - pkey(a.period); });
+    return rows[0] || null;
+  }
+  function def(slot) { return D.defs.filter(function (x) { return x.slot_key === slot; })[0]; }
+
+  // ---------------------------------------------------------------- tegning
+  function render() {
+    var c = D.c, q = D.q || {};
+    var color = c.brand_color || colorOf(c.ticker);
+    document.title = c.name + " – Innsikt";
+    var crumb = document.querySelector(".crumb"); if (crumb) crumb.innerHTML = 'Innsikt <span class="sep">/</span> Selskaper <span class="sep">/</span> <b>' + esc(c.name) + '</b>';
+    var price = q.price != null ? Number(q.price) : null, chg = q.change_pct != null ? Number(q.change_pct) : null;
+    $("companyHeader").innerHTML =
+      '<div class="row between wrap" style="gap:14px;align-items:flex-start;">' +
+        '<div class="row center gap-12"><div style="width:48px;height:48px;border-radius:12px;background:' + color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">' + esc(c.initials || c.ticker.slice(0, 2)) + '</div>' +
+          '<div class="col" style="line-height:1.3;"><h1 class="h1" style="margin:0;">' + esc(c.name) + '</h1>' +
+          '<span class="muted" style="font-size:13px;">' + esc([c.ticker, c.exchange, c.currency].filter(Boolean).join(" · ")) + ' <span class="tag" style="margin-left:6px;">' + esc(KIND_LABEL[c.kind] || "") + '</span>' + (c.sector ? ' <span class="tag">' + esc(c.sector) + '</span>' : '') + '</span></div></div>' +
+        '<div class="col" style="align-items:flex-end;line-height:1.2;"><span style="font-size:26px;font-weight:700;">' + (price != null ? num(price, 2) : "–") + ' <span style="font-size:13px;color:var(--text-faint);">' + esc(c.currency || "") + '</span></span>' +
+        (chg != null ? '<span style="font-size:13px;font-weight:700;color:' + (chg >= 0 ? "var(--pos)" : "var(--neg)") + ';">' + (chg > 0 ? "+" : "") + num(chg, 2) + ' % i dag</span>' : '') +
+        (q.updated_at ? '<span class="faint" style="font-size:11px;margin-top:3px;">Oppdatert ' + new Date(q.updated_at).toLocaleString("nb-NO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + '</span>' : '') + '</div></div>';
+    if (!c.is_active) $("companyHeader").insertAdjacentHTML("beforeend", '<div class="gapbox" style="margin-top:12px;">Dette selskapet er ikke ferdig innhentet ennå. <a href="selskaper.html"><b>Gå til Selskaper</b></a> for å se fremdriften.</div>');
+    overview(); news(); financials(); valuation(); estimates(); events(); ownership(); leadership(); thesis(); sources();
+    App.initTabs(document);
+  }
+
+  function gapBox(tab) {
+    var list = (D.items || []).filter(function (i) { return TAB_OF_PAGE[i.page_key] === tab && (i.status === "not_found" || i.status === "partial"); });
+    if (!list.length) return "";
+    return '<div class="gapbox"><b>Dette fant jeg ikke, eller bare delvis:</b><ul>' + list.map(function (i) {
+      return '<li><b>' + esc(i.label || i.item_key) + '</b> (' + (i.status === "partial" ? "delvis" : "ikke funnet") + ')' + (i.gap_reason ? ' – ' + esc(i.gap_reason) : '') + (i.suggested_fix ? ' <i>Forslag: ' + esc(i.suggested_fix) + '</i>' : '') + '</li>';
+    }).join("") + '</ul></div>';
+  }
+
+  // --- Oversikt
+  function kpiHtml() {
+    var kp = (D.kind && D.kind.overview_kpis) || [], q = D.q || {};
+    return kp.map(function (k) {
+      var v = "–", sub = "";
+      if (k.type === "market_cap") v = q.market_cap_text || "–";
+      else if (k.type === "week52") v = (q.week52_low != null && q.week52_high != null) ? num(q.week52_low, 2) + " – " + num(q.week52_high, 2) : "–";
+      else if (k.type === "slot") {
+        var df = def(k.slot);
+        if (df && df.applicable === false) { v = "Ikke relevant"; }
+        else if (df) {
+          if (k.slot.indexOf("val_") === 0) { var lv = latestVal(df.metric_key); if (lv) { v = fmtVal(lv[df.metric_key], df.unit_kind); sub = lv.period; } }
+          else { var lf = latestOf(df.metric_key, STOCK.indexOf(df.metric_key) > -1); if (lf) { v = fmtVal(lf.metric_value, df.unit_kind); sub = lf.period + (lf.unit && df.unit_kind === "amount" ? " · " + lf.unit : ""); } }
+        }
+      }
+      return '<div class="kpi-tile"><div class="kpi-label">' + esc(k.label) + '</div><div class="kpi-value">' + esc(v) + '</div>' + (sub ? '<div class="faint" style="font-size:11px;margin-top:3px;">' + esc(sub) + '</div>' : '') + '</div>';
+    }).join("");
+  }
+
+  function chartSvg(points, w, h) {
+    var xs = points.map(function (p) { return p.t; }), ys = points.map(function (p) { return p.v; });
+    var minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys), minX = xs[0], maxX = xs[xs.length - 1];
+    var pad = (maxY - minY) * 0.08 || 1; minY -= pad; maxY += pad;
+    var pts = points.map(function (p) { return (8 + (p.t - minX) / ((maxX - minX) || 1) * (w - 16)).toFixed(1) + "," + (h - 8 - (p.v - minY) / (maxY - minY) * (h - 16)).toFixed(1); });
+    var up = ys[ys.length - 1] >= ys[0], col = up ? "#16a34a" : "#dc2626";
+    return '<svg id="pxSvg" viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" preserveAspectRatio="none"><polygon points="8,' + (h - 8) + ' ' + pts.join(" ") + ' ' + (w - 8) + ',' + (h - 8) + '" fill="' + col + '" opacity=".08"></polygon><polyline points="' + pts.join(" ") + '" fill="none" stroke="' + col + '" stroke-width="2" vector-effect="non-scaling-stroke"></polyline></svg>';
+  }
+  var pxRange = 365;
+  function drawChart() {
+    var box = $("pxBox"); if (!box) return;
+    var all = D.px.map(function (p) { return { t: new Date(p.price_timestamp).getTime(), v: Number(p.price) }; });
+    if (all.length < 2) { box.innerHTML = empty("Ingen kurshistorikk er hentet for dette selskapet."); return; }
+    var from = pxRange ? Date.now() - pxRange * 86400000 : 0;
+    var pts = all.filter(function (p) { return p.t >= from; }); if (pts.length < 2) pts = all.slice(-30);
+    box.innerHTML = '<div class="chart-wrap" id="pxWrap">' + chartSvg(pts, 800, 240) + '<div class="chart-tip" id="pxTip"></div></div>' +
+      '<div class="row between faint" style="font-size:11px;margin-top:4px;"><span>' + fmtDate(pts[0].t) + '</span><span>Lavest ' + num(Math.min.apply(null, pts.map(function (p) { return p.v; })), 2) + ' · Høyest ' + num(Math.max.apply(null, pts.map(function (p) { return p.v; })), 2) + '</span><span>' + fmtDate(pts[pts.length - 1].t) + '</span></div>';
+    var wrap = $("pxWrap"), tip = $("pxTip");
+    wrap.addEventListener("pointermove", function (e) {
+      var r = wrap.getBoundingClientRect(), x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+      var p = pts[Math.round(x * (pts.length - 1))];
+      tip.style.display = "block"; tip.style.left = (x * 100) + "%"; tip.style.top = "30px";
+      tip.textContent = fmtDate(p.t) + " · " + num(p.v, 2);
+    });
+    wrap.addEventListener("pointerleave", function () { tip.style.display = "none"; });
+  }
+
+  function overview() {
+    var c = D.c, q = D.q || {};
+    var facts = [["Selskapsnavn", c.name], ["Ticker", c.ticker], ["Børs", c.exchange], ["Valuta", c.currency], ["ISIN", c.isin], ["Sektor", c.sector], ["Bransje", c.industry], ["Land", c.country], ["Org.nr.", c.orgnr], ["Morselskap", c.parent_name], ["Nettside", c.website ? '<a class="srclink" href="' + esc(c.website) + '" target="_blank" rel="noopener">' + esc(c.website.replace(/^https?:\/\//, "").replace(/\/$/, "")) + '</a>' : null]];
+    var factHtml = facts.map(function (f) { return '<div class="fact"><span>' + f[0] + '</span><span>' + (f[1] ? (f[0] === "Nettside" ? f[1] : esc(f[1])) : '<span class="faint" style="font-weight:500;">Ikke funnet</span>') + '</span></div>'; }).join("");
+    var items = D.items || [], filled = items.filter(function (i) { return i.status === "filled"; }).length, part = items.filter(function (i) { return i.status === "partial"; }).length, nf = items.filter(function (i) { return i.status === "not_found"; }).length, na = items.filter(function (i) { return i.status === "not_applicable"; }).length;
+    var cover = items.length ? '<div class="card pad col gap-8"><div class="eyebrow">Datadekning</div><div style="font-size:13px;line-height:1.55;"><b>' + filled + '</b> punkter funnet fullt ut, <b>' + part + '</b> delvis og <b>' + nf + '</b> ikke funnet' + (na ? ' (' + na + ' ikke relevante for denne selskapstypen)' : '') + '. Se «Dette fant jeg ikke» under hver fane.</div></div>' : '';
+    var stats = [["P/E", q.pe_ratio, 1, "x"], ["P/B", q.pb, 1, "x"], ["Utbytteyield", q.div_yield, 2, " %"], ["Antall aksjer", q.shares_out_text, null, ""]];
+    $("panel-overview").innerHTML =
+      '<div class="row gap-12 wrap">' + kpiHtml() + '</div>' +
+      '<div class="card pad col gap-8"><div class="row between center wrap"><div class="h3">Kursutvikling</div><div class="rng" id="pxRng"><button data-d="30">1 mnd</button><button data-d="90">3 mnd</button><button data-d="180">6 mnd</button><button data-d="365" class="on">1 år</button><button data-d="0">Alt</button></div></div><div id="pxBox"></div></div>' +
+      '<div class="row gap-16 wrap" style="align-items:flex-start;"><div class="card pad col" style="flex:1;min-width:300px;"><div class="eyebrow" style="margin-bottom:4px;">Om selskapet</div>' + factHtml + '</div>' +
+        '<div class="col gap-12" style="flex:1;min-width:300px;">' + cover + gapBox("overview") + '</div></div>';
+    drawChart();
+    App.qsa("#pxRng button").forEach(function (b) { b.addEventListener("click", function () { pxRange = Number(b.getAttribute("data-d")); App.qsa("#pxRng button").forEach(function (x) { x.classList.toggle("on", x === b); }); drawChart(); }); });
+  }
+
+  // --- Nyheter / Tese (bevisst ikke hentet ved oppstart)
+  function news() { $("panel-news").innerHTML = empty("<b>Nyheter hentes ikke når et selskap legges til.</b><br>Her kommer nyhetsstrømmen for selskapet når nyhetsflyten kobles på. Ingenting er hentet ennå, og det er derfor tomt.") ; }
+  function thesis() { $("panel-thesis").innerHTML = empty("<b>Tese og risiko er ikke fylt ut ennå.</b><br>Bull-, bear- og base-case settes ikke opp automatisk ved oppstart. Det bygges senere, sammen med nyhetsvurderingen."); }
+
+  // --- Finans
+  var finMode = "annual";
+  function financials() {
+    var rows = D.defs.filter(function (d) { return d.slot_key.indexOf("fin_") === 0; }).sort(byOrder);
+    if (!D.fin.length) { $("panel-financials").innerHTML = empty("Ingen regnskapstall er hentet for dette selskapet.") + gapBox("financials"); return; }
+    function draw() {
+      var type = finMode;
+      var data = D.fin.filter(function (f) { return f.period_type === type; });
+      var periods = []; data.forEach(function (f) { if (periods.indexOf(f.period) < 0) periods.push(f.period); });
+      periods.sort(function (a, b) { return pkey(a) - pkey(b); });
+      if (type === "quarterly") periods = periods.slice(-12);
+      var map = {}; data.forEach(function (f) { map[f.metric_key + "|" + f.period] = f; });
+      var trs = rows.map(function (d) {
+        if (d.applicable === false) return '<tr class="nrow"><td>' + esc(d.label) + '</td><td colspan="' + periods.length + '" style="text-align:left;">Ikke relevant: ' + esc(d.not_applicable_reason || "") + '</td></tr>';
+        var unit = ""; var cells = periods.map(function (p) { var f = map[d.metric_key + "|" + p]; if (f && f.unit && !unit) unit = f.unit; return f && f.metric_value != null ? '<td title="' + (f.source === "computed" ? "Regnet ut av meg" : "Fra rapport") + '">' + fmtVal(f.metric_value, d.unit_kind) + '</td>' : '<td class="na">–</td>'; });
+        return '<tr><td title="' + esc(d.description || "") + '">' + esc(d.label) + (unit ? ' <span class="faint" style="font-size:11px;">' + esc(unit) + '</span>' : '') + '</td>' + cells.join("") + '</tr>';
+      });
+      $("finTbl").innerHTML = '<table class="dtbl"><thead><tr><th>Nøkkeltall</th>' + periods.map(function (p) { return '<th>' + esc(p) + '</th>'; }).join("") + '</tr></thead><tbody>' + trs.join("") + '</tbody></table>';
+      var urls = {}; data.forEach(function (f) { if (f.source_url) urls[f.source_url] = 1; });
+      $("finSrc").innerHTML = Object.keys(urls).slice(0, 12).map(function (u, i) { return '<a class="srclink" href="' + esc(u) + '" target="_blank" rel="noopener">AI hentet lenke ' + (i + 1) + ' ↗</a>'; }).join(" · ");
+    }
+    $("panel-financials").innerHTML = '<div class="row between center wrap"><div class="h3">Regnskapstall</div><div class="seg2" id="finSeg"><button data-m="annual" class="on">Årlig</button><button data-m="quarterly">Kvartalsvis</button></div></div>' +
+      '<div class="card pad"><div class="tscroll" id="finTbl"></div><div style="margin-top:10px;font-size:11.5px;line-height:1.7;" id="finSrc"></div></div>' + gapBox("financials");
+    draw();
+    App.qsa("#finSeg button").forEach(function (b) { b.addEventListener("click", function () { finMode = b.getAttribute("data-m"); App.qsa("#finSeg button").forEach(function (x) { x.classList.toggle("on", x === b); }); draw(); }); });
+  }
+
+  // --- Verdsettelse
+  function valuation() {
+    var rows = D.defs.filter(function (d) { return d.slot_key.indexOf("val_") === 0; }).sort(byOrder);
+    var periods = D.val.map(function (v) { return v.period; }).sort(function (a, b) { return pkey(a) - pkey(b); });
+    if (!periods.length) { $("panel-valuation").innerHTML = empty("Ingen verdsettelse er beregnet for dette selskapet.") + gapBox("valuation"); return; }
+    var byP = {}; D.val.forEach(function (v) { byP[v.period] = v; });
+    var trs = rows.map(function (d) {
+      if (d.applicable === false) return '<tr class="nrow"><td>' + esc(d.label) + '</td><td colspan="' + periods.length + '" style="text-align:left;">Ikke relevant: ' + esc(d.not_applicable_reason || "") + '</td></tr>';
+      return '<tr><td title="' + esc(d.description || "") + '">' + esc(d.label) + '</td>' + periods.map(function (p) { var v = byP[p][d.metric_key]; return v != null ? '<td>' + fmtVal(v, d.unit_kind) + '</td>' : '<td class="na">–</td>'; }).join("") + '</tr>';
+    });
+    $("panel-valuation").innerHTML = '<div class="card pad"><div class="h3" style="margin-bottom:8px;">Verdsettelse over tid</div><div class="tscroll"><table class="dtbl"><thead><tr><th>Nøkkeltall</th>' + periods.map(function (p) { return '<th>' + esc(p) + '</th>'; }).join("") + '</tr></thead><tbody>' + trs.join("") + '</tbody></table></div>' +
+      '<p class="muted" style="font-size:11.5px;margin:10px 0 0;line-height:1.5;">Beregnet av meg fra kursen ved årsskiftet og regnskapstallene, ikke hentet ferdig fra en tredjepart. Framoverskuende P/E krever betalt konsensus og er ikke med.</p></div>' + gapBox("valuation");
+  }
+
+  // --- Estimater (selskapets egne mål)
+  function estimates() {
+    var html = '<div class="h3">Selskapets egne mål (guiding)</div>';
+    if (!D.goals.length) html += empty("Jeg fant ingen uttalte mål eller guiding for dette selskapet.");
+    else html += D.goals.map(function (g) {
+      var ups = D.upd.filter(function (u) { return u.goal_id === g.id; });
+      return '<div class="card pad col gap-8"><div class="row between center" style="gap:8px;"><b style="font-size:14px;">' + esc(g.title) + '</b>' + (g.status ? '<span class="pill pill-neu">' + esc(g.status) + '</span>' : '') + '</div>' +
+        (g.conclusion ? '<div style="font-size:13px;line-height:1.5;color:var(--text-dim);">' + esc(g.conclusion) + '</div>' : '') +
+        (g.source_quote ? '<div class="wiz-note" style="background:#f4f4f5;border-radius:10px;padding:8px 10px;font-size:12px;font-style:italic;">«' + esc(g.source_quote) + '»</div>' : '') +
+        ups.map(function (u) { return '<div style="font-size:12.5px;border-top:1px solid #f1f1f3;padding-top:6px;"><span class="faint">' + fmtDate(u.update_date) + '</span> · ' + esc(u.text_value || "") + '</div>'; }).join("") +
+        '<div>' + link(g.source_url) + '</div></div>';
+    }).join("");
+    html += '<p class="muted" style="font-size:11.5px;margin:0;">Analytikernes konsensus (omsetning, EPS, framoverskuende P/E) hentes fra betalte kilder og er ikke med ved oppstart.</p>' + gapBox("estimates");
+    $("panel-estimates").innerHTML = html;
+  }
+
+  // --- Hendelser
+  function events() {
+    var today = new Date().toISOString().slice(0, 10);
+    var up = D.events.filter(function (e) { return e.event_date >= today; }), past = D.events.filter(function (e) { return e.event_date < today; }).reverse();
+    function row(e) {
+      return '<div class="card pad col gap-4"><div class="row between center" style="gap:8px;"><b style="font-size:13.5px;">' + esc(e.title) + '</b><span class="faint" style="font-size:12px;white-space:nowrap;">' + fmtDate(e.event_date) + '</span></div>' +
+        (e.event_type ? '<div><span class="tag">' + esc(e.event_type) + '</span></div>' : '') + (e.description ? '<div style="font-size:12.5px;color:var(--text-dim);line-height:1.5;">' + esc(e.description) + '</div>' : '') +
+        '<div>' + link(e.source_url) + '</div></div>';
+    }
+    $("panel-events").innerHTML = '<div class="h3">Kommende hendelser</div>' + (up.length ? up.map(row).join("") : empty("Ingen kommende hendelser funnet i finanskalenderen.")) +
+      (past.length ? '<div class="h3" style="margin-top:8px;">Tidligere</div>' + past.slice(0, 15).map(row).join("") : "") + gapBox("events");
+  }
+
+  // --- Eierskap
+  function ownership() {
+    var h = D.holders, asof = h.length ? h[0].as_of_date : null;
+    var holders = h.length ? '<div class="tscroll"><table class="dtbl"><thead><tr><th>Aksjonær</th><th>Aksjer</th><th>Eierandel</th><th></th></tr></thead><tbody>' + h.map(function (x) { return '<tr><td>' + esc(x.holder_name) + '</td><td>' + (x.shares_held != null ? num(x.shares_held, 0) : "–") + '</td><td>' + (x.ownership_pct != null ? num(x.ownership_pct, 2) + " %" : "–") + '</td><td>' + link(x.source_url) + '</td></tr>'; }).join("") + '</tbody></table></div>' : empty("Fant ingen aksjonærliste.");
+    var ins = D.insiders.length ? '<div class="tscroll"><table class="dtbl"><thead><tr><th>Dato</th><th>Person</th><th>Type</th><th>Aksjer</th><th>Pris</th><th></th></tr></thead><tbody>' + D.insiders.map(function (x) { return '<tr><td>' + fmtDate(x.trade_date) + '</td><td>' + esc(x.insider_name) + (x.role ? ' <span class="faint" style="font-size:11px;">' + esc(x.role) + '</span>' : '') + '</td><td>' + esc(x.transaction_type || "") + '</td><td>' + (x.shares != null ? num(x.shares, 0) : "–") + '</td><td>' + (x.price != null ? num(x.price, 2) : "–") + '</td><td>' + link(x.source_url) + '</td></tr>'; }).join("") + '</tbody></table></div>' : empty("Fant ingen innsidehandler.");
+    var mg = D.people.filter(function (p) { return p.shares_held != null; });
+    var mgm = mg.length ? '<div class="tscroll"><table class="dtbl"><thead><tr><th>Person</th><th>Rolle</th><th>Aksjer</th><th></th></tr></thead><tbody>' + mg.map(function (p) { return '<tr><td>' + esc(p.name) + '</td><td>' + esc(p.role || "") + '</td><td>' + num(p.shares_held, 0) + '</td><td>' + link(p.source_url) + '</td></tr>'; }).join("") + '</tbody></table></div>' : empty("Fant ikke ledelsens aksjebeholdning.");
+    $("panel-ownership").innerHTML = '<div class="card pad col gap-8"><div class="row between center"><div class="h3">Største aksjonærer</div>' + (asof ? '<span class="faint" style="font-size:12px;">pr. ' + fmtDate(asof) + '</span>' : '') + '</div>' + holders + '</div>' +
+      '<div class="card pad col gap-8"><div class="h3">Innsidehandler</div>' + ins + '</div><div class="card pad col gap-8"><div class="h3">Ledelsens aksjebeholdning</div>' + mgm + '</div>' + gapBox("ownership");
+  }
+
+  // --- Ledelse og struktur
+  function leadership() {
+    function ppl(type, none) {
+      var l = D.people.filter(function (p) { return p.person_type === type; });
+      return l.length ? l.map(function (p) { return '<div class="person"><div class="row between center" style="gap:8px;"><b style="font-size:13.5px;">' + esc(p.name) + '</b><span class="faint" style="font-size:12px;">' + esc(p.role || "") + (p.since_year ? " · siden " + p.since_year : "") + '</span></div>' + (p.background ? '<div style="font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-top:3px;">' + esc(p.background) + '</div>' : '') + '<div style="margin-top:3px;">' + link(p.source_url) + '</div></div>'; }).join("") : empty(none);
+    }
+    var c = D.c;
+    var struct = '<div class="fact"><span>Selskap</span><span>' + esc(c.name) + (c.orgnr ? ' (org.nr. ' + esc(c.orgnr) + ')' : '') + '</span></div>' + (c.parent_name ? '<div class="fact"><span>Morselskap</span><span>' + esc(c.parent_name) + '</span></div>' : '') +
+      (D.subs.length ? '<div class="fact"><span>Datterselskaper</span><span>' + D.subs.length + ' funnet</span></div>' + D.subs.map(function (s) { return '<div class="fact"><span style="padding-left:12px;">' + esc(s.name) + '</span><span>' + link(s.source_url) + '</span></div>'; }).join("") : '<div class="fact"><span>Datterselskaper</span><span class="faint" style="font-weight:500;">Ikke funnet</span></div>');
+    $("panel-leadership").innerHTML = '<div class="card pad col"><div class="h3" style="margin-bottom:4px;">Selskapsstruktur</div>' + struct + '</div>' +
+      '<div class="card pad col"><div class="h3">Ledergruppe</div>' + ppl("executive", "Fant ikke ledergruppen.") + '</div><div class="card pad col"><div class="h3">Styre</div>' + ppl("board", "Fant ikke styret.") + '</div>' + gapBox("leadership");
+  }
+
+  // --- Kilder
+  function sources() {
+    var rows = D.csrc.map(function (cs) { return { cs: cs, s: D.srcs[cs.source_id] }; }).filter(function (x) { return x.s; });
+    var html = rows.length ? '<div class="tscroll"><table class="dtbl"><thead><tr><th>Kilde</th><th>Gruppe</th><th>Sist sjekket</th><th></th></tr></thead><tbody>' + rows.map(function (x) {
+      return '<tr><td>' + esc(x.s.name) + (x.cs.origin === "ai" || x.cs.origin === "onboarding" ? ' <span class="tag">AI hentet</span>' : '') + '</td><td>' + esc(x.cs.source_group || "") + '</td><td>' + (x.cs.last_checked_at ? fmtDate(x.cs.last_checked_at) : "Ikke sjekket ennå") + '</td><td>' + (x.s.url ? '<a class="srclink" href="' + esc(x.s.url) + '" target="_blank" rel="noopener">AI hentet lenke ↗</a>' : "") + '</td></tr>';
+    }).join("") + '</tbody></table></div>' : empty("Ingen faste kilder er lagret for dette selskapet.");
+    $("panel-sources").innerHTML = '<div class="card pad col gap-8"><div class="h3">Faste kilder for dette selskapet</div><p class="muted" style="font-size:12px;margin:0;">Dette er sidene jeg bruker for rapporter og finanskalender. Alle lenker jeg har funnet selv er merket «AI hentet lenke».</p>' + html + '</div>' + gapBox("sources");
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

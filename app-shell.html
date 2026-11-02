@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<style>
+  /* Sidebaren og topplinjen under ligger permanent i dette skallet - de lastes aldri på
+     nytt. Selve siden (Oversikt, Selskaper osv.) vises i iframen under og byttes ut uten
+     at resten av vinduet rører på seg i det hele tatt. */
+  .shell-frame { flex-grow: 1; border: 0; width: 100%; display: block; background: var(--bg); }
+</style>
+</head>
+<body>
+<script>Auth.requireAuth();</script>
+<div class="app-shell">
+
+  <!-- SIDEBAR (permanent) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" target="contentFrame" class="navlink active" data-page="dashboard.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" target="contentFrame" class="navlink" data-page="selskaper.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="varsler.html" target="contentFrame" class="navlink" data-page="varsler.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" target="contentFrame" class="navlink" data-page="strategier.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="konto.html" target="contentFrame" class="navlink" data-page="konto.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm" id="sidebarAvatar">··</div><div class="col" style="line-height:1.2;min-width:0;flex:1;"><span style="font-size:13px;font-weight:600;" id="sidebarName">…</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div><button type="button" class="icon-btn plain" id="signOutBtn" title="Logg ut"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN (permanent topplinje + bytbart innhold i iframe) -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="shellCrumb">Innsikt <span class="sep">/</span> <span class="now">Oversikt</span></div>
+      <div class="row center gap-14">
+        <div class="search-wrap">
+          <label for="topsearch" class="visually-hidden">Søk</label>
+          <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+          <input id="topsearch" class="input" type="text" placeholder="Søk etter selskap, ticker..." style="width:260px;">
+        </div>
+        <button class="icon-btn" aria-label="Varsler" style="position:relative;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          <span style="position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:#dc2626;"></span>
+        </button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+    <iframe class="shell-frame" id="contentFrame" name="contentFrame" src="dashboard.html" title="Innhold"></iframe>
+  </div>
+
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var crumbEl = document.getElementById("shellCrumb");
+  var links = App.qsa(".navlink", document);
+
+  function setActive(page) {
+    // selskap.html (enkeltselskapsiden) hører til Selskaper-seksjonen i menyen.
+    var navPage = page === "selskap.html" ? "selskaper.html" : page;
+    links.forEach(function (a) {
+      a.classList.toggle("active", a.getAttribute("data-page") === navPage);
+    });
+  }
+
+  // «Tilbake»-knappen i brødsmulestien (kopiert inn fra selskapssiden) laster lenken i innholdsrammen.
+  crumbEl.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest("a[data-back]") : null;
+    if (!a) return;
+    e.preventDefault();
+    document.getElementById("contentFrame").src = a.getAttribute("href");
+  });
+
+  window.addEventListener("message", function (e) {
+    var data = e.data;
+    if (!data || data.type !== "innsikt:navigated") return;
+    if (data.title) document.title = data.title;
+    if (data.crumbHtml) crumbEl.innerHTML = data.crumbHtml;
+    setActive(data.page);
+  });
+})();
+</script>
+</body>
+</html>

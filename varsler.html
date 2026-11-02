@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Varsler – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/auth.js"></script>
+<style>
+  .alert-log-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-soft); }
+  .alert-log-item:last-child { border-bottom: none; }
+  .mail-icon { width: 30px; height: 30px; border-radius: 9px; background: var(--neu-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-dim); }
+  /* To valgbare "kort" for å starte en ny varsling (nyhet vs. periodisk oppsummering). */
+  .alert-type-card { flex: 1; min-width: 190px; border: 1px solid var(--border); border-radius: 14px; padding: 16px; cursor: pointer; background: #fff; text-align: left; }
+  .alert-type-card:hover { border-color: var(--accent); }
+  .alert-type-card .title { display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
+  .alert-type-card .desc { display: block; font-size: 12px; color: var(--text-mut); line-height: 1.5; }
+  .wizard-back { font-size: 12px; font-weight: 600; color: var(--text-mut); cursor: pointer; background: none; border: none; padding: 0; align-self: flex-start; }
+  .wizard-back:hover { color: var(--text); }
+
+  .sent-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .sent-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:18px 10px; border-radius:14px; border:1.5px solid var(--border); background:#fff; color:var(--text-dim); font-size:14px; font-weight:700; cursor:pointer; transition:transform .12s, background .15s, border-color .15s, color .15s, box-shadow .15s; }
+  .sent-btn:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+  .sent-btn .sent-ico { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; background:var(--neu-bg); color:var(--neu); transition:all .15s; }
+  .sent-btn .sent-sub { font-size:11px; font-weight:500; opacity:.8; }
+  .sent-btn[data-sent="pos"].active { background:var(--pos-bg); border-color:var(--pos); color:var(--pos); }
+  .sent-btn[data-sent="neg"].active { background:var(--neg-bg); border-color:var(--neg); color:var(--neg); }
+  .sent-btn[data-sent="neu"].active { background:#e4e4e7; border-color:#71717a; color:#3f3f46; }
+  .sent-btn[data-sent="pos"].active .sent-ico { background:var(--pos); }
+  .sent-btn[data-sent="neg"].active .sent-ico { background:var(--neg); }
+  .sent-btn[data-sent="neu"].active .sent-ico { background:#71717a; }
+  .sent-btn.active .sent-ico span { color:#fff; }
+  .sent-count { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--text-dim); }
+  .sent-dots { display:flex; gap:5px; }
+  .sent-dot { width:9px; height:9px; border-radius:50%; background:#d4d4d8; transition:background .15s; }
+  .sent-dot.on { background:var(--accent, #111); }
+  @media (max-width:560px) { .sent-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<script>Auth.requireAuth();</script>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="varsler.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="konto.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm" id="sidebarAvatar">··</div><div class="col" style="line-height:1.2;min-width:0;flex:1;"><span style="font-size:13px;font-weight:600;" id="sidebarName">…</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div><button type="button" class="icon-btn plain" id="signOutBtn" title="Logg ut"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> <span class="now">Varsler</span></div>
+      <div class="row center gap-14">
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div>
+        <h1 class="h1">Varsler</h1>
+        <p class="muted" style="margin:6px 0 0;font-size:13.5px;max-width:700px;">Lag varslinger for enkeltnyheter eller periodiske oppsummeringer for selskapene du følger. Varslene sendes til e-postadressen du oppgir under.</p>
+      </div>
+
+      <div class="row wrap gap-16">
+        <!-- EMAIL SETTINGS -->
+        <div class="card pad col gap-14" style="flex:1;min-width:320px;">
+          <div class="row between center">
+            <div class="eyebrow">E-postvarsler</div>
+            <button class="toggle" id="emailEnabledToggle"><span class="knob"></span></button>
+          </div>
+          <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">E-postadresse</span><input class="input" id="notifyEmail" type="email" placeholder="din@epost.no"></label>
+          <div class="row gap-10 center">
+            <button class="btn btn-primary" id="saveEmailBtn">Lagre e-postadresse</button>
+            <span class="faint" style="font-size:11.5px;" id="emailSavedMsg"></span>
+          </div>
+        </div>
+
+        <!-- NY VARSLING (skjema, ett steg om gangen) -->
+        <div class="card pad col gap-14" style="flex:1.3;min-width:380px;">
+          <div class="eyebrow">Opprett ny varsling</div>
+          <div class="col gap-14" id="wizardArea"></div>
+        </div>
+      </div>
+
+      <!-- RULES LIST -->
+      <div class="card pad col gap-10">
+        <div class="row between center"><div class="eyebrow">Dine varselregler</div><span class="muted" style="font-size:12px;" id="ruleCountLabel"></span></div>
+        <div class="col gap-2" id="rulesList"></div>
+        <p class="empty-hint" id="rulesEmptyHint" style="display:none;">Du har ingen varselregler ennå. Legg til én over for å komme i gang.</p>
+      </div>
+
+      <!-- ALERT LOG (mock) -->
+      <div class="card pad col gap-10">
+        <div class="row between center"><div class="eyebrow">Nylige varsler (mock)</div><span class="muted" style="font-size:12px;" id="logCountLabel"></span></div>
+        <div class="col" id="alertLog"></div>
+        <p class="empty-hint" id="logEmptyHint" style="display:none;">Ingen nyheter matcher varselreglene dine ennå.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: velg starttidspunkt for varslingsløpet -->
+<div class="modal-overlay" id="modalStartDate">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 class="h3">Velg starttidspunkt for varslingsløpet</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="muted" style="margin:0;font-size:12.5px;line-height:1.6;" id="calExplainText"></p>
+      <div class="cal-head">
+        <button type="button" class="cal-nav-btn" id="calPrevBtn" aria-label="Forrige måned">‹</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button type="button" class="cal-nav-btn" id="calNextBtn" aria-label="Neste måned">›</button>
+      </div>
+      <div class="cal-grid" id="calWeekdays"></div>
+      <div class="cal-grid" id="calDays"></div>
+      <div class="cal-legend">
+        <span class="cal-legend-item"><span class="cal-legend-swatch" style="background:var(--pos-bg);"></span>Dager assistenten henter nyheter fra</span>
+        <span class="cal-legend-item"><span class="cal-legend-swatch" style="background:var(--accent);"></span>Dagen du får oppsummeringen</span>
+      </div>
+      <p class="muted" style="margin:0;font-size:12px;" id="calSelectedText"></p>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="calConfirmBtn" disabled>Bruk denne datoen</button></div>
+  </div>
+</div>
+
+<!-- MODAL: se/endre beskrivelse til assistenten -->
+<div class="modal-overlay" id="modalEditPrompt">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Beskrivelse til assistenten</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="muted" style="margin:0;font-size:12px;">Dette er instruksen assistenten bruker for å lage oppsummeringen. Du kan endre den når som helst.</p>
+      <textarea class="ta" rows="5" id="editPromptText"></textarea>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="savePromptBtn">Lagre endringer</button></div>
+  </div>
+</div>
+
+<!-- MODAL: bekreft sletting av varselregel -->
+<div class="modal-overlay" id="modalConfirmDeleteRule">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Er du sikker?</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body"><p class="muted" style="margin:0;font-size:13px;">Varslingsregelen blir slettet permanent, og kan ikke angres.</p></div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-danger" id="confirmDeleteRuleBtn">Ja, slett</button></div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+
+  function esc(s) { return App.escapeHtml(s); }
+
+  // ---------- merged news across companies (same pattern as dashboard.html) ----------
+  function getCompanyMerged(ticker) {
+    var base = MOCK.companies[ticker];
+    var overrides = App.store.get("company:" + ticker, {});
+    var news = base.news.map(function (n) {
+      var copy = Object.assign({}, n);
+      if (overrides.newsMeta && overrides.newsMeta[n.id]) Object.assign(copy, overrides.newsMeta[n.id]);
+      return copy;
+    });
+    return { ticker: base.ticker, name: base.name, color: base.color, initials: base.initials, news: news };
+  }
+  var companies = MOCK.companyOrder.map(getCompanyMerged);
+  function allNews() {
+    var out = [];
+    companies.forEach(function (c) {
+      c.news.forEach(function (n) { out.push(Object.assign({}, n, { ticker: c.ticker, companyName: c.name, color: c.color, initials: c.initials })); });
+    });
+    return out;
+  }
+
+  // ---------- email settings ----------
+  var notifySettings = App.store.get("notifySettings", { enabled: false, email: "" });
+  function renderEmailSettings() {
+    document.getElementById("emailEnabledToggle").classList.toggle("on", notifySettings.enabled);
+    document.getElementById("notifyEmail").value = notifySettings.email;
+  }
+  document.getElementById("emailEnabledToggle").addEventListener("click", function () {
+    notifySettings.enabled = !notifySettings.enabled;
+    App.store.set("notifySettings", notifySettings);
+    renderEmailSettings();
+    renderLog();
+  });
+  document.getElementById("saveEmailBtn").addEventListener("click", function () {
+    notifySettings.email = document.getElementById("notifyEmail").value.trim();
+    App.store.set("notifySettings", notifySettings);
+    var msg = document.getElementById("emailSavedMsg");
+    msg.textContent = "Lagret ✓";
+    setTimeout(function () { msg.textContent = ""; }, 2000);
+    renderLog();
+  });
+
+  // ---------- ny varsling: enkelt skjema, ett steg om gangen ----------
+  // Samme fem nivåer som på selskapssiden (Sterkt positiv … Sterkt negativ), gjenbrukt her for å vise
+  // om poengscore-terskelen for en nyhetsvarsling er positiv, negativ eller nøytral.
+  var SENTIMENTS = [["pos", "Positiv", "Gode nyheter", "▲"], ["neu", "Nøytral", "Verken eller", "●"], ["neg", "Negativ", "Dårlige nyheter", "▼"]];
+  function sentimentOf(v) { v = Math.round(Number(v) || 0); return v > 0 ? "pos" : v < 0 ? "neg" : "neu"; }
+  function sentimentLabel(list) {
+    var w = SENTIMENTS.filter(function (k) { return list.indexOf(k[0]) >= 0; }).map(function (k) { return k[1].toLowerCase(); });
+    if (w.length === 3) return "alle nyheter (positive, nøytrale og negative)";
+    return w.length === 1 ? "bare " + w[0] + "e nyheter" : w[0] + "e og " + w[1] + "e nyheter";
+  }
+  function scoreTier(v) {
+    v = Math.round(Number(v) || 0);
+    if (v >= 7) return { label: "Sterkt positiv", color: "var(--pos)" };
+    if (v >= 3) return { label: "Positiv", color: "var(--pos)" };
+    if (v <= -7) return { label: "Sterkt negativ", color: "var(--neg)" };
+    if (v <= -3) return { label: "Negativ", color: "var(--neg)" };
+    return { label: "Nøytral", color: "var(--neu)" };
+  }
+  var SUMMARY_PERIODS = [
+    ["24t", "Siste 24 timer", 1],
+    ["2d", "Siste 2 dager", 2],
+    ["3d", "Siste 3 dager", 3],
+    ["4d", "Siste 4 dager", 4],
+    ["5d", "Siste 5 dager", 5],
+    ["6d", "Siste 6 dager", 6],
+    ["uke", "Siste uke", 7],
+    ["uke2", "Siste 2 uker", 14],
+    ["uke3", "Siste 3 uker", 21],
+    ["maned", "Siste måned", 30]
+  ];
+  function periodLabelFor(key) { var p = SUMMARY_PERIODS.filter(function (x) { return x[0] === key; })[0]; return p ? p[1] : key; }
+  function periodDaysFor(key) { var p = SUMMARY_PERIODS.filter(function (x) { return x[0] === key; })[0]; return p ? p[2] : 1; }
+
+  var WEEKDAYS = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
+  function dateFromISO(s) { var parts = s.split("-"); return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)); }
+  function isoFromDate(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function formatDateLong(d) {
+    var months = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
+    return d.getDate() + ". " + months[d.getMonth()] + " " + d.getFullYear();
+  }
+  // Beskriver hvor ofte oppsummeringen gjentas, ut fra perioden og den valgte startdatoen –
+  // f.eks. "hver mandag" for en 7-dagersperiode, "hver 3. dag" for en 3-dagersperiode.
+  function cadenceLabel(periodDays, startDateIso) {
+    if (!startDateIso) return "";
+    if (periodDays === 1) return "hver dag";
+    if (periodDays % 7 === 0) {
+      var d = dateFromISO(startDateIso);
+      var wd = "hver " + WEEKDAYS[d.getDay()];
+      return periodDays === 7 ? wd : "hver " + (periodDays / 7) + ". uke (" + WEEKDAYS[d.getDay()] + ")";
+    }
+    if (periodDays === 30) return "hver måned";
+    return "hver " + periodDays + ". dag";
+  }
+
+  function companyOptionsHtml() {
+    return MOCK.companyOrder.map(function (t) {
+      return '<option value="' + t + '">' + t + ' – ' + MOCK.companies[t].name + '</option>';
+    }).join("");
+  }
+
+  function getRules() { return App.store.get("alertRules", []); }
+  function saveRules(list) { App.store.set("alertRules", list); }
+
+  var wizardStep = "choose"; // "choose" | "news" | "summary"
+  var pendingStartDate = null; // ISO-dato valgt i kalender-modalen for inneværende oppsummeringsskjema
+  var pendingSummaryTime = "08:00"; // valgt klokkeslett i den tilpassede tidspunkt-velgeren
+
+  // ---------- tilpasset, profesjonell tidspunkt-velger (erstatter <input type="time">) ----------
+  function ftimeHtml(fieldId, initialValue) {
+    return '<div class="ftime" id="' + fieldId + '">' +
+      '<button type="button" class="ftime-btn" id="' + fieldId + 'Btn">' +
+        '<span id="' + fieldId + 'Text">' + esc(initialValue) + '</span>' +
+        '<svg class="ftime-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"/></svg>' +
+      '</button>' +
+      '<div class="ftime-panel">' +
+        '<div class="ftime-cols">' +
+          '<div class="ftime-col" id="' + fieldId + 'Hours"></div>' +
+          '<div class="ftime-colsep">:</div>' +
+          '<div class="ftime-col" id="' + fieldId + 'Minutes"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function wireFtime(fieldId, initialValue, onChange) {
+    var wrap = document.getElementById(fieldId);
+    var btn = document.getElementById(fieldId + "Btn");
+    var textEl = document.getElementById(fieldId + "Text");
+    var hoursEl = document.getElementById(fieldId + "Hours");
+    var minutesEl = document.getElementById(fieldId + "Minutes");
+    var parts = initialValue.split(":");
+    var curH = parts[0], curM = parts[1];
+
+    function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+
+    var hours = [];
+    for (var h = 0; h < 24; h++) hours.push(pad2(h));
+    var minutes = [];
+    for (var m = 0; m < 60; m += 5) minutes.push(pad2(m));
+
+    function renderCols() {
+      hoursEl.innerHTML = hours.map(function (h) {
+        return '<button type="button" class="ftime-opt' + (h === curH ? " active" : "") + '" data-h="' + h + '">' + h + '</button>';
+      }).join("");
+      minutesEl.innerHTML = minutes.map(function (m) {
+        return '<button type="button" class="ftime-opt' + (m === curM ? " active" : "") + '" data-m="' + m + '">' + m + '</button>';
+      }).join("");
+      App.qsa("[data-h]", hoursEl).forEach(function (b) {
+        b.addEventListener("click", function (e) { e.stopPropagation(); curH = b.getAttribute("data-h"); commit(); renderCols(); });
+      });
+      App.qsa("[data-m]", minutesEl).forEach(function (b) {
+        b.addEventListener("click", function (e) { e.stopPropagation(); curM = b.getAttribute("data-m"); commit(); renderCols(); });
+      });
+    }
+
+    function commit() {
+      var value = curH + ":" + curM;
+      textEl.textContent = value;
+      if (onChange) onChange(value);
+    }
+
+    function scrollActiveIntoView() {
+      [hoursEl, minutesEl].forEach(function (col) {
+        var active = col.querySelector(".ftime-opt.active");
+        if (active) active.scrollIntoView({ block: "center" });
+      });
+    }
+
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var isOpen = wrap.classList.contains("open");
+      App.qsa(".ftime.open", document).forEach(function (o) { o.classList.remove("open"); });
+      if (!isOpen) {
+        wrap.classList.add("open");
+        renderCols();
+        scrollActiveIntoView();
+      }
+    });
+
+    renderCols();
+    commit();
+  }
+
+  document.addEventListener("click", function (e) {
+    App.qsa(".ftime.open", document).forEach(function (o) {
+      if (!o.contains(e.target)) o.classList.remove("open");
+    });
+  });
+
+  function renderWizard() {
+    var area = document.getElementById("wizardArea");
+
+    if (wizardStep === "newskind") {
+      area.innerHTML =
+        '<button type="button" class="wizard-back" data-wizard-back>&larr; Tilbake</button>' +
+        '<p class="muted" style="margin:0;font-size:12.5px;">Hva slags nyhetsvarsling vil du lage?</p>' +
+        '<div class="row gap-10 wrap">' +
+          '<button type="button" class="alert-type-card" data-wizard-type="news">' +
+            '<span class="title">Varsling for positiv, negativ eller nøytral nyhet</span>' +
+            '<span class="desc">Få e-post når en nyhet for et selskap er så positiv eller negativ som du selv velger.</span>' +
+          '</button>' +
+          '<button type="button" class="alert-type-card" data-wizard-type="insider">' +
+            '<span class="title">Varsling for innsidehandel</span>' +
+            '<span class="desc">Få e-post når noen med innsideinformasjon (for eksempel ledelsen eller styret) kjøper eller selger aksjer i selskapet.</span>' +
+          '</button>' +
+        '</div>';
+      App.qsa("[data-wizard-type]", area).forEach(function (btn) {
+        btn.addEventListener("click", function () { wizardStep = btn.getAttribute("data-wizard-type"); renderWizard(); });
+      });
+    } else if (wizardStep === "insider") {
+      area.innerHTML =
+        '<button type="button" class="wizard-back" data-wizard-back>&larr; Tilbake</button>' +
+        '<label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskap</span><select class="select" id="insiderRuleCompany">' + companyOptionsHtml() + '</select></label>' +
+        '<label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Hva skal utløse varsel?</span>' +
+          '<select class="select" id="insiderRuleDir">' +
+            '<option value="both">Alle innsidehandler (kjøp og salg)</option>' +
+            '<option value="buy">Bare innsidekjøp</option>' +
+            '<option value="sell">Bare innsidesalg</option>' +
+          '</select>' +
+        '</label>' +
+        '<button class="btn btn-primary" style="align-self:flex-start;" id="saveInsiderRuleBtn">Lagre varsling</button>';
+      document.getElementById("saveInsiderRuleBtn").addEventListener("click", function () {
+        var rules = getRules();
+        rules.push({
+          id: MOCK.uid(), type: "insider",
+          ticker: document.getElementById("insiderRuleCompany").value,
+          direction: document.getElementById("insiderRuleDir").value
+        });
+        saveRules(rules);
+        wizardStep = "choose";
+        renderWizard(); renderRules(); renderLog();
+      });
+    } else if (wizardStep === "news") {
+      area.innerHTML =
+        '<button type="button" class="wizard-back" data-wizard-back>&larr; Tilbake</button>' +
+        '<label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskap</span><select class="select" id="newsRuleCompany">' + companyOptionsHtml() + '</select></label>' +
+        '<div class="col gap-6">' +
+          '<span style="font-size:12.5px;font-weight:600;">Hva slags nyheter vil du ha varsel om?</span>' +
+          '<div class="sent-grid" id="newsRuleKinds">' +
+            SENTIMENTS.map(function (k) { return '<button type="button" class="sent-btn" data-sent="' + k[0] + '"><span class="sent-ico"><span>' + k[3] + '</span></span>' + k[1] + '<span class="sent-sub">' + k[2] + '</span></button>'; }).join("") +
+          '</div>' +
+          '<div class="sent-count"><div class="sent-dots" id="newsRuleDots"><span class="sent-dot"></span><span class="sent-dot"></span><span class="sent-dot"></span></div><span id="newsRuleCount"></span></div>' +
+          '<span class="muted" style="font-size:11.5px;" id="newsRuleKindsDesc"></span>' +
+        '</div>' +
+        '<button class="btn btn-primary" style="align-self:flex-start;" id="saveNewsRuleBtn">Lagre varsling</button>';
+
+      var kindsEl = document.getElementById("newsRuleKinds");
+      function chosenKinds() { return App.qsa("[data-sent].active", kindsEl).map(function (x) { return x.getAttribute("data-sent"); }); }
+      function updateKindsLabel() {
+        var ch = chosenKinds(), saveBtn = document.getElementById("saveNewsRuleBtn");
+        saveBtn.disabled = !ch.length; saveBtn.style.opacity = ch.length ? "" : "0.5";
+        document.getElementById("newsRuleCount").textContent = ch.length + " av 3 valgt";
+        App.qsa(".sent-dot", document.getElementById("newsRuleDots")).forEach(function (d, i) { d.classList.toggle("on", i < ch.length); });
+        document.getElementById("newsRuleKindsDesc").textContent = ch.length
+          ? "Du får varsel for: " + sentimentLabel(ch) + "."
+          : "Trykk på én eller flere for å velge. Du må velge minst én for å kunne lagre.";
+      }
+      App.qsa("[data-sent]", kindsEl).forEach(function (btn) {
+        btn.addEventListener("click", function () { btn.classList.toggle("active"); updateKindsLabel(); });
+      });
+      updateKindsLabel();
+
+      document.getElementById("saveNewsRuleBtn").addEventListener("click", function () {
+        var rules = getRules();
+        rules.push({
+          id: MOCK.uid(), type: "news",
+          ticker: document.getElementById("newsRuleCompany").value,
+          sentiments: chosenKinds()
+        });
+        saveRules(rules);
+        wizardStep = "choose";
+        renderWizard(); renderRules(); renderLog();
+      });
+    } else if (wizardStep === "summary") {
+      pendingStartDate = null;
+      pendingSummaryTime = "08:00";
+      area.innerHTML =
+        '<button type="button" class="wizard-back" data-wizard-back>&larr; Tilbake</button>' +
+        '<label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskap</span><select class="select" id="summaryRuleCompany">' + companyOptionsHtml() + '</select></label>' +
+        '<label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Tidsperiode for oppsummering</span>' +
+          '<select class="select" id="summaryRulePeriod">' +
+            SUMMARY_PERIODS.map(function (p) { return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("") +
+          '</select>' +
+        '</label>' +
+        '<div class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Tidspunkt på dagen oppsummeringen skal sendes</span>' + ftimeHtml("summaryRuleTime", pendingSummaryTime) + '</div>' +
+        '<div class="col gap-6">' +
+          '<span style="font-size:12.5px;font-weight:600;">Start tidspunkt for varslingsløpet for perioden</span>' +
+          '<button type="button" class="btn" style="align-self:flex-start;" id="openCalendarBtn">Velg startdato</button>' +
+          '<span class="muted" style="font-size:11.5px;" id="startDateSummaryText">Ingen startdato valgt ennå.</span>' +
+        '</div>' +
+        '<label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Beskrivelse til assistenten</span><textarea class="ta" rows="3" id="summaryRulePrompt" placeholder="Beskriv hva oppsummeringen skal dekke, f.eks. «Oppsummer de viktigste nyhetene i perioden, og om de styrker eller svekker bull-casen.»"></textarea></label>' +
+        '<button class="btn btn-primary" style="align-self:flex-start;" id="saveSummaryRuleBtn">Lagre oppsummering</button>';
+
+      wireFtime("summaryRuleTime", pendingSummaryTime, function (value) { pendingSummaryTime = value; });
+
+      document.getElementById("openCalendarBtn").addEventListener("click", function () {
+        var key = document.getElementById("summaryRulePeriod").value;
+        openStartDateCalendar(periodDaysFor(key), periodLabelFor(key));
+      });
+
+      document.getElementById("saveSummaryRuleBtn").addEventListener("click", function () {
+        var rules = getRules();
+        rules.push({
+          id: MOCK.uid(), type: "summary",
+          ticker: document.getElementById("summaryRuleCompany").value,
+          period: document.getElementById("summaryRulePeriod").value,
+          time: pendingSummaryTime,
+          startDate: pendingStartDate,
+          prompt: document.getElementById("summaryRulePrompt").value.trim()
+        });
+        saveRules(rules);
+        wizardStep = "choose";
+        renderWizard(); renderRules();
+      });
+    } else {
+      area.innerHTML =
+        '<p class="muted" style="margin:0;font-size:12.5px;">Hva vil du lage en varsling for?</p>' +
+        '<div class="row gap-10 wrap">' +
+          '<button type="button" class="alert-type-card" data-wizard-type="newskind">' +
+            '<span class="title">Varsling for nyhet</span>' +
+            '<span class="desc">Få e-post om en nyhet (positiv, negativ eller nøytral) eller når noen i ledelsen handler aksjer (innsidehandel).</span>' +
+          '</button>' +
+          '<button type="button" class="alert-type-card" data-wizard-type="summary">' +
+            '<span class="title">Få oppsummering av periode</span>' +
+            '<span class="desc">Få en AI-oppsummering av nyhetsbildet for et selskap, sendt på et tidspunkt du velger.</span>' +
+          '</button>' +
+        '</div>';
+      App.qsa("[data-wizard-type]", area).forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          wizardStep = btn.getAttribute("data-wizard-type");
+          renderWizard();
+        });
+      });
+    }
+
+    var backBtn = area.querySelector("[data-wizard-back]");
+    if (backBtn) backBtn.addEventListener("click", function () {
+      wizardStep = (wizardStep === "news" || wizardStep === "insider") ? "newskind" : "choose"; renderWizard();
+    });
+  }
+
+  // ---------- kalender: velg starttidspunkt for varslingsløpet ----------
+  var calPeriodDays = 1, calEarliestDate = null, calCursor = null, calChosenDate = null;
+
+  function addDays(d, n) { var r = new Date(d); r.setDate(r.getDate() + n); return r; }
+  function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+
+  function openStartDateCalendar(periodDays, periodLabel) {
+    calPeriodDays = periodDays;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    calEarliestDate = addDays(today, periodDays);
+    calChosenDate = pendingStartDate ? dateFromISO(pendingStartDate) : null;
+    calCursor = startOfMonth(calChosenDate || calEarliestDate);
+    document.getElementById("calExplainText").textContent =
+      "Velg datoen du vil motta den aller første oppsummeringen – klikk på det tidspunktet du skal motta varslingen, ikke startdatoen for innsamlingen. Siden du har valgt «" + periodLabel + "», må assistenten samle nyheter i hele perioden først, så tidligste mulige dato er " + formatDateLong(calEarliestDate) + ".";
+    document.getElementById("calWeekdays").innerHTML =
+      ["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"].map(function (w) { return '<div class="cal-weekday">' + w + '</div>'; }).join("");
+    renderCalendar();
+    document.getElementById("modalStartDate").classList.add("open");
+  }
+
+  // Hvilken "rolle" en dato har: "receive" = dagen oppsummeringen sendes, "collect" = en av
+  // dagene assistenten henter nyheter fra for det kommende mottaket. Regnes ut fra valgt
+  // startdato og periodens lengde, og gjentas fremover slik at hele kalenderen fylles ut.
+  function dayRoleFor(d) {
+    if (!calChosenDate) return null;
+    var diffDays = Math.round((d - calChosenDate) / 86400000);
+    if (diffDays < -calPeriodDays) return null;
+    if (diffDays >= 0 && diffDays % calPeriodDays === 0) return "receive";
+    return "collect";
+  }
+
+  function renderCalendar() {
+    var monthNames = ["januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"];
+    document.getElementById("calMonthLabel").textContent = monthNames[calCursor.getMonth()] + " " + calCursor.getFullYear();
+
+    var firstWeekday = (calCursor.getDay() + 6) % 7; // 0 = mandag
+    var daysInMonth = new Date(calCursor.getFullYear(), calCursor.getMonth() + 1, 0).getDate();
+
+    var cells = [];
+    for (var p = 0; p < firstWeekday; p++) cells.push('<div class="cal-day cal-pad"></div>');
+    for (var day = 1; day <= daysInMonth; day++) {
+      var d = new Date(calCursor.getFullYear(), calCursor.getMonth(), day);
+      var cls = "cal-day";
+      var role = dayRoleFor(d);
+      if (role === "receive") cls += " cal-receive";
+      else if (role === "collect") cls += " cal-collect";
+      var isSelectable = d >= calEarliestDate;
+      cls += isSelectable ? " cal-selectable" : " cal-disabled";
+      cells.push('<div class="' + cls + '" data-cal-day="' + isoFromDate(d) + '">' + day + '</div>');
+    }
+    document.getElementById("calDays").innerHTML = cells.join("");
+
+    App.qsa(".cal-selectable", document.getElementById("calDays")).forEach(function (cell) {
+      cell.addEventListener("click", function () {
+        calChosenDate = dateFromISO(cell.getAttribute("data-cal-day"));
+        renderCalendar();
+      });
+    });
+
+    var confirmBtn = document.getElementById("calConfirmBtn");
+    var textEl = document.getElementById("calSelectedText");
+    if (calChosenDate) {
+      var cadence = cadenceLabel(calPeriodDays, isoFromDate(calChosenDate));
+      textEl.textContent = "Valgt dato: " + formatDateLong(calChosenDate) + ". Du vil motta oppsummeringer " + (cadence || "fra og med denne datoen") + ".";
+      confirmBtn.disabled = false;
+    } else {
+      textEl.textContent = "";
+      confirmBtn.disabled = true;
+    }
+  }
+
+  document.getElementById("calPrevBtn").addEventListener("click", function () {
+    calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() - 1, 1);
+    renderCalendar();
+  });
+  document.getElementById("calNextBtn").addEventListener("click", function () {
+    calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + 1, 1);
+    renderCalendar();
+  });
+  document.getElementById("calConfirmBtn").addEventListener("click", function () {
+    if (!calChosenDate) return;
+    pendingStartDate = isoFromDate(calChosenDate);
+    var summaryTextEl = document.getElementById("startDateSummaryText");
+    if (summaryTextEl) {
+      summaryTextEl.textContent = "Starter " + formatDateLong(calChosenDate) + " – " + (cadenceLabel(calPeriodDays, pendingStartDate) || "");
+    }
+    document.getElementById("modalStartDate").classList.remove("open");
+  });
+
+  var pendingDeleteIndex = null;
+
+  function renderRules() {
+    var rules = getRules();
+    document.getElementById("ruleCountLabel").textContent = rules.length + " regler";
+    document.getElementById("rulesEmptyHint").style.display = rules.length ? "none" : "block";
+    document.getElementById("rulesList").innerHTML = rules.map(function (r, i) {
+      var coLabel = r.ticker ? (MOCK.companies[r.ticker] ? MOCK.companies[r.ticker].name : r.ticker) : "Alle selskaper";
+      if (r.type === "summary") {
+        var periodLabel = periodLabelFor(r.period);
+        var cadence = cadenceLabel(periodDaysFor(r.period), r.startDate);
+        return '<div class="row between center" style="padding:16px 4px;border-bottom:1px solid var(--border-soft);gap:16px;">' +
+          '<div class="col gap-6" style="min-width:0;">' +
+            '<span style="font-size:13px;font-weight:600;">' + esc(coLabel) + ' · Oppsummering</span>' +
+            '<span class="faint" style="font-size:11.5px;">' + esc(periodLabel) + ' · sendes kl. ' + esc(r.time || "–") + (cadence ? " " + esc(cadence) : "") + '</span>' +
+          '</div>' +
+          '<div class="row gap-8 center" style="flex-shrink:0;">' +
+            '<button type="button" class="btn btn-sm" data-view-prompt="' + i + '">Se beskrivelse til assistenten</button>' +
+            '<button class="btn-danger-ghost btn-sm" data-remove-rule="' + i + '">Slett</button>' +
+          '</div>' +
+        '</div>';
+      }
+      if (r.type === "insider") {
+        var dl = r.direction === "buy" ? "Bare innsidekjøp" : r.direction === "sell" ? "Bare innsidesalg" : "Alle innsidehandler (kjøp og salg)";
+        return '<div class="row between center" style="padding:16px 4px;border-bottom:1px solid var(--border-soft);gap:16px;">' +
+          '<div class="col gap-6" style="min-width:0;"><span style="font-size:13px;font-weight:600;">' + esc(coLabel) + ' · Innsidehandel</span>' +
+            '<span class="faint" style="font-size:11.5px;">' + dl + '</span></div>' +
+          '<button class="btn-danger-ghost btn-sm" style="flex-shrink:0;" data-remove-rule="' + i + '">Slett</button>' +
+        '</div>';
+      }
+      var kinds = r.sentiments || (r.threshold >= 0 ? ["pos"] : ["neg"]);
+      return '<div class="row between center" style="padding:16px 4px;border-bottom:1px solid var(--border-soft);gap:16px;">' +
+        '<div class="col gap-6" style="min-width:0;"><span style="font-size:13px;font-weight:600;">' + esc(coLabel) + ' · Nyhetsvarsling</span>' +
+          '<span class="faint" style="font-size:11.5px;">Varsler for ' + sentimentLabel(kinds) + '</span></div>' +
+        '<button class="btn-danger-ghost btn-sm" style="flex-shrink:0;" data-remove-rule="' + i + '">Slett</button>' +
+      '</div>';
+    }).join("");
+
+    App.qsa("[data-view-prompt]", document.getElementById("rulesList")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.getAttribute("data-view-prompt"), 10);
+        var allRules = getRules();
+        document.getElementById("editPromptText").value = allRules[idx].prompt || "";
+        document.getElementById("savePromptBtn").setAttribute("data-prompt-idx", idx);
+        document.getElementById("modalEditPrompt").classList.add("open");
+      });
+    });
+    App.qsa("[data-remove-rule]", document.getElementById("rulesList")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        pendingDeleteIndex = parseInt(btn.getAttribute("data-remove-rule"), 10);
+        document.getElementById("modalConfirmDeleteRule").classList.add("open");
+      });
+    });
+  }
+
+  document.getElementById("savePromptBtn").addEventListener("click", function () {
+    var idx = parseInt(this.getAttribute("data-prompt-idx"), 10);
+    var rules = getRules();
+    if (rules[idx]) {
+      rules[idx].prompt = document.getElementById("editPromptText").value.trim();
+      saveRules(rules);
+    }
+    document.getElementById("modalEditPrompt").classList.remove("open");
+    renderRules();
+  });
+
+  document.getElementById("confirmDeleteRuleBtn").addEventListener("click", function () {
+    if (pendingDeleteIndex === null) return;
+    var rules = getRules();
+    rules.splice(pendingDeleteIndex, 1);
+    saveRules(rules);
+    pendingDeleteIndex = null;
+    document.getElementById("modalConfirmDeleteRule").classList.remove("open");
+    renderRules(); renderLog();
+  });
+
+  // ---------- mock alert log ----------
+  function ruleMatches(rule, n) {
+    if (rule.type === "summary" || rule.type === "insider") return false;
+    if (rule.ticker && rule.ticker !== n.ticker) return false;
+    var kinds = rule.sentiments || (rule.threshold >= 0 ? ["pos"] : ["neg"]);
+    if (kinds.indexOf(sentimentOf(n.impact)) < 0) return false;
+    return true;
+  }
+  function renderLog() {
+    var rules = getRules();
+    var news = allNews();
+    var matches = [];
+    news.forEach(function (n) {
+      var hit = rules.filter(function (r) { return ruleMatches(r, n); })[0];
+      if (hit) matches.push(n);
+    });
+    matches.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+    document.getElementById("logCountLabel").textContent = matches.length + " varsler";
+    document.getElementById("logEmptyHint").style.display = matches.length ? "none" : "block";
+    document.getElementById("alertLog").innerHTML = matches.slice(0, 20).map(function (n) {
+      var sentTo = notifySettings.enabled && notifySettings.email ? "Sendt til " + esc(notifySettings.email) : "Ville blitt sendt (aktiver e-postvarsler over)";
+      return '<div class="alert-log-item">' +
+        '<div class="mail-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"/></svg></div>' +
+        '<div class="col gap-2" style="min-width:0;flex-grow:1;">' +
+          '<span style="font-size:13px;font-weight:600;">' + esc(n.headline) + '</span>' +
+          '<span class="faint" style="font-size:11.5px;">' + n.ticker + ' · ' + n.source + ' · ' + n.time + ' · ' + sentTo + '</span>' +
+        '</div>' +
+        '<span class="pill ' + (n.impact > 0 ? "pill-pos" : n.impact < 0 ? "pill-neg" : "pill-neu") + '" style="flex-shrink:0;height:fit-content;">' + (n.impact > 0 ? "Positiv" : n.impact < 0 ? "Negativ" : "Nøytral") + '</span>' +
+      '</div>';
+    }).join("");
+  }
+
+  App.initModals(document);
+  renderEmailSettings(); renderWizard(); renderRules(); renderLog();
+})();
+</script>
+</body>
+</html>

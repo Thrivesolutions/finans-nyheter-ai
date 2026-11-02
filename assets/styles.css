@@ -1,0 +1,569 @@
+/* ============================================================
+   Innsikt – delt stilark
+   ============================================================ */
+
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #f4f4f5;
+  --card: #ffffff;
+  --border: #e4e4e7;
+  --border-soft: #f0f0f1;
+  --text: #18181b;
+  --text-dim: #3f3f46;
+  --text-mut: #71717a;
+  --text-faint: #a1a1aa;
+  --pos: #16a34a;
+  --pos-bg: #e9f8ee;
+  --neg: #dc2626;
+  --neg-bg: #fdecec;
+  --neu: #71717a;
+  --neu-bg: #f4f4f5;
+  --warn: #d97706;
+  --warn-bg: #fef3e2;
+  --accent: #18181b;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 9px;
+  --sidebar-w: 264px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+/* Skjuler siden til innloggingssjekken er ferdig, så man ikke ser et glimt av innhold
+   før en eventuell omdirigering til logg-inn.html. auth.js/logg-inn.html setter klassen. */
+html:not(.auth-ready) body { visibility: hidden; }
+/* Stille sidebytte: ingen hvit blink, sidepanelet står helt stille, kun innholdet byttes. */
+@view-transition { navigation: auto; }
+html { scrollbar-gutter: stable; }
+.sidebar { view-transition-name: sidebar; }
+::view-transition-group(sidebar) { animation: none; }
+::view-transition-old(sidebar), ::view-transition-new(sidebar) { animation: none; mix-blend-mode: normal; }
+::view-transition-old(root) { animation: none; }
+::view-transition-new(root) { animation: vt-in .12s ease-out both; }
+@keyframes vt-in { from { opacity: 0; } to { opacity: 1; } }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; }
+::placeholder { color: var(--text-faint); }
+
+/* ---------- Layout shell ---------- */
+.app-shell { min-height: 100vh; display: flex; }
+
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0; background: #fff;
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 20px; }
+.brand-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-eyebrow { font-size: 10.5px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; }
+.brand-name { font-size: 15px; font-weight: 700; }
+
+.navsection { font-size: 10.5px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .07em; padding: 14px 12px 6px; display: block; }
+.navlink { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: var(--radius-sm); color: var(--text-dim); font-size: 13.5px; font-weight: 500; }
+.navlink.active { background: var(--accent); color: #fff; font-weight: 600; }
+.navlink svg { flex-shrink: 0; }
+
+.user-card { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: var(--radius-md); background: var(--bg); }
+.avatar-sm { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+
+.main { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar { height: 64px; flex-shrink: 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: #fff; position: sticky; top: 0; z-index: 20; }
+.crumb { font-size: 13.5px; color: var(--text-faint); font-weight: 500; }
+.crumb b, .crumb .now { color: var(--text); font-weight: 600; }
+.crumb .sep { color: #d4d4d8; margin: 0 4px; }
+
+.content { flex-grow: 1; padding: 26px 28px 40px; display: flex; flex-direction: column; gap: 20px; }
+
+/* ---------- Basics ---------- */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.pad { padding: 20px 22px; }
+.pad-sm { padding: 14px 16px; }
+.row { display: flex; }
+.wrap { flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; }
+.gap-4 { gap: 4px; } .gap-6 { gap: 6px; } .gap-8 { gap: 8px; } .gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; } .gap-14 { gap: 14px; } .gap-16 { gap: 16px; } .gap-20 { gap: 20px; }
+.between { justify-content: space-between; }
+.center { align-items: center; }
+.grow { flex-grow: 1; }
+.muted { color: var(--text-mut); }
+.faint { color: var(--text-faint); }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--text-mut); text-transform: uppercase; }
+.h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+.h3 { margin: 0; font-size: 15px; font-weight: 700; }
+
+/* ---------- Buttons ---------- */
+.btn { height: 36px; padding: 0 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fff; font-size: 12.5px; font-weight: 600; color: var(--text-dim); display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.btn:hover { border-color: #d4d4d8; }
+.btn-primary { border: none; background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: .9; }
+.btn-ghost { border: none; background: transparent; color: var(--text-dim); }
+.btn-ghost:hover { background: var(--neu-bg); }
+.btn-danger-ghost { border: none; background: transparent; color: var(--neg); }
+.btn-danger { border: none; background: var(--neg); color: #fff; }
+.btn-danger:hover { opacity: .9; }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 12px; border-radius: 8px; }
+.icon-btn { width: 34px; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fff; display: inline-flex; align-items: center; justify-content: center; color: var(--text-dim); }
+.icon-btn.plain { border: none; background: transparent; color: var(--text-faint); }
+
+/* ---------- Form controls ---------- */
+.input, .select, textarea.ta {
+  height: 36px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fafafa;
+  padding: 0 12px; font-size: 12.5px; color: var(--text); width: 100%;
+}
+textarea.ta { height: auto; padding: 12px; line-height: 1.6; resize: vertical; }
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-wrap svg.ic { position: absolute; left: 11px; pointer-events: none; }
+.search-wrap .input { padding-left: 32px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* ---------- Pills / badges / chips ---------- */
+.pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.pill-pos { background: var(--pos-bg); color: var(--pos); }
+.pill-neg { background: var(--neg-bg); color: var(--neg); }
+.pill-neu { background: var(--neu-bg); color: var(--neu); }
+.pill-warn { background: var(--warn-bg); color: var(--warn); }
+.pill-dark { background: var(--accent); color: #fff; }
+.pill-outline { border: 1px solid var(--border); background: #fff; color: var(--text-dim); }
+/* Sterkere variant for "Svært positiv"/"Svært negativ" - samme pille, men heldekket farge
+   i stedet for lys bakgrunn, slik at styrken i nyhetsbildet skiller seg visuelt fra "Moderat". */
+.pill-pos-strong { background: var(--pos); color: #fff; }
+.pill-neg-strong { background: var(--neg); color: #fff; }
+
+.chip { padding: 7px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border); background: #fff; color: var(--text-dim); }
+.chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.tag { padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 600; background: var(--neu-bg); color: #52525b; }
+
+/* ---------- Tabs (segmented / underline) ---------- */
+.seg { display: inline-flex; background: var(--neu-bg); border-radius: 8px; padding: 3px; }
+.seg .seg-item { padding: 5px 10px; font-size: 12px; color: var(--text-faint); font-weight: 600; border-radius: 6px; cursor: pointer; }
+.seg .seg-item.active { background: var(--accent); color: #fff; }
+
+.tabbar { display: flex; align-items: center; gap: 2px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.tabbar .tab { padding: 12px 14px; font-size: 13px; font-weight: 600; color: var(--text-faint); border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer; }
+.tabbar .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.tabbar .tab:hover { color: var(--text-dim); }
+.tabpanel { display: none; }
+.tabpanel.active { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---------- Table ---------- */
+table.tbl { width: 100%; border-collapse: collapse; }
+table.tbl th { text-align: left; padding: 0 8px 10px 4px; font-size: 10.5px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; cursor: default; }
+table.tbl th.sortable { cursor: pointer; user-select: none; }
+table.tbl th.sortable:hover { color: var(--text-dim); }
+table.tbl td { padding: 10px 8px 10px 4px; font-size: 12.5px; color: var(--text-dim); border-bottom: 1px solid var(--border-soft); }
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl tr.hl td { background: #fafafa; font-weight: 700; }
+
+.info-dot {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--border);
+  font-size: 9.5px; font-weight: 700; color: var(--text-faint); background: transparent;
+  cursor: pointer; margin-left: 6px; vertical-align: middle; flex-shrink: 0; line-height: 1;
+}
+.info-dot:hover { color: var(--text-dim); border-color: var(--text-faint); }
+
+/* ---------- Toggle switch ---------- */
+.toggle { width: 36px; height: 20px; border-radius: 20px; border: none; position: relative; padding: 0; background: var(--border); flex-shrink: 0; }
+.toggle.on { background: var(--accent); }
+.toggle .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: left .12s ease; }
+.toggle.on .knob { left: 18px; }
+
+/* ---------- Slider ---------- */
+.slider-track { height: 6px; border-radius: 4px; background: #f0f0f1; position: relative; cursor: pointer; }
+.slider-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--accent); }
+.slider-handle { position: absolute; top: -5px; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); margin-left: -8px; cursor: grab; }
+
+/* ---------- Star rating ---------- */
+.star-rate { display: inline-flex; gap: 2px; }
+.star-rate .star { cursor: pointer; color: #d4d4d8; }
+.star-rate .star.filled { color: #18181b; }
+
+/* ---------- Accordion ---------- */
+.accordion-item { border-bottom: 1px solid var(--border-soft); }
+.accordion-item:last-child { border-bottom: none; }
+.accordion-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; cursor: pointer; gap: 12px; }
+.accordion-chev { transition: transform .15s ease; color: var(--text-faint); flex-shrink: 0; }
+.accordion-item.open .accordion-chev { transform: rotate(180deg); }
+.accordion-body { display: none; padding-bottom: 14px; }
+.accordion-item.open .accordion-body { display: block; }
+
+/* ---------- Modal ---------- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(24,24,27,.45); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+.modal-lg { max-width: 760px; }
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--border-soft); }
+.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.modal-foot { padding: 16px 22px; border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ---------- Company cards (selskaper.html) ---------- */
+.company-card { display: block; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 18px 16px; }
+.company-card:hover { border-color: #d4d4d8; }
+
+/* ---------- Misc ---------- */
+.divider { height: 1px; background: var(--border-soft); border: none; margin: 0; }
+.kpi-tile { flex: 1; min-width: 150px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; }
+.kpi-label { font-size: 10.5px; font-weight: 700; color: var(--text-faint); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.kpi-value { font-size: 17px; font-weight: 700; }
+
+/* Oversikt-fanen på selskapssiden skal strekke seg og fylle høyden vertikalt, slik at det ikke blir tomrom nederst. */
+#panel-overview.active { flex: 1; }
+
+.impact-bar-wrap { display: flex; align-items: center; gap: 7px; }
+/* Bakgrunnen deler linjen i tre like soner (hver 1/3 av -10..+10-skalaen): negativ (bear),
+   nøytral (base) og positiv (bull) – samme tredeling som brukes til farge og tekst. Tynne
+   streker (bredde styrt av --tick) markerer hvert enkelt poeng på skalaen. */
+.impact-bar {
+  --tick: 6px;
+  width: 120px; height: 8px; border-radius: 4px; position: relative; flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,.1);
+  background-image:
+    repeating-linear-gradient(to right, rgba(0,0,0,.16) 0, rgba(0,0,0,.16) 1px, transparent 1px, transparent var(--tick)),
+    linear-gradient(to right, var(--neg-bg) 0%, var(--neg-bg) 33.33%, var(--neu-bg) 33.33%, var(--neu-bg) 66.66%, var(--pos-bg) 66.66%, var(--pos-bg) 100%);
+}
+/* Midtlinjen (0-punktet) stikker tydelig opp/ned over rammen og ligger over fyllfargen. */
+.impact-bar .mid { position: absolute; z-index: 2; left: 50%; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--text-mut); border-radius: 1px; }
+.impact-bar .fill { position: absolute; z-index: 1; top: -1px; bottom: -1px; border-radius: 1px; box-shadow: 0 0 0 1px rgba(255,255,255,.85); }
+/* Bredere, mer synlig utgave i AI-vurderingen på Nyheter-fanen. */
+.news-detail-score .impact-bar { width: 160px; --tick: 8px; }
+
+/* ---------- Moderne filter-dropdown (Kilder, Alle datoer m.fl. på Nyheter-siden) ---------- */
+.fdrop { position: relative; }
+.fdrop-btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
+  border-radius: 10px; border: 1px solid var(--border); background: #fff;
+  font-size: 12.5px; font-weight: 600; color: var(--text-dim); cursor: pointer; white-space: nowrap;
+}
+.fdrop-btn:hover { border-color: #d4d4d8; }
+.fdrop-btn .fdrop-chev { flex-shrink: 0; color: var(--text-faint); transition: transform .15s ease; }
+.fdrop.open .fdrop-btn { border-color: var(--accent); color: var(--text); }
+.fdrop.open .fdrop-btn .fdrop-chev { transform: rotate(180deg); color: var(--accent); }
+.fdrop-panel {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0; z-index: 30;
+  width: max-content; min-width: 150px; max-width: 280px; max-height: 320px; overflow-y: auto; background: #fff;
+  border: 1px solid var(--border-soft); border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(15,15,20,.12); padding: 8px;
+}
+.fdrop.open .fdrop-panel { display: block; }
+.fdrop-panel-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-faint); padding: 6px 10px 5px; }
+.fdrop-opt {
+  display: block; width: 100%; text-align: left; border: none; background: transparent;
+  padding: 9px 10px; border-radius: 9px; font-size: 13px; font-weight: 500; color: var(--text-dim); cursor: pointer;
+}
+.fdrop-opt:hover { background: var(--neu-bg); }
+.fdrop-opt.active { background: var(--accent); color: #fff; font-weight: 600; }
+.fdrop-check { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 9px; font-size: 12.5px; color: var(--text-dim); cursor: pointer; }
+.fdrop-check:hover { background: var(--neu-bg); }
+.fdrop-check input { accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; }
+.fdrop-clear {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; color: var(--text-faint); font-size: 9px; flex-shrink: 0;
+}
+.fdrop-clear:hover { background: var(--neu-bg); color: var(--text-dim); }
+
+/* ---------- Terskel-glidebryter (-10..+10) i påvirkningsfilteret ---------- */
+.threshold-slider { width: 100%; accent-color: var(--accent); }
+.threshold-scale { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-faint); margin-top: 2px; }
+
+/* ---------- Påvirkningsmåler (-10..+10), brukes i nyhetstabeller ---------- */
+.impact-meter { position: relative; width: 44px; height: 6px; border-radius: 3px; background: var(--neu-bg); flex-shrink: 0; overflow: hidden; }
+.impact-meter-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.impact-meter-mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--border); }
+.impact-score { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; min-width: 24px; display: inline-block; }
+
+/* ---------- Fargevelger (brukes i "Legg til selskap") ----------
+   Klassisk "fargetavle": et stort felt (hvit øverst til venstre, full farge øverst til høyre,
+   svart nederst) + en fargelinje under som bytter grunnfarge (nyanse). */
+.cp-area {
+  position: relative; width: 100%; height: 150px; border-radius: 10px; cursor: crosshair;
+  touch-action: none; user-select: none; outline: none; overflow: hidden; scroll-margin-top: 110px;
+  background:
+    linear-gradient(to top, #000, rgba(0,0,0,0)),
+    linear-gradient(to right, #fff, rgba(255,255,255,0)),
+    var(--cp-hue, #ff0000);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.08) inset;
+}
+.cp-area:focus-visible { box-shadow: 0 0 0 2px #18181b; }
+.cp-cursor {
+  position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.35);
+  pointer-events: none;
+}
+.cp-hue {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 14px; border-radius: 7px; margin: 0; cursor: pointer;
+  background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.08) inset;
+}
+.cp-hue::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--cp-hue, #f00); border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.35);
+}
+.cp-hue::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: var(--cp-hue, #f00);
+  border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.35);
+}
+.cp-hex-row { display: flex; align-items: center; gap: 10px; }
+.cp-hex-swatch { width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(0,0,0,.12) inset; }
+.cp-hex-input { width: 110px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-transform: uppercase; }
+
+/* Bredere popup med skjemaet i to kolonner (selskapsopplysninger | farge) */
+.modal-wide { max-width: 880px; }
+.modal-body.form-2col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 32px; align-items: start; }
+.form-2col > .span-all { grid-column: 1 / -1; }
+.form-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.form-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 760px) {
+  .modal-body.form-2col { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Live forhåndsvisning av selskapets logoboks i "Legg til selskap" */
+.logo-preview {
+  position: sticky; top: 0; z-index: 2; margin: -20px -22px 0; padding: 14px 22px;
+  background: var(--bg, #fafafa); border-bottom: 1px solid var(--border-soft);
+  display: flex; align-items: center; gap: 14px;
+}
+.logo-preview-box {
+  width: 52px; height: 52px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; flex-shrink: 0; transition: background .08s;
+}
+
+/* ---------- Iframe-skall (app-shell.html): skjuler sidens egen sidebar/topbar når siden
+   vises inni rammen i skallet, slik at bare innholdet fyller flaten og meny/topplinje
+   aldri lastes på nytt eller rykker ved navigering mellom sider. ---------- */
+html.embedded .sidebar,
+html.embedded .topbar { display: none !important; }
+
+/* ---------- Moderne tidspunkt-velger (f.eks. "Tidspunkt på dagen oppsummeringen skal sendes") ---------- */
+.ftime { position: relative; }
+.ftime-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;
+  height: 36px; padding: 0 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: #fafafa; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; text-align: left;
+}
+.ftime-btn:hover { border-color: #d4d4d8; }
+.ftime-btn .ftime-icon { flex-shrink: 0; color: var(--text-faint); }
+.ftime.open .ftime-btn { border-color: var(--accent); background: #fff; }
+.ftime.open .ftime-btn .ftime-icon { color: var(--accent); }
+.ftime-panel {
+  display: none; position: absolute; top: calc(100% + 8px); left: 0; z-index: 30;
+  background: #fff; border: 1px solid var(--border-soft); border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(15,15,20,.12); padding: 10px;
+}
+.ftime.open .ftime-panel { display: block; }
+.ftime-cols { display: flex; align-items: stretch; gap: 2px; }
+.ftime-colsep { display: flex; align-items: flex-start; padding-top: 7px; font-size: 15px; font-weight: 700; color: var(--text-faint); }
+.ftime-col {
+  width: 58px; max-height: 196px; overflow-y: auto; scroll-behavior: smooth;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ftime-opt {
+  display: block; width: 100%; text-align: center; border: none; background: transparent;
+  padding: 7px 0; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--text-dim); cursor: pointer; flex-shrink: 0;
+}
+.ftime-opt:hover { background: var(--neu-bg); }
+.ftime-opt.active { background: var(--accent); color: #fff; }
+
+/* ---------- Nyhetsdetaljer (åpnet nyhet i Nyheter-fanen) ---------- */
+/* To like tekstkolonner (AI-oppsummering | Begrunnelse og konklusjon, skilt med en tynn
+   loddrett linje) på øverste rad, en full-bredde rad for notat-knappen/-feltet under dem,
+   og AI-vurderingen som en egen ramme til høyre som strekker seg over begge radene. */
+.news-detail {
+  display: grid; grid-template-columns: 1fr 1fr 210px;
+  grid-template-areas: "summary rationale score" "note note score";
+  gap: 16px 18px; align-items: start; padding-top: 2px;
+}
+.news-detail-summary { grid-area: summary; min-width: 0; }
+.news-detail-main { grid-area: rationale; min-width: 0; border-left: 1px solid var(--border-soft); padding-left: 18px; }
+.news-detail-noterow { grid-area: note; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.news-detail-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; color: var(--text); margin-bottom: 6px; }
+.news-detail-text { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--text-dim); }
+.news-detail-text.muted { color: var(--text-mut); }
+.news-detail-score {
+  grid-area: score;
+  display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center;
+  border: 1.5px solid; border-radius: 14px; padding: 16px 14px;
+}
+.news-detail-score-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-faint); }
+.news-detail-score-num { font-size: 30px; font-weight: 800; line-height: 1; margin-top: 2px; }
+.news-detail-score-sub { font-size: 11.5px; font-weight: 600; color: var(--text-mut); margin-bottom: 6px; }
+/* Lyst underlag bak selve linja slik at den ikke drukner i score-boksens grønne/røde bakgrunn. */
+.news-detail-score .impact-bar-wrap { background: rgba(255,255,255,.65); border-radius: 10px; padding: 7px 9px; }
+@media (max-width: 900px) {
+  .news-detail { grid-template-columns: 1fr; grid-template-areas: "summary" "rationale" "note" "score"; }
+  .news-detail-main { border-left: none; padding-left: 0; }
+}
+
+.assumption-badge { padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; cursor: pointer; }
+.assumption-badge.holds { background: var(--pos-bg); color: var(--pos); }
+.assumption-badge.weakened { background: var(--warn-bg); color: var(--warn); }
+.assumption-badge.broken { background: var(--neg-bg); color: var(--neg); }
+
+.empty-hint { font-size: 12px; color: var(--text-faint); padding: 10px 0; }
+
+/* Org-chart tre (Ledelse og struktur) — enkeltboks øverst, vannrett fordelingsstrek
+   ned til en rad bokser, som igjen kan forgrene seg videre nedover. */
+.tree { display: flex; flex-direction: column; align-items: center; overflow-x: auto; padding: 4px 2px 6px; }
+.tree ul { list-style: none; margin: 0; padding: 24px 0 0; position: relative; display: flex; }
+.tree ul::before {
+  content: ""; position: absolute; top: 0; left: 50%; width: 0; height: 24px;
+  border-left: 2px solid var(--border);
+}
+.tree li { list-style: none; display: flex; flex-direction: column; align-items: center; position: relative; padding: 24px 12px 0; }
+.tree li::before, .tree li::after {
+  content: ""; position: absolute; top: 0; right: 50%; width: 50%; height: 24px;
+  border-top: 2px solid var(--border);
+}
+.tree li::after { right: auto; left: 50%; border-left: 2px solid var(--border); }
+.tree li:only-child { padding-top: 0; }
+.tree li:only-child::before, .tree li:only-child::after { display: none; }
+.tree li:first-child::before { border: none; }
+.tree li:last-child::after { border: none; }
+.tree li:first-child::after { border-radius: 6px 0 0 0; }
+.tree li:last-child::before { border-right: 2px solid var(--border); border-radius: 0 6px 0 0; }
+.orgnode {
+  display: inline-flex; flex-direction: column; gap: 3px; align-items: center; text-align: center;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+  padding: 8px 14px; min-width: 128px;
+}
+.orgnode.big { padding: 10px 18px; border-width: 1.5px; }
+.orgnode .oname { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.orgnode.big .oname { font-size: 13.5px; }
+.orgnode .orole { font-size: 10.5px; color: var(--text-mut); }
+
+@media (max-width: 980px) {
+  .sidebar { display: none; }
+  .content { padding: 20px 16px 32px; }
+}
+
+/* ---------- Kalender (velg startdato for en periodisk varsling) ---------- */
+.cal-head { display: flex; align-items: center; justify-content: space-between; }
+.cal-nav-btn { background: #fff; border: 1px solid var(--border); border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; color: var(--text-dim); }
+.cal-nav-btn:hover { border-color: #d4d4d8; }
+.cal-month-label { font-size: 14px; font-weight: 700; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-weekday { font-size: 10px; font-weight: 700; color: var(--text-faint); text-align: center; padding-bottom: 2px; text-transform: uppercase; letter-spacing: .03em; }
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  border-radius: 9px; font-size: 12.5px; font-weight: 600; color: var(--text-dim);
+  position: relative; background: transparent;
+}
+.cal-day.cal-pad { visibility: hidden; }
+.cal-day.cal-disabled { color: var(--text-faint); opacity: .4; }
+.cal-day.cal-selectable { cursor: pointer; }
+.cal-day.cal-selectable:hover { background: var(--neu-bg); }
+.cal-day.cal-collect { background: var(--pos-bg); color: var(--text); }
+.cal-day.cal-disabled.cal-collect { opacity: .7; color: var(--text-dim); }
+.cal-day.cal-receive { background: var(--accent); color: #fff; font-weight: 700; box-shadow: 0 0 0 3px var(--pos-bg); }
+.cal-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-mut); }
+.cal-legend-item { display: flex; align-items: center; gap: 6px; }
+.cal-legend-swatch { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+
+/* Selskapsstruktur som pyramide: ledergruppen ligger i et rutenett under sjefen */
+.org-pyramid { overflow-x: visible; align-items: center; padding: 8px 2px 6px; }
+.org-stem { width: 2px; height: 22px; background: var(--border); flex-shrink: 0; }
+.org-group { width: 100%; max-width: 1040px; border: 1px dashed var(--border); border-radius: 12px; padding: 12px 14px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.org-glabel { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-mut); }
+.org-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
+.org-grid .orgnode { width: 190px; min-height: 64px; justify-content: center; }
+.org-pyramid > .orgnode { max-width: 420px; }
+@media (max-width: 700px) { .org-grid .orgnode { width: calc(50% - 6px); } }
+
+/* ===== Eksempel-popup: hvordan et selskap styres ===== */
+.hx-modal { max-width: 1020px; }
+.hx-intro { font-size: 13.5px; line-height: 1.6; color: var(--text-dim); margin: 0; }
+.hx-flow { display: flex; flex-direction: column; }
+.hx-level { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1.25fr); gap: 18px; align-items: center; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 18px; background: #fff; }
+.hx-num { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.hx-info h4 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--text); }
+.hx-info p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--text-dim); }
+.hx-vis { background: var(--neu-bg); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.hx-vis-label { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-mut); }
+.hx-bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; }
+.hx-bar > span { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11.5px; font-weight: 700; }
+.hx-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--text-dim); }
+.hx-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.hx-note { font-size: 11.5px; line-height: 1.5; color: var(--text-dim); }
+.hx-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hx-chip { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 600; color: var(--text); }
+.hx-chip.dark { background: var(--accent); color: #fff; border-color: var(--accent); }
+.hx-chip small { font-weight: 500; color: var(--text-mut); margin-left: 4px; }
+.hx-chip.dark small { color: #d4d4d8; }
+.hx-arrow { display: flex; align-items: center; justify-content: center; gap: 26px; padding: 8px 0; flex-wrap: wrap; }
+.hx-arrow .down, .hx-arrow .up { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 5px 12px 5px 8px; }
+.hx-arrow .down { background: var(--pos-bg); color: #166534; }
+.hx-arrow .up { background: var(--warn-bg); color: #92400e; }
+.hx-arrow svg { flex-shrink: 0; }
+.hx-scen-title { font-size: 13px; font-weight: 700; margin: 4px 0 0; }
+.hx-scen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.hx-scen > div { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; font-size: 12.5px; line-height: 1.55; color: var(--text-dim); }
+.hx-scen b { display: block; color: var(--text); margin-bottom: 3px; font-size: 12.5px; }
+.hx-org-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+@media (max-width: 800px) {
+  .hx-level { grid-template-columns: 36px minmax(0, 1fr); }
+  .hx-level .hx-vis { grid-column: 1 / -1; }
+  .hx-scen { grid-template-columns: minmax(0, 1fr); }
+}
+.hx-level.hx-mid { border-style: dashed; background: #fafafa; }
+.hx-level.hx-mid .hx-num { background: #fff; color: var(--text); border: 2px solid var(--accent); font-size: 12px; }
+.hx-steps { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; counter-reset: hx; }
+.hx-steps li { counter-increment: hx; display: flex; gap: 9px; align-items: flex-start; font-size: 12px; line-height: 1.5; color: var(--text-dim); }
+.hx-steps li::before { content: counter(hx); flex: 0 0 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+
+/* Personkort: rammer for stilling / posisjon / startdato + kort stillingsbeskrivelse */
+.phead{flex:1;min-width:0;display:grid;grid-template-columns:230px 1fr;gap:8px 20px;align-items:center;}
+.pname{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+.pinfo{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.pframes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr) minmax(0,.7fr);gap:8px;align-items:stretch;}
+.pframe-d{font-size:12px;line-height:1.45;color:var(--text-mut,#71717a);}
+.pdescf{justify-content:center;}
+@media (max-width:760px){.phead{grid-template-columns:1fr;}.pframes{grid-template-columns:1fr;}}
+.pframe{display:flex;flex-direction:column;gap:2px;padding:6px 11px;border:1px solid var(--border,rgba(128,128,128,.28));border-radius:8px;background:var(--surface-2,rgba(128,128,128,.07));min-width:0;}
+.pframe-l{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mut,#8a8f98);font-weight:600;}
+.pframe-v{font-size:13px;font-weight:600;line-height:1.3;}
+.pframe.faded{opacity:.6;border-style:dashed;}
+.pframe.faded .pframe-v{font-weight:500;}
+.pdesc{font-size:12px;line-height:1.5;}
+
+/* Tese-guide */
+.ex-text{font-size:13px;line-height:1.55;background:var(--neu-bg,rgba(128,128,128,.07));border:1px solid var(--border,#e4e4e7);border-radius:8px;padding:10px 12px;}
+.ex-tip{font-size:12.5px;line-height:1.55;color:var(--text-dim,#52525b);}
+
+.ex-disc{font-size:12px;line-height:1.5;color:var(--text-mut,#71717a);margin:8px 0 0;}
+.ex-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px;}
+.ex-kpi{display:flex;flex-direction:column;gap:2px;border:1px solid var(--border,#e4e4e7);border-radius:10px;padding:10px 12px;}
+.ex-kpi span{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mut,#71717a);font-weight:600;}
+.ex-kpi b{font-size:18px;font-weight:700;}
+.ex-kpi i{font-size:11.5px;font-style:normal;color:var(--text-mut,#71717a);}
+@media (max-width:700px){.ex-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+/* Funn som krysser tesen: to ulike skalaer */
+.sig-scales{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px 24px;margin-top:2px;}
+.sig-scale{display:flex;flex-direction:column;gap:5px;}
+.lik-bar{width:120px;height:8px;border-radius:4px;position:relative;flex-shrink:0;border:1px solid rgba(0,0,0,.1);background:var(--neu-bg,rgba(128,128,128,.12));overflow:hidden;}
+.lik-fill{position:absolute;left:0;top:0;bottom:0;background:#3b82f6;border-radius:3px;}
+
+/* Hvordan vi gir poeng */
+.score-table{width:100%;border-collapse:collapse;margin:14px 0 6px;font-size:12.5px;}
+.score-table th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-mut,#71717a);padding:6px 10px;border-bottom:1px solid var(--border,#e4e4e7);}
+.score-table td{padding:9px 10px;border-bottom:1px solid var(--border-soft,#f0f0f2);vertical-align:top;line-height:1.5;}
+.score-table tr.pos td:first-child{color:var(--pos);} .score-table tr.neg td:first-child{color:var(--neg);}
+.score-table tr.pos{background:var(--pos-bg);} .score-table tr.neg{background:var(--neg-bg);} .score-table tr.neu{background:var(--neu-bg);}
+.score-h{margin:18px 0 6px;font-size:13px;font-weight:700;}
+.score-list{margin:6px 0 10px;padding-left:20px;font-size:12.5px;line-height:1.6;}
+@media (max-width:700px){.score-table th:nth-child(3),.score-table td:nth-child(3){display:none;}}
+
+/* Små hjelpetekster under overskriftene i nyhetsdetaljene */
+.news-detail-hint { font-size: 11.5px; color: var(--text-mut); margin: -2px 0 6px; line-height: 1.4; }
+.news-detail-concl { margin: 8px 0 0; font-size: 12.5px; line-height: 1.45; }
+.impact-word { font-size: 13px; font-weight: 700; }

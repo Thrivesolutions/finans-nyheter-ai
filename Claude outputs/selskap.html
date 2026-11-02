@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Selskapsprofil – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm">EO</div><div class="col" style="line-height:1.2;min-width:0;"><span style="font-size:13px;font-weight:600;">Emil</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> Selskaper <span class="sep">/</span> <b id="crumbCompany">…</b></div>
+      <div class="row center gap-14">
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <a href="selskaper.html" class="row center gap-6" style="font-size:12.5px;color:var(--text-mut);font-weight:600;width:fit-content;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Selskaper
+      </a>
+
+      <div id="companyHeader"></div>
+
+      <div class="tabbar" data-tabbar="company" id="companyTabbar">
+        <div class="tab active" data-tab="overview">Oversikt</div>
+        <div class="tab" data-tab="news">Nyheter</div>
+        <div class="tab" data-tab="financials">Finans</div>
+        <div class="tab" data-tab="valuation">Verdsettelse</div>
+        <div class="tab" data-tab="estimates">Estimater</div>
+        <div class="tab" data-tab="events">Hendelser</div>
+        <div class="tab" data-tab="ownership">Eierskap</div>
+        <div class="tab" data-tab="competitors">Konkurrenter</div>
+        <div class="tab" data-tab="thesis">Tese &amp; risiko</div>
+        <div class="tab" data-tab="sourcesai">Kilder &amp; AI</div>
+      </div>
+
+      <div class="tabpanel active" data-tabpanel="company" data-panel="overview" id="panel-overview"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="news" id="panel-news"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="financials" id="panel-financials"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="valuation" id="panel-valuation"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="estimates" id="panel-estimates"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="events" id="panel-events"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="ownership" id="panel-ownership"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="competitors" id="panel-competitors"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="thesis" id="panel-thesis"></div>
+      <div class="tabpanel" data-tabpanel="company" data-panel="sourcesai" id="panel-sourcesai"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: eksporter rapport -->
+<div class="modal-overlay" id="modalExport">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Eksporter rapport</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="muted" style="font-size:13px;margin:0;">Dette genererer en PDF-oppsummering av selskapsprofilen (nøkkeltall, siste nyheter og tese). Eksportfunksjonen er ikke koblet til ekte data ennå – dette er et forhåndsvisning av hvordan den vil fungere.</p>
+      <div class="card pad-sm" style="background:#fafafa;">
+        <div class="row between center"><span style="font-size:13px;font-weight:600;" id="exportCompanyName">–</span><span class="tag">PDF · 2 sider</span></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Lukk</button><button class="btn btn-primary" disabled title="Kommer når backend er koblet til">Last ned PDF</button></div>
+  </div>
+</div>
+
+<!-- MODAL: ny hendelse -->
+<div class="modal-overlay" id="modalNewEvent">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Ny hendelse</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Tittel</span><input class="input" id="evTitle" placeholder="F.eks. Møte med IR-avdelingen"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Dato</span><input class="input" id="evDate" type="date"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Type</span>
+        <select class="select" id="evType">
+          <option>Rapport</option><option>Kapitalmarkedsdag</option><option>Generalforsamling</option><option>Ex-dato</option>
+          <option>Produktlansering</option><option>Regulatorisk</option><option>Kontrakt</option><option>Rettssak</option>
+          <option>Oppkjøp</option><option>Annet</option>
+        </select>
+      </label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Beskrivelse</span><textarea class="ta" id="evDesc" rows="3" placeholder="Kort beskrivelse av hendelsen..."></textarea></label>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="evSaveBtn">Legg til hendelse</button></div>
+  </div>
+</div>
+
+<!-- MODAL: ny kilde -->
+<div class="modal-overlay" id="modalNewSource">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Ny kilde</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Navn / URL</span><input class="input" id="srcName" placeholder="F.eks. Offshore Energy Today"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Kategori</span><select class="select" id="srcCategory"></select></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Hva skal AI-en se etter fra denne kilden?</span><textarea class="ta" id="srcPrompt" rows="4" placeholder="Beskriv nøyaktig hva AI-assistenten skal lete etter og vurdere fra denne kilden..."></textarea></label>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="srcSaveBtn">Legg til kilde</button></div>
+  </div>
+</div>
+
+<!-- MODAL: test prompt -->
+<div class="modal-overlay" id="modalTestPrompt">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 class="h3">Test prompt</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body" id="testPromptBody"></div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Lukk</button><button class="btn btn-primary" id="runTestBtn">Kjør test</button></div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+  var params = new URLSearchParams(location.search);
+  var ticker = params.get("ticker") || "EQNR";
+  if (!MOCK.companies[ticker]) ticker = "EQNR";
+
+  // ---------- persistence per selskap ----------
+  function loadOverrides(t) { return App.store.get("company:" + t, {}); }
+  function saveOverrides(t, ov) { App.store.set("company:" + t, ov); }
+
+  var overrides = loadOverrides(ticker);
+  var base = MOCK.companies[ticker];
+  var C = JSON.parse(JSON.stringify(base)); // arbeidskopi
+
+  if (overrides.inPortfolio !== undefined) C.inPortfolio = overrides.inPortfolio;
+  if (overrides.thesis) Object.assign(C.thesis, overrides.thesis);
+  if (overrides.sources) C.sources = overrides.sources;
+  if (overrides.thresholds) Object.assign(C.thresholds, overrides.thresholds);
+  if (overrides.newsMeta) {
+    C.news.forEach(function (n) {
+      var m = overrides.newsMeta[n.id];
+      if (m) Object.assign(n, m);
+    });
+  }
+  if (overrides.manualEvents) C.events = C.events.concat(overrides.manualEvents);
+
+  function persist(patch) {
+    Object.assign(overrides, patch);
+    saveOverrides(ticker, overrides);
+  }
+
+  var G = MOCK.globalDefaults;
+
+  // ---------- formatting ----------
+  function n1(v) { return (v === undefined || v === null) ? "–" : v.toLocaleString("nb-NO", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
+  function n2(v) { return (v === undefined || v === null) ? "–" : v.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function pct(v, d) { if (v === undefined || v === null) return "–"; d = d === undefined ? 1 : d; return (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(d).replace(".", ",") + " %"; }
+  function pctClass(v) { return v > 0 ? "pill-pos" : v < 0 ? "pill-neg" : "pill-neu"; }
+  function money(v, unit) { return n1(v) + " " + unit; }
+  function esc(s) { return App.escapeHtml(s); }
+
+  // ---------- header ----------
+  function renderHeader() {
+    var options = MOCK.companyOrder.map(function (t) {
+      var co = MOCK.companies[t];
+      return '<option value="' + t + '"' + (t === ticker ? " selected" : "") + '>' + co.ticker + " – " + co.name + "</option>";
+    }).join("");
+
+    document.getElementById("crumbCompany").textContent = C.name;
+    document.getElementById("exportCompanyName").textContent = C.name + " (" + C.ticker + ")";
+    document.title = C.name + " – Innsikt";
+
+    document.getElementById("companyHeader").innerHTML =
+      '<div class="row wrap between" style="gap:16px;">' +
+        '<div class="row center gap-16">' +
+          '<div style="width:56px;height:56px;border-radius:14px;background:' + C.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;">' + C.initials + '</div>' +
+          '<div>' +
+            '<div class="row center gap-10 wrap">' +
+              '<h1 class="h1" style="font-size:23px;">' + esc(C.name) + '</h1>' +
+              '<span class="pill ' + (C.inPortfolio ? "pill-dark" : "pill-outline") + '" id="portfolioPill">' + (C.inPortfolio ? "I porteføljen" : "På overvåkningsliste") + '</span>' +
+            '</div>' +
+            '<span class="muted" style="font-size:13px;">' + C.ticker + ' · ' + C.exchange + ' · ' + C.sector + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="row center gap-20 wrap">' +
+          '<div style="text-align:right;">' +
+            '<div style="font-size:24px;font-weight:700;">' + n2(C.price) + ' ' + C.currency + '</div>' +
+            '<div class="row center gap-4" style="justify-content:flex-end;font-size:12.5px;font-weight:700;color:' + (C.changePct >= 0 ? "var(--pos)" : "var(--neg)") + ';">' + pct(C.changePct) + ' i dag</div>' +
+          '</div>' +
+          '<select class="select" id="companySwitcher" style="width:230px;">' + options + '</select>' +
+          '<div class="row gap-8">' +
+            '<button class="btn" id="togglePortfolioBtn">' + (C.inPortfolio ? "Fjern fra portefølje" : "Legg til i portefølje") + '</button>' +
+            '<button class="btn btn-primary" data-modal-open="modalExport">Eksporter rapport</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("companySwitcher").addEventListener("change", function (e) {
+      location.href = "selskap.html?ticker=" + e.target.value;
+    });
+    document.getElementById("togglePortfolioBtn").addEventListener("click", function () {
+      C.inPortfolio = !C.inPortfolio;
+      persist({ inPortfolio: C.inPortfolio });
+      renderHeader();
+    });
+  }
+
+  // ---------- OVERSIKT ----------
+  var NO_MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, mai: 4, jun: 5, jul: 6, aug: 7, sep: 8, okt: 9, nov: 10, des: 11 };
+  function parseNoDate(s) {
+    var m = /(\d{1,2})\.\s*([a-zæøå]+)\s*(\d{4})/i.exec(s || "");
+    if (!m || NO_MONTHS[m[2].toLowerCase()] === undefined) return "2026-01-01";
+    var mm = String(NO_MONTHS[m[2].toLowerCase()] + 1); if (mm.length < 2) mm = "0" + mm;
+    var dd = String(parseInt(m[1], 10)); if (dd.length < 2) dd = "0" + dd;
+    return m[3] + "-" + mm + "-" + dd;
+  }
+
+  function materialityList() {
+    var real = C.news.filter(function (n) { return n.material; });
+    var reportDate = parseNoDate(C.lastReport.date);
+    var reportEntry = {
+      id: "synthetic-report", source: "Rapport", time: App.fmtDateShort(reportDate), date: reportDate,
+      headline: C.lastReport.label + " – " + C.lastReport.summary, impact: null, synthetic: true
+    };
+    return real.concat([reportEntry])
+      .sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 4);
+  }
+
+  function renderOverview() {
+    var pricePts = App.linePoints(C.priceHistory, 640, 150, 8, 8);
+    var priceArea = App.areaPoints(pricePts, 640, 150);
+    var lastLow = base.week52Low, lastHigh = base.week52High;
+
+    var recentNews = materialityList().map(function (n) {
+      var badge = n.synthetic ? '<span class="pill pill-outline" style="flex-shrink:0;height:fit-content;">Rapport</span>' :
+        '<span class="pill ' + (n.impact > 2 ? "pill-pos" : n.impact < -2 ? "pill-neg" : "pill-neu") + '" style="flex-shrink:0;height:fit-content;">' + (n.impact > 0 ? "+" : "") + n.impact + '</span>';
+      return '<div class="row gap-12" style="padding:10px 0;border-bottom:1px solid var(--border-soft);">' +
+        badge +
+        '<div class="col gap-2" style="min-width:0;">' +
+          '<span style="font-size:13px;font-weight:600;">' + esc(n.headline) + '</span>' +
+          '<span class="faint" style="font-size:11.5px;">' + n.source + ' · ' + n.time + '</span>' +
+        '</div></div>';
+    }).join("") || '<p class="empty-hint">Ingen vesentlige nyheter registrert.</p>';
+
+    var kpis = [
+      ["Markedsverdi", C.marketCapText], ["P/E", n1(C.peRatio)], ["Forward P/E", n1(C.fwdPe)],
+      ["EV/EBITDA", n1(C.evEbitda)], ["Dividendeyield", pct(C.divYield)], ["52-ukers range", n1(lastLow) + "–" + n1(lastHigh)],
+      ["Volum i dag", C.volumeToday], ["Utestående aksjer", C.sharesOutText]
+    ].map(function (kv) {
+      return '<div class="kpi-tile"><div class="kpi-label">' + kv[0] + '</div><div class="kpi-value">' + kv[1] + '</div></div>';
+    }).join("");
+
+    var dirBadge = { up: '<span class="pill pill-pos">Hevet</span>', down: '<span class="pill pill-neg">Justert ned</span>', flat: '<span class="pill pill-neu">Uendret</span>' }[C.guidanceChange.direction];
+
+    var html =
+      '<div class="row wrap gap-16">' + kpis + '</div>' +
+      '<div class="row wrap gap-16">' +
+        '<div class="card pad" style="flex:1.7;min-width:480px;">' +
+          '<div class="eyebrow" style="margin-bottom:14px;">Kursutvikling (siste periode)</div>' +
+          '<svg width="100%" height="150" viewBox="0 0 640 150" preserveAspectRatio="none">' +
+            '<polyline points="' + priceArea + '" fill="var(--bg)"></polyline>' +
+            '<polyline points="' + pricePts + '" fill="none" stroke="' + C.color + '" stroke-width="2.2"></polyline>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="card pad col gap-12" style="flex:1;min-width:280px;">' +
+          '<div class="eyebrow">Endringer siden sist</div>' +
+          '<div class="row between center"><span style="font-size:12.5px;">Neste hendelse</span><span class="pill pill-outline">' + C.nextEvent.date + '</span></div>' +
+          '<span style="font-size:12.5px;font-weight:600;">' + esc(C.nextEvent.label) + '</span>' +
+          '<hr class="divider">' +
+          '<div class="row between center"><span style="font-size:12.5px;">Guiding</span>' + dirBadge + '</div>' +
+          '<span class="muted" style="font-size:12px;">' + esc(C.guidanceChange.text) + '</span>' +
+          '<hr class="divider">' +
+          '<div class="row between center"><span style="font-size:12.5px;">Eier-/innsideendring</span></div>' +
+          '<span class="muted" style="font-size:12px;">' + esc(C.insiderChange.text) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card pad">' +
+        '<div class="eyebrow" style="margin-bottom:12px;">Siste vesentlige nyheter</div>' + recentNews +
+        '<button class="btn btn-sm" style="margin-top:12px;" data-goto-tab="news">Se hele nyhetsfeeden →</button>' +
+      '</div>' +
+      '<div class="row wrap gap-16">' +
+        '<div class="card pad col gap-10" style="flex:1;min-width:260px;">' +
+          '<div class="eyebrow">Viktigste risikoer</div>' +
+          '<ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--text-dim);line-height:1.7;">' + C.keyRisks.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + '</ul>' +
+        '</div>' +
+        '<div class="card pad col gap-10" style="flex:1;min-width:260px;">' +
+          '<div class="eyebrow">Viktigste drivere</div>' +
+          '<ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--text-dim);line-height:1.7;">' + C.keyDrivers.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + '</ul>' +
+        '</div>' +
+        '<div class="card pad col gap-10" style="flex:1;min-width:260px;">' +
+          '<div class="eyebrow">Investeringscase – kort</div>' +
+          '<p style="margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.6;">' + esc(C.thesisSummary) + '</p>' +
+          '<button class="btn btn-sm" style="align-self:flex-start;" data-goto-tab="thesis">Åpne full tese →</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("panel-overview").innerHTML = html;
+  }
+
+  // ---------- NYHETER ----------
+  var newsState = { search: "", sources: null, category: "Alle", range: "all", sort: "date", openId: null };
+
+  function newsMatches(n) {
+    if (newsState.search && (n.headline + " " + n.aiSummary).toLowerCase().indexOf(newsState.search.toLowerCase()) === -1) return false;
+    if (newsState.sources && !newsState.sources.has(n.source)) return false;
+    if (newsState.category !== "Alle" && n.category !== newsState.category) return false;
+    if (newsState.range !== "all") {
+      var days = { "24t": 1, "uke": 7, "maned": 30 }[newsState.range];
+      var d = (new Date("2026-09-18") - new Date(n.date)) / 86400000;
+      if (d > days) return false;
+    }
+    return true;
+  }
+
+  function renderNewsList() {
+    var list = C.news.filter(newsMatches);
+    if (newsState.sort === "impact") list.sort(function (a, b) { return Math.abs(b.impact) - Math.abs(a.impact); });
+    else if (newsState.sort === "relevance") list.sort(function (a, b) { return (b.material === a.material) ? 0 : (b.material ? 1 : -1); });
+    else list.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+
+    var body = list.map(function (n) {
+      var open = newsState.openId === n.id;
+      var w = Math.min(Math.abs(n.impact) * 6, 60);
+      var left = n.impact >= 0 ? 60 : 60 - w;
+      var barColor = n.impact > 2 ? "var(--pos)" : n.impact < -2 ? "var(--neg)" : "var(--neu)";
+      return '<div class="accordion-item' + (open ? " open" : "") + '" data-news-id="' + n.id + '">' +
+        '<div class="accordion-head" data-news-toggle="' + n.id + '">' +
+          '<div class="row center gap-12" style="min-width:0;">' +
+            '<span class="tag">' + n.source + '</span>' +
+            '<span class="tag">' + n.category + '</span>' +
+            (n.read ? '' : '<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;"></span>') +
+            '<span style="font-size:13px;font-weight:600;">' + esc(n.headline) + '</span>' +
+          '</div>' +
+          '<div class="row center gap-10" style="flex-shrink:0;">' +
+            (n.flagged ? '<span title="Flagget">🚩</span>' : '') +
+            '<span class="faint" style="font-size:11.5px;">' + n.time + '</span>' +
+            '<span class="pill ' + (n.impact > 2 ? "pill-pos" : n.impact < -2 ? "pill-neg" : "pill-neu") + '">' + (n.impact > 0 ? "+" : "") + n.impact + '</span>' +
+            '<svg class="accordion-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</div>' +
+        '</div>' +
+        '<div class="accordion-body col gap-12">' +
+          '<p style="margin:0;font-size:12.5px;color:var(--text-dim);line-height:1.6;"><b>AI-oppsummering:</b> ' + esc(n.aiSummary) + '</p>' +
+          '<div class="impact-bar-wrap"><div class="impact-bar"><div class="mid"></div><div class="fill" style="left:' + left + 'px;width:' + w + 'px;background:' + barColor + ';"></div></div><span style="font-size:11px;font-weight:700;color:' + barColor + ';">' + (n.impact > 0 ? "+" : "") + n.impact + '/10 – ' + n.impactLabel + '</span></div>' +
+          '<p style="margin:0;font-size:12.5px;color:var(--text-mut);line-height:1.6;"><b>Hvorfor:</b> ' + esc(n.rationale) + '</p>' +
+          '<div class="row gap-6 wrap"><span class="faint" style="font-size:11.5px;">Berører caset:</span>' + (n.caseAreas.length ? n.caseAreas.map(function (a) { return '<span class="tag">' + a + '</span>'; }).join("") : '<span class="faint" style="font-size:11.5px;">Ingen direkte kobling</span>') + '</div>' +
+          '<div class="row gap-8 wrap" style="padding-top:4px;">' +
+            '<button class="btn btn-sm" data-news-action="read" data-id="' + n.id + '">' + (n.read ? "Merk som ulest" : "Merk som lest") + '</button>' +
+            '<button class="btn btn-sm" data-news-action="flag" data-id="' + n.id + '">' + (n.flagged ? "Fjern flagg" : "Flagg") + '</button>' +
+            '<button class="btn btn-sm" data-news-action="note" data-id="' + n.id + '">Legg til notat</button>' +
+          '</div>' +
+          '<div class="col gap-8" id="noteArea-' + n.id + '" style="display:none;">' +
+            '<textarea class="ta" rows="2" id="noteInput-' + n.id + '" placeholder="Skriv et notat om denne artikkelen...">' + esc(n.note || "") + '</textarea>' +
+            '<button class="btn btn-sm btn-primary" style="align-self:flex-start;" data-news-action="savenote" data-id="' + n.id + '">Lagre notat</button>' +
+          '</div>' +
+          (n.note ? '<p style="margin:0;font-size:11.5px;color:var(--text-mut);background:#fafafa;padding:8px 10px;border-radius:8px;"><b>Notat:</b> ' + esc(n.note) + '</p>' : '') +
+        '</div>' +
+      '</div>';
+    }).join("") || '<p class="empty-hint">Ingen nyheter matcher filteret.</p>';
+
+    document.getElementById("newsListContainer").innerHTML = body;
+    App.qsa("[data-news-toggle]", document.getElementById("newsListContainer")).forEach(function (h) {
+      h.addEventListener("click", function () {
+        var id = h.getAttribute("data-news-toggle");
+        newsState.openId = newsState.openId === id ? null : id;
+        renderNewsList();
+      });
+    });
+    App.qsa("[data-news-action]", document.getElementById("newsListContainer")).forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute("data-id"), action = b.getAttribute("data-news-action");
+        var item = C.news.filter(function (x) { return x.id === id; })[0];
+        var meta = overrides.newsMeta || {};
+        if (action === "read") { item.read = !item.read; meta[id] = Object.assign(meta[id] || {}, { read: item.read }); }
+        if (action === "flag") { item.flagged = !item.flagged; meta[id] = Object.assign(meta[id] || {}, { flagged: item.flagged }); }
+        if (action === "note") { var box = document.getElementById("noteArea-" + id); box.style.display = box.style.display === "none" ? "flex" : "none"; return; }
+        if (action === "savenote") { item.note = document.getElementById("noteInput-" + id).value; meta[id] = Object.assign(meta[id] || {}, { note: item.note }); }
+        persist({ newsMeta: meta });
+        renderNewsList();
+      });
+    });
+  }
+
+  function renderNews() {
+    var sources = Array.from(new Set(C.news.map(function (n) { return n.source; })));
+    var categories = ["Alle"].concat(Array.from(new Set(C.news.map(function (n) { return n.category; }))));
+    var html =
+      '<div class="card pad col gap-14">' +
+        '<div class="row wrap gap-10 between">' +
+          '<div class="search-wrap" style="width:260px;"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg><input class="input" id="newsSearchInput" placeholder="Søk i nyheter..."></div>' +
+          '<div class="row gap-8 wrap">' +
+            '<details style="position:relative;"><summary class="btn btn-sm" style="list-style:none;">Kilder ▾</summary>' +
+              '<div class="card pad-sm col gap-6" style="position:absolute;right:0;top:36px;z-index:10;min-width:180px;">' +
+                sources.map(function (s) { return '<label class="row gap-8 center" style="font-size:12.5px;"><input type="checkbox" class="newsSourceCb" value="' + s + '" checked> ' + s + '</label>'; }).join("") +
+              '</div>' +
+            '</details>' +
+            '<select class="select" id="newsRangeSelect" style="width:150px;"><option value="all">Alle datoer</option><option value="24t">Siste 24 timer</option><option value="uke">Siste uke</option><option value="maned">Siste måned</option></select>' +
+            '<select class="select" id="newsSortSelect" style="width:170px;"><option value="date">Sorter: Dato</option><option value="impact">Sorter: Påvirkning</option><option value="relevance">Sorter: Relevans</option></select>' +
+          '</div>' +
+        '</div>' +
+        '<div class="chip-row" id="newsCategoryChips">' + categories.map(function (c) { return '<span class="chip' + (c === "Alle" ? " active" : "") + '" data-cat="' + c + '">' + c + '</span>'; }).join("") + '</div>' +
+        '<div id="newsListContainer" class="col"></div>' +
+      '</div>';
+    document.getElementById("panel-news").innerHTML = html;
+
+    document.getElementById("newsSearchInput").addEventListener("input", App.debounce(function (e) { newsState.search = e.target.value; renderNewsList(); }, 200));
+    document.getElementById("newsRangeSelect").addEventListener("change", function (e) { newsState.range = e.target.value; renderNewsList(); });
+    document.getElementById("newsSortSelect").addEventListener("change", function (e) { newsState.sort = e.target.value; renderNewsList(); });
+    App.qsa(".newsSourceCb", document.getElementById("panel-news")).forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var checked = App.qsa(".newsSourceCb", document.getElementById("panel-news")).filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
+        newsState.sources = new Set(checked);
+        renderNewsList();
+      });
+    });
+    App.qsa("#newsCategoryChips .chip", document.getElementById("panel-news")).forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        App.qsa("#newsCategoryChips .chip", document.getElementById("panel-news")).forEach(function (c) { c.classList.remove("active"); });
+        chip.classList.add("active");
+        newsState.category = chip.getAttribute("data-cat");
+        renderNewsList();
+      });
+    });
+    renderNewsList();
+  }
+
+  // ---------- FINANS ----------
+  var finState = { period: "annual" };
+  var FIN_ROWS = [
+    ["revenue", "Omsetning", "u"], ["revenueGrowth", "Omsetningsvekst", "%"], ["ebitda", "EBITDA", "u"], ["ebit", "EBIT", "u"],
+    ["netIncome", "Resultat", "u"], ["eps", "EPS", "n2"], ["grossMargin", "Bruttomargin", "%"], ["opMargin", "Driftsmargin", "%"],
+    ["fcf", "Fri kontantstrøm", "u"], ["capex", "CAPEX", "u"], ["debt", "Gjeld", "u"], ["netDebt", "Netto gjeld", "u"],
+    ["cash", "Kontantbeholdning", "u"], ["sharesOutText", "Utestående aksjer", "txt"]
+  ];
+
+  function renderFinancials() {
+    var unit = C.financials.unit;
+    var data = finState.period === "annual" ? C.financials.annual : C.financials.quarterly;
+
+    var revBars = data.map(function (d) { return d.revenue; });
+    var maxRev = Math.max.apply(null, revBars);
+    var revChart = data.map(function (d) {
+      var h = Math.max(4, Math.round((d.revenue / maxRev) * 120));
+      return '<div class="col center gap-6" style="flex:1;"><div style="width:70%;height:' + h + 'px;background:' + C.color + ';border-radius:5px 5px 2px 2px;align-self:flex-end;"></div><span class="faint" style="font-size:10px;">' + d.period + '</span></div>';
+    }).join("");
+
+    var marginPts1 = App.linePoints(data.map(function (d) { return d.grossMargin; }), 600, 110, 6, 6);
+    var marginPts2 = App.linePoints(data.map(function (d) { return d.opMargin; }), 600, 110, 6, 6);
+
+    var rows = FIN_ROWS.map(function (r) {
+      var key = r[0], label = r[1], fmt = r[2];
+      var cells = data.map(function (d) {
+        var v = d[key];
+        var out = fmt === "%" ? pct(v) : fmt === "n2" ? n2(v) : fmt === "txt" ? v : n1(v) + (fmt === "u" ? "" : "");
+        return "<td>" + out + "</td>";
+      }).join("");
+      return "<tr><td style='font-weight:600;'>" + label + (fmt === "u" ? ' <span class="faint">(' + unit + ')</span>' : "") + "</td>" + cells + "</tr>";
+    }).join("");
+    var headCells = data.map(function (d) { return "<th>" + d.period + "</th>"; }).join("");
+
+    document.getElementById("panel-financials").innerHTML =
+      '<div class="row between center wrap gap-10">' +
+        '<div class="seg" id="finPeriodSeg"><span class="seg-item' + (finState.period === "quarterly" ? " active" : "") + '" data-p="quarterly">Kvartal</span><span class="seg-item' + (finState.period === "annual" ? " active" : "") + '" data-p="annual">År</span></div>' +
+        '<span class="muted" style="font-size:12px;">Alle tall i ' + unit + ' der ikke annet er angitt</span>' +
+      '</div>' +
+      '<div class="row wrap gap-16">' +
+        '<div class="card pad" style="flex:1.3;min-width:380px;"><div class="eyebrow" style="margin-bottom:14px;">Omsetning per periode</div><div class="row" style="align-items:flex-end;gap:8px;height:140px;">' + revChart + '</div></div>' +
+        '<div class="card pad" style="flex:1;min-width:320px;">' +
+          '<div class="eyebrow" style="margin-bottom:10px;">Marginer</div>' +
+          '<div class="row gap-12" style="font-size:11.5px;color:var(--text-mut);margin-bottom:6px;"><span class="row center gap-5"><span style="width:8px;height:8px;border-radius:50%;background:' + C.color + ';display:inline-block;"></span>Bruttomargin</span><span class="row center gap-5"><span style="width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-faint);display:inline-block;"></span>Driftsmargin</span></div>' +
+          '<svg width="100%" height="110" viewBox="0 0 600 110" preserveAspectRatio="none"><polyline points="' + marginPts1 + '" fill="none" stroke="' + C.color + '" stroke-width="2"></polyline><polyline points="' + marginPts2 + '" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-dasharray="4 3"></polyline></svg>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card pad" style="overflow-x:auto;"><table class="tbl" style="min-width:760px;"><thead><tr><th>Nøkkeltall</th>' + headCells + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+    App.qsa("#finPeriodSeg .seg-item", document.getElementById("panel-financials")).forEach(function (s) {
+      s.addEventListener("click", function () { finState.period = s.getAttribute("data-p"); renderFinancials(); });
+    });
+  }
+
+  // ---------- VERDSETTELSE ----------
+  var valState = { metric: "pe" };
+  var VAL_METRICS = [["pe", "P/E"], ["fwdPe", "Forward P/E"], ["evEbitda", "EV/EBITDA"], ["evEbit", "EV/EBIT"], ["ps", "P/S"], ["pb", "P/B"], ["fcfYield", "FCF yield"], ["divYield", "Dividend yield"]];
+
+  function avg(arr, key) { return arr.reduce(function (s, x) { return s + x[key]; }, 0) / arr.length; }
+
+  function renderValuation() {
+    var hist = C.valuationHistory;
+    var sectorPe = avg(C.competitors, "pe"), sectorEvEbitda = avg(C.competitors, "evEbitda");
+    var current = hist[hist.length - 1];
+
+    var rows = VAL_METRICS.map(function (m) {
+      var key = m[0], label = m[1];
+      var fiveYr = avg(hist, key);
+      var sector = key === "pe" ? sectorPe : key === "evEbitda" ? sectorEvEbitda : null;
+      var fmt = (key === "fcfYield" || key === "divYield") ? pct : n1;
+      return "<tr><td style='font-weight:600;'>" + label + "</td><td>" + fmt(current[key]) + "</td><td>" + fmt(fiveYr) + "</td><td>" + (sector === null ? '<span class="faint">–</span>' : fmt(sector)) + "</td></tr>";
+    }).join("");
+
+    var metricPts = App.linePoints(hist.map(function (h) { return h[valState.metric]; }), 600, 140, 8, 8);
+    var metricOptions = VAL_METRICS.map(function (m) { return '<option value="' + m[0] + '"' + (m[0] === valState.metric ? " selected" : "") + '>' + m[1] + '</option>'; }).join("");
+
+    var compRows = C.competitors.map(function (co) {
+      return "<tr" + (co.highlight ? ' class="hl"' : "") + "><td>" + co.ticker + "</td><td>" + n1(co.pe) + "</td><td>" + n1(co.evEbitda) + "</td><td class='" + (co.priceChange >= 0 ? "pos" : "neg") + "' style='color:" + (co.priceChange >= 0 ? "var(--pos)" : "var(--neg)") + ";font-weight:700;'>" + pct(co.priceChange) + "</td></tr>";
+    }).join("");
+
+    document.getElementById("panel-valuation").innerHTML =
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Multipler – nå vs. historikk vs. sektor</div>' +
+        '<table class="tbl"><thead><tr><th>Multippel</th><th>Nå</th><th>5-års snitt</th><th>Sektorsnitt (konkurrenter)</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div class="card pad">' +
+        '<div class="row between center wrap gap-10" style="margin-bottom:12px;"><div class="eyebrow">Historisk utvikling</div><select class="select" id="valMetricSelect" style="width:180px;">' + metricOptions + '</select></div>' +
+        '<svg width="100%" height="140" viewBox="0 0 600 140" preserveAspectRatio="none"><polyline points="' + metricPts + '" fill="none" stroke="' + C.color + '" stroke-width="2.2"></polyline></svg>' +
+        '<div class="row between" style="font-size:10.5px;color:var(--text-faint);margin-top:4px;">' + hist.map(function (h) { return "<span>" + h.period + "</span>"; }).join("") + '</div>' +
+      '</div>' +
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Sammenlignet med konkurrenter</div><table class="tbl"><thead><tr><th>Selskap</th><th>P/E</th><th>EV/EBITDA</th><th>Kursendring</th></tr></thead><tbody>' + compRows + '</tbody></table></div>';
+
+    document.getElementById("valMetricSelect").addEventListener("change", function (e) { valState.metric = e.target.value; renderValuation(); });
+  }
+
+  // ---------- ESTIMATER ----------
+  function renderEstimates() {
+    var E = C.estimates;
+    function estCard(label, cur, prior, unit) {
+      var up = cur >= prior;
+      return '<div class="card pad-sm col gap-8" style="flex:1;min-width:180px;">' +
+        '<div class="eyebrow">' + label + '</div>' +
+        '<div style="font-size:19px;font-weight:700;">' + n2(cur) + ' ' + unit + '</div>' +
+        '<div class="row center gap-5" style="font-size:11.5px;font-weight:600;color:' + (up ? "var(--pos)" : "var(--neg)") + ';">' + (up ? "▲" : "▼") + ' forrige: ' + n2(prior) + ' ' + unit + '</div>' +
+      '</div>';
+    }
+    var revisionPts = App.linePoints(E.revisionTrend, 560, 100, 6, 6);
+    var guideRows = E.guidanceHistory.map(function (g) {
+      var badge = { up: '<span class="pill pill-pos">Hevet</span>', down: '<span class="pill pill-neg">Justert ned</span>', flat: '<span class="pill pill-neu">Uendret</span>' }[g.direction];
+      return '<div class="row gap-12" style="padding:10px 0;border-bottom:1px solid var(--border-soft);"><span class="faint" style="font-size:11.5px;width:80px;flex-shrink:0;">' + g.date + '</span>' + badge + '<span style="font-size:12.5px;">' + esc(g.text) + '</span></div>';
+    }).join("");
+    var beatRows = E.quarterlyBeats.map(function (q) {
+      var pillClass = q.result === "beat" ? "pill-pos" : q.result === "miss" ? "pill-neg" : "pill-neu";
+      var label = q.result === "beat" ? "Slo forventning" : q.result === "miss" ? "Under forventning" : "I tråd";
+      return "<tr><td>" + q.period + "</td><td>" + n1(q.estRevenue) + "</td><td>" + n1(q.actRevenue) + "</td><td>" + n2(q.estEps) + "</td><td>" + n2(q.actEps) + "</td><td><span class='pill " + pillClass + "'>" + label + "</span></td></tr>";
+    }).join("");
+
+    document.getElementById("panel-estimates").innerHTML =
+      '<div class="row wrap gap-16">' +
+        estCard("Konsensus omsetning (i år)", E.consensusRevenue, E.consensusRevenuePrior, C.financials.unit) +
+        estCard("Konsensus EPS (i år)", E.consensusEps, E.consensusEpsPrior, "") +
+        estCard("Konsensus EBITDA (i år)", E.consensusEbitda, E.consensusEbitdaPrior, C.financials.unit) +
+      '</div>' +
+      '<div class="card pad"><div class="eyebrow" style="margin-bottom:10px;">Estimatrevisjoner (EPS, siste 8 datapunkter)</div><svg width="100%" height="100" viewBox="0 0 560 100" preserveAspectRatio="none"><polyline points="' + revisionPts + '" fill="none" stroke="' + C.color + '" stroke-width="2.2"></polyline></svg></div>' +
+      '<div class="card pad"><div class="eyebrow" style="margin-bottom:6px;">Guiding-historikk (selskapets egen)</div>' + guideRows + '</div>' +
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Faktisk vs. forventet</div><table class="tbl"><thead><tr><th>Periode</th><th>Est. omsetning</th><th>Faktisk omsetning</th><th>Est. EPS</th><th>Faktisk EPS</th><th>Resultat</th></tr></thead><tbody>' + beatRows + '</tbody></table></div>';
+  }
+
+  // ---------- HENDELSER ----------
+  var evState = { filter: "Alle" };
+  function renderEvents() {
+    var types = ["Alle"].concat(Array.from(new Set(C.events.map(function (e) { return e.type; }))));
+    var today = new Date("2026-09-18");
+    var sorted = C.events.slice().filter(function (e) { return evState.filter === "Alle" || e.type === evState.filter; })
+      .sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+    var upcoming = sorted.filter(function (e) { return new Date(e.date) >= today; });
+    var past = sorted.filter(function (e) { return new Date(e.date) < today; }).reverse();
+
+    function evRow(e) {
+      var d = new Date(e.date);
+      return '<div class="row gap-12" style="padding:10px 0;border-bottom:1px solid var(--border-soft);">' +
+        '<div class="col center" style="width:44px;height:44px;border-radius:10px;background:var(--bg);flex-shrink:0;justify-content:center;"><span style="font-size:13px;font-weight:700;line-height:1;">' + d.getDate() + '</span><span class="faint" style="font-size:8.5px;font-weight:700;text-transform:uppercase;">' + App.fmtDateShort(e.date).split(". ")[1] + '</span></div>' +
+        '<div class="col gap-2 grow"><span style="font-size:12.5px;font-weight:600;">' + esc(e.title) + '</span><span class="muted" style="font-size:11.5px;">' + esc(e.description) + '</span></div>' +
+        '<span class="tag" style="flex-shrink:0;height:fit-content;">' + e.type + '</span>' +
+        (e.source === "manual" ? '<button class="icon-btn plain" data-del-event="' + e.id + '" aria-label="Slett">✕</button>' : '') +
+      '</div>';
+    }
+
+    document.getElementById("panel-events").innerHTML =
+      '<div class="row between wrap gap-10">' +
+        '<div class="chip-row">' + types.map(function (t) { return '<span class="chip' + (t === evState.filter ? " active" : "") + '" data-evtype="' + t + '">' + t + '</span>'; }).join("") + '</div>' +
+        '<button class="btn btn-primary" data-modal-open="modalNewEvent">+ Ny hendelse</button>' +
+      '</div>' +
+      '<div class="card pad"><div class="eyebrow" style="margin-bottom:8px;">Kommende</div>' + (upcoming.map(evRow).join("") || '<p class="empty-hint">Ingen kommende hendelser.</p>') + '</div>' +
+      '<div class="card pad"><div class="eyebrow" style="margin-bottom:8px;">Tidligere</div>' + (past.map(evRow).join("") || '<p class="empty-hint">Ingen tidligere hendelser.</p>') + '</div>';
+
+    App.qsa("[data-evtype]", document.getElementById("panel-events")).forEach(function (c) {
+      c.addEventListener("click", function () { evState.filter = c.getAttribute("data-evtype"); renderEvents(); });
+    });
+    App.qsa("[data-del-event]", document.getElementById("panel-events")).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = b.getAttribute("data-del-event");
+        C.events = C.events.filter(function (e) { return e.id !== id; });
+        var man = (overrides.manualEvents || []).filter(function (e) { return e.id !== id; });
+        persist({ manualEvents: man });
+        renderEvents();
+      });
+    });
+  }
+
+  // ---------- EIERSKAP ----------
+  function renderOwnership() {
+    var O = C.ownership;
+    var holderRows = O.topHolders.map(function (h) {
+      return "<tr><td>" + esc(h.name) + "</td><td>" + n1(h.pct) + " %</td><td style='color:" + (h.change > 0 ? "var(--pos)" : h.change < 0 ? "var(--neg)" : "var(--text-faint)") + ";font-weight:700;'>" + (h.change === 0 ? "–" : pct(h.change * 100 / h.pct * h.pct / h.pct, 2)) + "</td></tr>";
+    }).join("");
+    var insiderRows = O.insiderTrades.map(function (t) {
+      return "<tr><td>" + esc(t.name) + "</td><td>" + esc(t.role) + "</td><td><span class='pill " + (t.type === "Kjøp" ? "pill-pos" : "pill-neg") + "'>" + t.type + "</span></td><td>" + t.shares.toLocaleString("nb-NO") + "</td><td>" + n2(t.price) + "</td><td>" + App.fmtDateShort(t.date) + "</td></tr>";
+    }).join("");
+    var mgmtRows = O.managementHoldings.map(function (m) {
+      return "<tr><td>" + esc(m.name) + "</td><td>" + esc(m.role) + "</td><td>" + m.shares.toLocaleString("nb-NO") + "</td></tr>";
+    }).join("");
+
+    document.getElementById("panel-ownership").innerHTML =
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Største aksjonærer</div><table class="tbl"><thead><tr><th>Aksjonær</th><th>Eierandel</th><th>Endring</th></tr></thead><tbody>' + holderRows + '</tbody></table></div>' +
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Innsidehandler</div><table class="tbl"><thead><tr><th>Navn</th><th>Rolle</th><th>Type</th><th>Antall</th><th>Pris</th><th>Dato</th></tr></thead><tbody>' + insiderRows + '</tbody></table></div>' +
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Ledelsens aksjebeholdning</div><table class="tbl"><thead><tr><th>Navn</th><th>Rolle</th><th>Antall aksjer</th></tr></thead><tbody>' + mgmtRows + '</tbody></table></div>';
+  }
+
+  // ---------- KONKURRENTER ----------
+  var compState = { sortKey: "marketCapNum", sortDir: -1, metric: "revenueGrowth" };
+  var COMP_COLS = [["ticker", "Ticker"], ["revenueGrowth", "Oms.vekst"], ["opMargin", "Driftsmargin"], ["eps", "EPS"], ["fcfYield", "FCF yield"], ["debt", "Gjeld"], ["pe", "P/E"], ["evEbitda", "EV/EBITDA"], ["priceChange", "Kursendring"]];
+  var METRIC_OPTIONS = [["revenueGrowth", "Omsetningsvekst"], ["opMargin", "Driftsmargin"], ["pe", "P/E"], ["evEbitda", "EV/EBITDA"], ["priceChange", "Kursendring"]];
+
+  function renderCompetitors() {
+    var list = C.competitors.slice();
+    if (compState.sortKey !== "ticker") {
+      list.sort(function (a, b) { return (a[compState.sortKey] - b[compState.sortKey]) * compState.sortDir; });
+    }
+    var rows = list.map(function (co) {
+      var cells = COMP_COLS.map(function (col) {
+        var key = col[0], v = co[key];
+        if (key === "ticker") return "<td style='font-weight:700;'>" + v + '<br><span class="faint" style="font-weight:400;">' + esc(co.name) + '</span></td>';
+        if (key === "priceChange" || key === "revenueGrowth" || key === "opMargin" || key === "fcfYield") return "<td style='color:" + (v >= 0 ? "var(--pos)" : "var(--neg)") + ";font-weight:600;'>" + pct(v) + "</td>";
+        if (key === "debt") return "<td>" + n1(v) + "</td>";
+        return "<td>" + n1(v) + "</td>";
+      }).join("");
+      return "<tr" + (co.highlight ? ' class="hl"' : "") + ">" + cells + "</tr>";
+    }).join("");
+    var headCells = COMP_COLS.map(function (col) {
+      return '<th class="sortable" data-sortkey="' + col[0] + '">' + col[1] + (compState.sortKey === col[0] ? (compState.sortDir === 1 ? " ↑" : " ↓") : "") + '</th>';
+    }).join("");
+
+    var maxV = Math.max.apply(null, C.competitors.map(function (c) { return Math.abs(c[compState.metric]); }));
+    var bars = C.competitors.map(function (co) {
+      var h = Math.max(4, Math.round((Math.abs(co[compState.metric]) / maxV) * 130));
+      return '<div class="col center gap-6" style="flex:1;"><span style="font-size:11px;font-weight:700;">' + n1(co[compState.metric]) + '</span><div style="width:60%;height:' + h + 'px;background:' + (co.highlight ? C.color : "#d4d4d8") + ';border-radius:5px 5px 2px 2px;"></div><span class="faint" style="font-size:10.5px;">' + co.ticker + '</span></div>';
+    }).join("");
+    var metricOpts = METRIC_OPTIONS.map(function (m) { return '<option value="' + m[0] + '"' + (m[0] === compState.metric ? " selected" : "") + '>' + m[1] + '</option>'; }).join("");
+
+    document.getElementById("panel-competitors").innerHTML =
+      '<div class="card pad" style="overflow-x:auto;"><div class="eyebrow" style="margin-bottom:12px;">Utvidet sammenligning (klikk kolonne for å sortere)</div><table class="tbl"><thead><tr>' + headCells + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div class="card pad"><div class="row between center wrap gap-10" style="margin-bottom:12px;"><div class="eyebrow">Visuell sammenligning</div><select class="select" id="compMetricSelect" style="width:200px;">' + metricOpts + '</select></div><div class="row" style="align-items:flex-end;gap:10px;height:150px;">' + bars + '</div></div>';
+
+    App.qsa("th.sortable", document.getElementById("panel-competitors")).forEach(function (th) {
+      th.addEventListener("click", function () {
+        var key = th.getAttribute("data-sortkey");
+        if (compState.sortKey === key) compState.sortDir *= -1; else { compState.sortKey = key; compState.sortDir = -1; }
+        renderCompetitors();
+      });
+    });
+    document.getElementById("compMetricSelect").addEventListener("change", function (e) { compState.metric = e.target.value; renderCompetitors(); });
+  }
+
+  // ---------- TESE & RISIKO ----------
+  function chipListEditor(items, key) {
+    return '<div class="chip-row" data-chiplist="' + key + '">' +
+      items.map(function (it, i) { return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;">' + esc(it) + '<button class="btn-ghost" style="padding:0;font-size:13px;line-height:1;" data-remove-chip="' + key + '" data-idx="' + i + '">✕</button></span>'; }).join("") +
+      '<span class="row gap-6"><input class="input" style="width:180px;height:30px;" id="add-' + key + '" placeholder="+ Legg til..."><button class="btn btn-sm" data-add-chip="' + key + '">Legg til</button></span>' +
+    '</div>';
+  }
+
+  function renderThesis() {
+    var T = C.thesis;
+    var assumptionRows = T.assumptions.map(function (a) {
+      return '<div class="row center gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-soft);">' +
+        '<span class="assumption-badge ' + a.status + '" data-cycle-assumption="' + a.id + '">' + { holds: "Holder", weakened: "Svekket", broken: "Brutt" }[a.status] + '</span>' +
+        '<span style="font-size:12.5px;flex-grow:1;">' + esc(a.text) + '</span>' +
+        '<button class="icon-btn plain" data-remove-assumption="' + a.id + '" aria-label="Fjern">✕</button>' +
+      '</div>';
+    }).join("");
+    var notesHtml = T.notes.slice().reverse().map(function (n) {
+      return '<div class="col gap-2" style="padding:8px 0;border-bottom:1px solid var(--border-soft);"><span class="faint" style="font-size:11px;">' + App.fmtDate(n.date) + '</span><span style="font-size:12.5px;">' + esc(n.text) + '</span></div>';
+    }).join("") || '<p class="empty-hint">Ingen notater ennå.</p>';
+
+    document.getElementById("panel-thesis").innerHTML =
+      '<div class="card pad col gap-10"><div class="eyebrow">Hvorfor jeg følger/eier selskapet</div><textarea class="ta" id="thesisWhy" rows="2">' + esc(T.whyFollow) + '</textarea></div>' +
+      '<div class="row wrap gap-16">' +
+        '<div class="card pad col gap-8" style="flex:1;min-width:220px;"><div class="eyebrow" style="color:var(--pos);">Bull case</div><textarea class="ta" id="thesisBull" rows="5">' + esc(T.bull) + '</textarea></div>' +
+        '<div class="card pad col gap-8" style="flex:1;min-width:220px;"><div class="eyebrow">Base case</div><textarea class="ta" id="thesisBase" rows="5">' + esc(T.base) + '</textarea></div>' +
+        '<div class="card pad col gap-8" style="flex:1;min-width:220px;"><div class="eyebrow" style="color:var(--neg);">Bear case</div><textarea class="ta" id="thesisBear" rows="5">' + esc(T.bear) + '</textarea></div>' +
+      '</div>' +
+      '<div class="row wrap gap-16">' +
+        '<div class="card pad col gap-10" style="flex:1;min-width:260px;"><div class="eyebrow">Viktigste drivere</div>' + chipListEditor(T.drivers, "drivers") + '</div>' +
+        '<div class="card pad col gap-10" style="flex:1;min-width:260px;"><div class="eyebrow">Viktigste risikoer</div>' + chipListEditor(T.risks, "risks") + '</div>' +
+        '<div class="card pad col gap-10" style="flex:1;min-width:260px;"><div class="eyebrow">Catalysts</div>' + chipListEditor(T.catalysts, "catalysts") + '</div>' +
+      '</div>' +
+      '<div class="card pad col gap-6"><div class="eyebrow" style="margin-bottom:6px;">Antakelser casen bygger på (klikk status for å endre)</div>' + assumptionRows +
+        '<div class="row gap-8" style="margin-top:10px;"><input class="input" id="newAssumption" placeholder="Ny antakelse..."><button class="btn btn-sm" id="addAssumptionBtn">Legg til</button></div>' +
+      '</div>' +
+      '<div class="card pad col gap-10"><div class="eyebrow">Hva som vil gjøre tesen ugyldig</div>' + chipListEditor(T.invalidators, "invalidators") + '</div>' +
+      '<div class="card pad col gap-10"><div class="eyebrow">Egne notater</div>' + notesHtml +
+        '<div class="row gap-8" style="margin-top:8px;"><input class="input" id="newNote" placeholder="Skriv et notat..."><button class="btn btn-sm btn-primary" id="addNoteBtn">Legg til</button></div>' +
+      '</div>';
+
+    function saveThesis(patch) { Object.assign(T, patch); persist({ thesis: T }); }
+
+    ["thesisWhy", "thesisBull", "thesisBase", "thesisBear"].forEach(function (id) {
+      document.getElementById(id).addEventListener("blur", function (e) {
+        var map = { thesisWhy: "whyFollow", thesisBull: "bull", thesisBase: "base", thesisBear: "bear" };
+        var p = {}; p[map[id]] = e.target.value; saveThesis(p);
+      });
+    });
+
+    App.qsa("[data-add-chip]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = btn.getAttribute("data-add-chip");
+        var input = document.getElementById("add-" + key);
+        if (!input.value.trim()) return;
+        T[key].push(input.value.trim());
+        saveThesis({});
+        renderThesis();
+      });
+    });
+    App.qsa("[data-remove-chip]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = btn.getAttribute("data-remove-chip"), idx = parseInt(btn.getAttribute("data-idx"), 10);
+        T[key].splice(idx, 1);
+        saveThesis({});
+        renderThesis();
+      });
+    });
+    App.qsa("[data-cycle-assumption]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-cycle-assumption");
+        var a = T.assumptions.filter(function (x) { return x.id === id; })[0];
+        var order = ["holds", "weakened", "broken"];
+        a.status = order[(order.indexOf(a.status) + 1) % order.length];
+        saveThesis({});
+        renderThesis();
+      });
+    });
+    App.qsa("[data-remove-assumption]", document.getElementById("panel-thesis")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-remove-assumption");
+        T.assumptions = T.assumptions.filter(function (x) { return x.id !== id; });
+        saveThesis({});
+        renderThesis();
+      });
+    });
+    document.getElementById("addAssumptionBtn").addEventListener("click", function () {
+      var input = document.getElementById("newAssumption");
+      if (!input.value.trim()) return;
+      T.assumptions.push({ id: MOCK.uid(), text: input.value.trim(), status: "holds" });
+      saveThesis({});
+      renderThesis();
+    });
+    document.getElementById("addNoteBtn").addEventListener("click", function () {
+      var input = document.getElementById("newNote");
+      if (!input.value.trim()) return;
+      T.notes.push({ id: MOCK.uid(), date: "2026-09-18", text: input.value.trim() });
+      saveThesis({});
+      renderThesis();
+    });
+  }
+
+  // ---------- KILDER & AI (per selskap) ----------
+  function catName(id) {
+    var c = G.sourceCategories.filter(function (x) { return x.id === id; })[0];
+    return c ? c.name : id;
+  }
+  function defaultSourcePrompt(s) {
+    return "Overvåk nyheter og oppdateringer fra " + s.name + " knyttet til " + C.name + ". Vurder om innholdet er relevant, og gi en kort begrunnet vurdering av mulig kurspåvirkning.";
+  }
+
+  function renderSourcesAI() {
+    var sourceItems = C.sources.map(function (s) {
+      var promptVal = (s.prompt && s.prompt.trim()) ? s.prompt : defaultSourcePrompt(s);
+      return '<div class="accordion-item" data-source-item="' + s.id + '">' +
+        '<div class="accordion-head" data-source-headtoggle="' + s.id + '">' +
+          '<div class="row center gap-12" style="min-width:0;"><span style="font-size:13px;font-weight:600;">' + esc(s.name) + '</span><span class="tag">' + catName(s.category) + '</span></div>' +
+          '<div class="row center gap-10">' +
+            '<button class="toggle ' + (s.on ? "on" : "") + '" data-source-toggle="' + s.id + '"><span class="knob"></span></button>' +
+            '<button class="icon-btn plain" data-source-remove="' + s.id + '" aria-label="Fjern">✕</button>' +
+            '<svg class="accordion-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</div>' +
+        '</div>' +
+        '<div class="accordion-body col gap-10">' +
+          '<span class="faint" style="font-size:11.5px;">Hva skal AI-en se etter fra denne kilden?</span>' +
+          '<textarea class="ta" rows="3" data-source-prompt="' + s.id + '">' + esc(promptVal) + '</textarea>' +
+          '<div class="row gap-8 wrap"><button class="btn btn-sm btn-primary" data-source-testprompt="' + s.id + '">Test prompt</button><span class="faint" style="font-size:11.5px;" id="sourcePromptMsg-' + s.id + '"></span></div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    document.getElementById("panel-sourcesai").innerHTML =
+      '<div class="card pad col gap-4"><span style="font-size:12.5px;">Disse innstillingene gjelder kun <b>' + esc(C.name) + '</b>, og påvirker ingen andre selskaper.</span></div>' +
+
+      '<div class="card pad col gap-10">' +
+        '<div class="row between center"><div class="eyebrow">Overvåkede kilder</div><span class="muted" style="font-size:12px;">' + C.sources.filter(function (s) { return s.on; }).length + ' av ' + C.sources.length + ' aktive</span></div>' +
+        '<div class="col gap-2">' + sourceItems + '</div>' +
+        '<div style="padding-top:8px;border-top:1px solid var(--border-soft);"><button class="btn btn-primary" data-modal-open="modalNewSource">+ Legg til kilde</button></div>' +
+      '</div>' +
+
+      '<div class="card pad col gap-14">' +
+        '<div class="eyebrow">Prioritering og varsling</div>' +
+        thresholdSlider("relevanceMin", "Relevans-terskel for å vises i feed", C.thresholds.relevanceMin) +
+        thresholdSlider("impactAlert", "Påvirkning som utløser varsel", C.thresholds.impactAlert) +
+        thresholdSlider("impactCritical", "Påvirkning som markeres som kritisk", C.thresholds.impactCritical) +
+      '</div>' +
+
+      '<div class="card pad col gap-10">' +
+        '<div class="eyebrow">Forklarbar AI – eksempel</div>' +
+        '<div class="card pad-sm col gap-6" style="background:#fafafa;">' +
+          '<div class="row between center"><span style="font-size:12.5px;font-weight:700;">Påvirkning: <span style="color:var(--neg);">Høy negativ</span></span></div>' +
+          '<span style="font-size:12.5px;"><b>Berører:</b> Guiding, marginer og produksjon</span>' +
+          '<span style="font-size:12.5px;"><b>Begrunnelse:</b> Selskapet reduserte forventet produksjonsvekst fra 4 % til 1,5 %.</span>' +
+          '<span style="font-size:12.5px;"><b>Tese påvirket:</b> Ja</span>' +
+          '<span style="font-size:12.5px;"><b>Berørt antakelse:</b> Produksjonsvekst &gt; 4 %</span>' +
+          '<span style="font-size:12.5px;"><b>Kilde:</b> Selskapets Q3-rapport</span>' +
+        '</div>' +
+        '<p class="muted" style="margin:0;font-size:11.5px;">Slik vil AI-vurderinger vises i nyhetsfeeden når ekte analyse kobles på – med full begrunnelse, ikke bare en score.</p>' +
+      '</div>';
+
+    function thresholdSlider(key, label, val) {
+      return '<div class="col gap-6"><div class="row between"><span style="font-size:12.5px;font-weight:600;">' + label + '</span><span style="font-size:12px;font-weight:700;color:var(--warn);" id="thVal-' + key + '">' + val + '/10</span></div>' +
+        '<input type="range" min="0" max="10" step="1" value="' + val + '" data-threshold="' + key + '" style="width:100%;">' +
+      '</div>';
+    }
+
+    var root = document.getElementById("panel-sourcesai");
+
+    // -- kilder: åpne/lukk
+    App.qsa("[data-source-headtoggle]", root).forEach(function (h) {
+      h.addEventListener("click", function () { h.parentElement.classList.toggle("open"); });
+    });
+    App.qsa("[data-source-toggle]", root).forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = b.getAttribute("data-source-toggle");
+        var s = C.sources.filter(function (x) { return x.id === id; })[0];
+        s.on = !s.on;
+        persist({ sources: C.sources });
+        renderSourcesAI();
+      });
+    });
+    App.qsa("[data-source-remove]", root).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute("data-source-remove");
+        C.sources = C.sources.filter(function (x) { return x.id !== id; });
+        persist({ sources: C.sources });
+        renderSourcesAI();
+      });
+    });
+    App.qsa("[data-source-prompt]", root).forEach(function (ta) {
+      ta.addEventListener("blur", function () {
+        var id = ta.getAttribute("data-source-prompt");
+        C.sources.filter(function (x) { return x.id === id; })[0].prompt = ta.value;
+        persist({ sources: C.sources });
+        var msg = document.getElementById("sourcePromptMsg-" + id);
+        if (msg) { msg.textContent = "Lagret ✓"; setTimeout(function () { msg.textContent = ""; }, 1800); }
+      });
+    });
+    App.qsa("[data-source-testprompt]", root).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute("data-source-testprompt");
+        var s = C.sources.filter(function (x) { return x.id === id; })[0];
+        var ta = App.qs('[data-source-prompt="' + id + '"]', root);
+        openTestPrompt(s, ta.value);
+      });
+    });
+
+    // -- terskler
+    App.qsa("[data-threshold]", root).forEach(function (input) {
+      input.addEventListener("input", function () {
+        var key = input.getAttribute("data-threshold");
+        document.getElementById("thVal-" + key).textContent = input.value + "/10";
+        C.thresholds[key] = parseInt(input.value, 10);
+        persist({ thresholds: C.thresholds });
+      });
+    });
+  }
+
+  document.getElementById("srcSaveBtn").addEventListener("click", function () {
+    var name = document.getElementById("srcName").value.trim();
+    if (!name) return;
+    C.sources.push({ id: MOCK.uid(), name: name, category: document.getElementById("srcCategory").value, on: true, custom: true, prompt: document.getElementById("srcPrompt").value.trim() });
+    persist({ sources: C.sources });
+    document.getElementById("modalNewSource").classList.remove("open");
+    document.getElementById("srcName").value = ""; document.getElementById("srcPrompt").value = "";
+    renderSourcesAI();
+  });
+
+  function openTestPrompt(source, promptText) {
+    var sample = C.news.filter(function (n) { return n.source === source.name; })[0] || C.news[0];
+    document.getElementById("testPromptBody").innerHTML =
+      '<div class="col gap-6"><span class="eyebrow">Prompt (' + esc(source.name) + ')</span><div class="card pad-sm" style="background:#fafafa;font-size:12px;white-space:pre-wrap;">' + esc(promptText) + '</div></div>' +
+      '<div class="col gap-6"><span class="eyebrow">Eksempelartikkel</span><div class="card pad-sm" style="background:#fafafa;"><b style="font-size:12.5px;">' + esc(sample.headline) + '</b><p style="margin:6px 0 0;font-size:12px;color:var(--text-mut);">' + esc(sample.aiSummary) + '</p></div></div>' +
+      '<div class="col gap-6" id="testResultArea"><span class="eyebrow">Resultat</span><p class="empty-hint">Trykk «Kjør test» for å se et mock-resultat.</p></div>';
+
+    document.getElementById("runTestBtn").onclick = function () {
+      var w = Math.min(Math.abs(sample.impact) * 6, 60), left = sample.impact >= 0 ? 60 : 60 - w;
+      var color = sample.impact > 2 ? "var(--pos)" : sample.impact < -2 ? "var(--neg)" : "var(--neu)";
+      document.getElementById("testResultArea").innerHTML =
+        '<span class="eyebrow">Resultat (mock)</span>' +
+        '<div class="card pad-sm col gap-6" style="background:#fafafa;">' +
+          '<span style="font-size:12.5px;"><b>Påvirkning:</b> <span style="color:' + color + ';">' + (sample.impact > 0 ? "+" : "") + sample.impact + '/10 – ' + sample.impactLabel + '</span></span>' +
+          '<div class="impact-bar-wrap"><div class="impact-bar"><div class="mid"></div><div class="fill" style="left:' + left + 'px;width:' + w + 'px;background:' + color + ';"></div></div></div>' +
+          '<span style="font-size:12.5px;"><b>Berører:</b> ' + (sample.caseAreas.join(", ") || "Ingen direkte kobling") + '</span>' +
+          '<span style="font-size:12.5px;"><b>Begrunnelse:</b> ' + esc(sample.rationale) + '</span>' +
+          '<span style="font-size:12.5px;"><b>Tese påvirket:</b> ' + (sample.caseAreas.length ? "Ja" : "Nei") + '</span>' +
+          '<span style="font-size:12.5px;"><b>Berørt antakelse:</b> ' + (C.thesis.assumptions[0] ? esc(C.thesis.assumptions[0].text) : "–") + '</span>' +
+          '<span style="font-size:12.5px;"><b>Kilde:</b> ' + sample.source + '</span>' +
+        '</div>';
+    };
+    document.getElementById("modalTestPrompt").classList.add("open");
+  }
+
+  // ---------- modaler: ny hendelse ----------
+  document.getElementById("evSaveBtn").addEventListener("click", function () {
+    var title = document.getElementById("evTitle").value.trim();
+    var date = document.getElementById("evDate").value;
+    if (!title || !date) return;
+    var ev = { id: MOCK.uid(), date: date, type: document.getElementById("evType").value, title: title, description: document.getElementById("evDesc").value.trim(), source: "manual" };
+    C.events.push(ev);
+    var man = (overrides.manualEvents || []).concat([ev]);
+    persist({ manualEvents: man });
+    document.getElementById("modalNewEvent").classList.remove("open");
+    document.getElementById("evTitle").value = ""; document.getElementById("evDate").value = ""; document.getElementById("evDesc").value = "";
+    renderEvents();
+  });
+
+  // ---------- init ----------
+  document.getElementById("srcCategory").innerHTML = G.sourceCategories.map(function (c) {
+    return '<option value="' + c.id + '">' + c.name + '</option>';
+  }).join("");
+
+  function renderAll() {
+    renderHeader(); renderOverview(); renderNews(); renderFinancials(); renderValuation();
+    renderEstimates(); renderEvents(); renderOwnership(); renderCompetitors(); renderThesis(); renderSourcesAI();
+  }
+  renderAll();
+  App.initTabs(document);
+  App.initModals(document);
+  document.addEventListener("click", function (e) {
+    var goto = e.target.closest && e.target.closest("[data-goto-tab]");
+    if (goto) {
+      var target = goto.getAttribute("data-goto-tab");
+      App.qsa('.tab', document.getElementById("companyTabbar")).forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-tab") === target); });
+      App.qsa('[data-tabpanel="company"]').forEach(function (p) { p.classList.toggle("active", p.getAttribute("data-panel") === target); });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Oversikt – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .waffle-col { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 42px; }
+  .waffle-col .cells { display: flex; flex-direction: column; gap: 2px; height: 120px; justify-content: flex-end; }
+  .waffle-cell { width: 13px; height: 9px; border-radius: 2px; background: transparent; border: 1px solid var(--border); }
+  .waffle-cell.on { background: var(--accent); border-color: var(--accent); }
+  .waffle-col .lbl { font-size: 10px; color: var(--text-faint); font-weight: 600; }
+  .waffle-col.current .lbl { color: var(--text); font-weight: 700; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .bar-col .bar { width: 34px; border-radius: 7px 7px 3px 3px; }
+  th.sortable { cursor: pointer; }
+  th.sortable .arrow { font-size: 9px; margin-left: 3px; color: var(--text-faint); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm">EO</div><div class="col" style="line-height:1.2;min-width:0;"><span style="font-size:13px;font-weight:600;">Emil</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> <span class="now">Oversikt</span></div>
+      <div class="row center gap-14">
+        <div class="search-wrap">
+          <label for="topsearch" class="visually-hidden">Søk</label>
+          <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+          <input id="topsearch" class="input" type="text" placeholder="Søk etter selskap, ticker..." style="width:260px;">
+        </div>
+        <button class="icon-btn" aria-label="Varsler" style="position:relative;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          <span style="position:absolute;top:6px;right:7px;width:6px;height:6px;border-radius:50%;background:#dc2626;"></span>
+        </button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="row wrap between" style="align-items:flex-start;gap:12px;">
+        <div>
+          <h1 class="h1">Velkommen tilbake, Emil</h1>
+          <p class="muted" style="margin:4px 0 0;font-size:13.5px;" id="pageSubtitle">Her er markedsbildet for de overvåkede selskapene dine.</p>
+        </div>
+        <div class="row center gap-10">
+          <div style="position:relative;">
+            <button class="btn" id="periodBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              <span id="periodBtnLabel">Denne uken</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="card col" id="periodMenu" style="display:none;position:absolute;right:0;top:42px;z-index:30;min-width:170px;padding:6px;">
+              <button class="btn-ghost" data-period="today" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">I dag</button>
+              <button class="btn-ghost" data-period="week" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">Denne uken</button>
+              <button class="btn-ghost" data-period="month" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">Denne måneden</button>
+              <button class="btn-ghost" data-period="year" style="text-align:left;padding:8px 10px;border-radius:8px;font-size:12.5px;">Hele året</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" data-modal-open="modalAddCompany">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Legg til selskap
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="row wrap gap-16" id="kpiRow"></div>
+
+      <!-- CHARTS ROW -->
+      <div class="row wrap gap-16">
+        <div class="card pad col gap-14" style="flex:1.7;min-width:520px;position:relative;">
+          <div class="row between center wrap gap-10">
+            <div class="col gap-2">
+              <div class="row center gap-6"><span class="eyebrow">Markedsstemning</span></div>
+              <span style="font-size:13px;color:var(--text-mut);">Sentiment-score: <b style="color:var(--text);" id="sentimentScoreLabel">–</b></span>
+            </div>
+            <div class="row center gap-16">
+              <div class="row center gap-12" style="font-size:12px;color:var(--text-mut);">
+                <span class="row center gap-5"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;"></span>Sentiment</span>
+              </div>
+              <div class="seg" id="waffleSeg">
+                <span class="seg-item" data-wperiod="week">Uke</span>
+                <span class="seg-item active" data-wperiod="month">Måned</span>
+                <span class="seg-item" data-wperiod="year">År</span>
+              </div>
+            </div>
+          </div>
+          <div class="row" style="align-items:flex-end;gap:14px;padding-top:8px;overflow-x:auto;">
+            <div class="col between" style="height:120px;font-size:10px;color:var(--text-faint);flex-shrink:0;">
+              <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+            </div>
+            <div class="row" id="waffleChart" style="align-items:flex-end;gap:12px;border-left:1px dashed var(--border);padding-left:16px;"></div>
+          </div>
+        </div>
+
+        <div class="card pad col gap-14" style="flex:1;min-width:280px;">
+          <div class="row between center"><span class="eyebrow">Nyhetsimpact-fordeling</span></div>
+          <div>
+            <div style="font-size:24px;font-weight:700;" id="impactTotalLabel">0 artikler</div>
+            <span class="muted" style="font-size:12px;" id="impactPeriodLabel"></span>
+          </div>
+          <div class="row" style="align-items:flex-end;gap:20px;flex-grow:1;justify-content:center;padding-top:6px;" id="impactBars"></div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card pad col gap-14" style="overflow-x:auto;">
+        <div class="row between center wrap gap-10">
+          <span style="font-size:13.5px;font-weight:700;">Siste nyheter <span class="muted" style="font-weight:500;" id="newsCountLabel"></span></span>
+          <div class="row center gap-10">
+            <select class="select" id="newsCompanyFilter" style="width:190px;"></select>
+            <div class="search-wrap">
+              <label for="newssearch" class="visually-hidden">Søk i nyheter</label>
+              <svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+              <input id="newssearch" class="input" type="text" placeholder="Søk i nyheter..." style="width:200px;height:32px;">
+            </div>
+            <button class="btn btn-sm btn-primary" data-modal-open="modalNewAlert">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Nytt varsel
+            </button>
+          </div>
+        </div>
+        <table class="tbl" style="min-width:820px;">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="company">Selskap<span class="arrow"></span></th>
+              <th class="sortable" data-sort="headline">Overskrift<span class="arrow"></span></th>
+              <th class="sortable" data-sort="source">Kilde<span class="arrow"></span></th>
+              <th class="sortable" data-sort="date">Publisert<span class="arrow"></span></th>
+              <th class="sortable" data-sort="impact">Påvirkning<span class="arrow"></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="newsTableBody"></tbody>
+        </table>
+        <p class="empty-hint" id="newsEmptyHint" style="display:none;">Ingen nyheter matcher filtrene dine.</p>
+      </div>
+
+      <!-- ALERT RULES -->
+      <div class="card pad col gap-10" id="alertRulesCard" style="display:none;">
+        <div class="row between center"><span class="eyebrow">Dine varselregler</span></div>
+        <div class="col gap-2" id="alertRulesList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: legg til selskap -->
+<div class="modal-overlay" id="modalAddCompany">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Legg til selskap</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="muted" style="margin:0;font-size:12.5px;">Selskapet legges til overvåkningslisten din med standard kilder og AI-prompter fra den globale malen. Full markedsdata vises når en ekte datakilde er koblet til.</p>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Ticker</span><input class="input" id="newCoTicker" placeholder="F.eks. YAR" style="text-transform:uppercase;"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskapsnavn</span><input class="input" id="newCoName" placeholder="F.eks. Yara International"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Børs</span><input class="input" id="newCoExchange" placeholder="F.eks. Oslo Børs" value="Oslo Børs"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Sektor</span><input class="input" id="newCoSector" placeholder="F.eks. Materialer"></label>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="saveNewCoBtn">Legg til</button></div>
+  </div>
+</div>
+
+<!-- MODAL: nytt varsel -->
+<div class="modal-overlay" id="modalNewAlert">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Ny varselregel</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskap</span><select class="select" id="alertCompany"><option value="">Alle selskaper</option></select></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Varsle ved påvirkning større enn</span>
+        <input type="range" min="1" max="10" step="1" value="6" id="alertThreshold" style="width:100%;">
+        <span class="muted" style="font-size:12px;">± <b id="alertThresholdVal">6</b>/10</span>
+      </label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Nøkkelord (valgfritt)</span><input class="input" id="alertKeyword" placeholder="F.eks. guiding, utbytte..."></label>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="saveAlertBtn">Lagre varselregel</button></div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+  var TODAY = "2026-09-18";
+
+  // ---------- extra (user-added) companies ----------
+  function getExtraCompanies() { return App.store.get("extraCompanies", []); }
+  function saveExtraCompanies(list) { App.store.set("extraCompanies", list); }
+
+  // ---------- merged per-company state (base + localStorage overrides) ----------
+  function getCompanyMerged(ticker) {
+    var base = MOCK.companies[ticker];
+    var overrides = App.store.get("company:" + ticker, {});
+    var C = { ticker: base.ticker, name: base.name, color: base.color, initials: base.initials, price: base.price, changePct: base.changePct, sector: base.sector };
+    C.inPortfolio = overrides.inPortfolio !== undefined ? overrides.inPortfolio : base.inPortfolio;
+    C.news = base.news.map(function (n) {
+      var copy = Object.assign({}, n);
+      if (overrides.newsMeta && overrides.newsMeta[n.id]) Object.assign(copy, overrides.newsMeta[n.id]);
+      return copy;
+    });
+    return C;
+  }
+
+  var companies = MOCK.companyOrder.map(getCompanyMerged);
+
+  // ---------- period handling ----------
+  var currentPeriod = App.store.get("dashboardPeriod", "week");
+  var PERIOD_LABELS = { today: "I dag", week: "Denne uken", month: "Denne måneden", year: "Hele året" };
+
+  function daysBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+  function inPeriod(dateStr, period) {
+    var diff = daysBetween(dateStr, TODAY);
+    if (diff < 0) return false;
+    if (period === "today") return diff === 0;
+    if (period === "week") return diff <= 7;
+    if (period === "month") return diff <= 31;
+    return diff <= 366;
+  }
+
+  // ---------- flattened news across companies ----------
+  function allNews(period) {
+    var out = [];
+    companies.forEach(function (c) {
+      c.news.forEach(function (n) {
+        if (!period || inPeriod(n.date, period)) out.push(Object.assign({}, n, { ticker: c.ticker, companyName: c.name, color: c.color, initials: c.initials }));
+      });
+    });
+    return out;
+  }
+
+  function esc(s) { return App.escapeHtml(s); }
+  function impactPillClass(v) { return v > 2 ? "pill-pos" : v < -2 ? "pill-neg" : "pill-neu"; }
+  function impactLabel(v) {
+    if (v >= 7) return "Høy positiv"; if (v >= 3) return "Moderat positiv"; if (v > 0) return "Svak positiv";
+    if (v <= -7) return "Høy negativ"; if (v <= -3) return "Moderat negativ"; if (v < 0) return "Svak negativ";
+    return "Nøytral";
+  }
+
+  // ---------- KPI ----------
+  function renderKpis() {
+    var extra = getExtraCompanies();
+    var watched = companies.length + extra.length;
+    var today = allNews("today");
+    var alertsToday = today.filter(function (n) { return Math.abs(n.impact) >= 6; }).length;
+    var highPrio = today.filter(function (n) { return Math.abs(n.impact) >= 8; }).length;
+    var yearNews = allNews("year");
+    var avgImpact = yearNews.length ? yearNews.reduce(function (s, n) { return s + n.impact; }, 0) / yearNews.length : 0;
+    var sentimentScore = Math.round((avgImpact + 10) / 20 * 100);
+    var portfolioCompanies = companies.filter(function (c) { return c.inPortfolio; });
+    var portfolioValue = portfolioCompanies.reduce(function (s, c) { return s + c.price; }, 0);
+    var portfolioChange = portfolioCompanies.length ? portfolioCompanies.reduce(function (s, c) { return s + c.changePct; }, 0) / portfolioCompanies.length : 0;
+
+    function kpi(label, value, deltaText, deltaPos, icon) {
+      return '<div class="card pad col gap-12" style="flex:1;min-width:220px;">' +
+        '<div class="row between center"><span class="eyebrow">' + label + '</span>' + icon + '</div>' +
+        '<div style="font-size:27px;font-weight:700;letter-spacing:-0.02em;">' + value + '</div>' +
+        '<div class="row center gap-5" style="font-size:12px;font-weight:600;color:' + (deltaPos ? "var(--pos)" : "var(--warn)") + ';">' + deltaText + '</div>' +
+      '</div>';
+    }
+    document.getElementById("kpiRow").innerHTML =
+      kpi("Selskaper overvåket", watched, (extra.length ? "+" + extra.length + " lagt til av deg" : portfolioCompanies.length + " i portefølje"), true, "") +
+      kpi("Varsler i dag", alertsToday, highPrio + " med høy prioritet", highPrio === 0, "") +
+      kpi("Snitt sentiment-score", sentimentScore + '<span style="font-size:15px;color:var(--text-faint);font-weight:600;">/100</span>', (sentimentScore >= 50 ? "Positiv overvekt" : "Negativ overvekt") + " siste år", sentimentScore >= 50, "") +
+      kpi("Porteføljeverdi (indikativ)", App.qs ? MOCK.fmtNOK(portfolioValue) + " kr" : portfolioValue, MOCK.fmtPct(portfolioChange) + " snitt i dag", portfolioChange >= 0, "");
+  }
+
+  // ---------- Markedsstemning (waffle) ----------
+  var waffleView = "month";
+  function seededHeight(seed) { return 2 + Math.abs(Math.round(Math.sin(seed * 12.9898) * 10000) % 10); }
+  function renderWaffle() {
+    var cols;
+    if (waffleView === "week") cols = ["MAN", "TIR", "ONS", "TOR", "FRE", "LØR", "SØN"];
+    else if (waffleView === "month") cols = ["JAN", "FEB", "MAR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DES"];
+    else cols = ["2022", "2023", "2024", "2025", "2026"];
+    var currentIdx = cols.length - (waffleView === "year" ? 1 : (waffleView === "month" ? 4 : 1));
+
+    document.getElementById("waffleChart").innerHTML = cols.map(function (label, i) {
+      var filled = i <= currentIdx ? seededHeight(i + 1) : 0;
+      var cells = "";
+      for (var j = 0; j < 10; j++) cells += '<div class="waffle-cell' + (j >= (10 - filled) && i <= currentIdx ? " on" : "") + '"></div>';
+      return '<div class="waffle-col' + (i === currentIdx ? " current" : "") + '"><div class="cells">' + cells + '</div><span class="lbl">' + label + '</span></div>';
+    }).join("");
+
+    var yearNews = allNews("year");
+    var avgImpact = yearNews.length ? yearNews.reduce(function (s, n) { return s + n.impact; }, 0) / yearNews.length : 0;
+    document.getElementById("sentimentScoreLabel").textContent = Math.round((avgImpact + 10) / 20 * 100) + "/100";
+  }
+  App.qsa("[data-wperiod]", document.getElementById("waffleSeg")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      App.qsa(".seg-item", document.getElementById("waffleSeg")).forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      waffleView = btn.getAttribute("data-wperiod");
+      renderWaffle();
+    });
+  });
+
+  // ---------- Impact distribution ----------
+  function renderImpact() {
+    var news = allNews(currentPeriod);
+    var pos = news.filter(function (n) { return n.impact > 2; }).length;
+    var neu = news.filter(function (n) { return n.impact >= -2 && n.impact <= 2; }).length;
+    var neg = news.filter(function (n) { return n.impact < -2; }).length;
+    var max = Math.max(pos, neu, neg, 1);
+    document.getElementById("impactTotalLabel").textContent = news.length + " artikler";
+    document.getElementById("impactPeriodLabel").textContent = PERIOD_LABELS[currentPeriod];
+    function bar(count, color, label) {
+      return '<div class="bar-col"><span style="font-size:12px;font-weight:700;">' + count + '</span><div class="bar" style="height:' + Math.max((count / max) * 150, 4) + 'px;background:' + color + ';"></div><span style="font-size:10.5px;color:var(--text-mut);font-weight:600;">' + label + '</span></div>';
+    }
+    document.getElementById("impactBars").innerHTML = bar(pos, "var(--pos)", "Positiv") + bar(neu, "var(--neu)", "Nøytral") + bar(neg, "var(--neg)", "Negativ");
+  }
+
+  // ---------- news table ----------
+  var sortKey = "impact", sortDir = -1, searchQuery = "", companyFilter = "";
+
+  function populateCompanyFilter() {
+    var sel = document.getElementById("newsCompanyFilter");
+    sel.innerHTML = '<option value="">Alle selskaper</option>' + companies.map(function (c) { return '<option value="' + c.ticker + '">' + c.ticker + ' – ' + c.name + '</option>'; }).join("");
+  }
+
+  function renderNewsTable() {
+    var rows = allNews(currentPeriod);
+    if (companyFilter) rows = rows.filter(function (n) { return n.ticker === companyFilter; });
+    if (searchQuery) {
+      var q = searchQuery.toLowerCase();
+      rows = rows.filter(function (n) { return n.headline.toLowerCase().indexOf(q) > -1 || n.source.toLowerCase().indexOf(q) > -1 || n.companyName.toLowerCase().indexOf(q) > -1 || n.ticker.toLowerCase().indexOf(q) > -1; });
+    }
+    rows.sort(function (a, b) {
+      var av, bv;
+      if (sortKey === "company") { av = a.ticker; bv = b.ticker; }
+      else if (sortKey === "headline") { av = a.headline; bv = b.headline; }
+      else if (sortKey === "source") { av = a.source; bv = b.source; }
+      else if (sortKey === "date") { av = a.date; bv = b.date; }
+      else { av = a.impact; bv = b.impact; }
+      if (av < bv) return -1 * sortDir; if (av > bv) return 1 * sortDir; return 0;
+    });
+
+    document.getElementById("newsCountLabel").textContent = "(" + rows.length + ")";
+    document.getElementById("newsEmptyHint").style.display = rows.length ? "none" : "block";
+    document.getElementById("newsTableBody").innerHTML = rows.slice(0, 40).map(function (n) {
+      return '<tr>' +
+        '<td><a class="row center gap-9" href="selskap.html?ticker=' + n.ticker + '#news" style="color:inherit;">' +
+          '<div style="width:28px;height:28px;border-radius:8px;background:' + n.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;">' + n.initials + '</div>' +
+          '<div class="col" style="line-height:1.2;"><span style="font-size:12.5px;font-weight:600;">' + n.ticker + '</span><span style="font-size:11px;color:var(--text-faint);">' + esc(n.companyName) + '</span></div>' +
+        '</a></td>' +
+        '<td><a href="selskap.html?ticker=' + n.ticker + '#news" style="color:var(--text-dim);">' + esc(n.headline) + '</a></td>' +
+        '<td>' + n.source + '</td>' +
+        '<td>' + n.time + '</td>' +
+        '<td><span class="pill ' + impactPillClass(n.impact) + '">' + impactLabel(n.impact) + '</span></td>' +
+        '<td style="text-align:right;"><a class="icon-btn plain" href="selskap.html?ticker=' + n.ticker + '#news" aria-label="Åpne"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></a></td>' +
+      '</tr>';
+    }).join("");
+  }
+
+  App.qsa("th.sortable").forEach(function (th) {
+    th.addEventListener("click", function () {
+      var key = th.getAttribute("data-sort");
+      if (sortKey === key) sortDir = -sortDir; else { sortKey = key; sortDir = key === "date" || key === "impact" ? -1 : 1; }
+      App.qsa("th.sortable .arrow").forEach(function (a) { a.textContent = ""; });
+      th.querySelector(".arrow").textContent = sortDir === 1 ? "▲" : "▼";
+      renderNewsTable();
+    });
+  });
+  document.getElementById("newssearch").addEventListener("input", App.debounce(function (e) {
+    searchQuery = e.target.value.trim();
+    renderNewsTable();
+  }, 200));
+  document.getElementById("newsCompanyFilter").addEventListener("change", function (e) {
+    companyFilter = e.target.value;
+    renderNewsTable();
+  });
+
+  // ---------- period menu ----------
+  var periodBtn = document.getElementById("periodBtn"), periodMenu = document.getElementById("periodMenu");
+  periodBtn.addEventListener("click", function (e) { e.stopPropagation(); periodMenu.style.display = periodMenu.style.display === "none" ? "flex" : "none"; });
+  document.addEventListener("click", function () { periodMenu.style.display = "none"; });
+  App.qsa("[data-period]", periodMenu).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      currentPeriod = btn.getAttribute("data-period");
+      App.store.set("dashboardPeriod", currentPeriod);
+      document.getElementById("periodBtnLabel").textContent = PERIOD_LABELS[currentPeriod];
+      document.getElementById("pageSubtitle").textContent = "Her er markedsbildet for de overvåkede selskapene dine (" + PERIOD_LABELS[currentPeriod].toLowerCase() + ").";
+      renderKpis(); renderImpact(); renderNewsTable();
+    });
+  });
+  document.getElementById("periodBtnLabel").textContent = PERIOD_LABELS[currentPeriod];
+  document.getElementById("pageSubtitle").textContent = "Her er markedsbildet for de overvåkede selskapene dine (" + PERIOD_LABELS[currentPeriod].toLowerCase() + ").";
+
+  // ---------- legg til selskap ----------
+  document.getElementById("saveNewCoBtn").addEventListener("click", function () {
+    var ticker = document.getElementById("newCoTicker").value.trim().toUpperCase();
+    var name = document.getElementById("newCoName").value.trim();
+    if (!ticker || !name) return;
+    var list = getExtraCompanies();
+    list.push({ ticker: ticker, name: name, exchange: document.getElementById("newCoExchange").value.trim() || "Oslo Børs", sector: document.getElementById("newCoSector").value.trim() || "Ukategorisert", addedAt: TODAY });
+    saveExtraCompanies(list);
+    document.getElementById("modalAddCompany").classList.remove("open");
+    document.getElementById("newCoTicker").value = ""; document.getElementById("newCoName").value = ""; document.getElementById("newCoSector").value = "";
+    renderKpis();
+  });
+
+  // ---------- varselregler ----------
+  function getAlertRules() { return App.store.get("alertRules", []); }
+  function saveAlertRules(list) { App.store.set("alertRules", list); }
+  function renderAlertRules() {
+    var rules = getAlertRules();
+    document.getElementById("alertRulesCard").style.display = rules.length ? "flex" : "none";
+    document.getElementById("alertRulesList").innerHTML = rules.map(function (r, i) {
+      var coLabel = r.ticker ? (MOCK.companies[r.ticker] ? MOCK.companies[r.ticker].name : r.ticker) : "Alle selskaper";
+      return '<div class="row between center" style="padding:8px 0;border-bottom:1px solid var(--border-soft);">' +
+        '<span style="font-size:12.5px;">Varsle for <b>' + esc(coLabel) + '</b> ved påvirkning ± ' + r.threshold + ' eller høyere' + (r.keyword ? ' og nøkkelord «' + esc(r.keyword) + '»' : '') + '</span>' +
+        '<button class="icon-btn plain" data-remove-rule="' + i + '" aria-label="Fjern">✕</button>' +
+      '</div>';
+    }).join("");
+    App.qsa("[data-remove-rule]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.getAttribute("data-remove-rule"), 10);
+        var rules = getAlertRules(); rules.splice(idx, 1); saveAlertRules(rules); renderAlertRules();
+      });
+    });
+  }
+  document.getElementById("alertCompany").innerHTML = '<option value="">Alle selskaper</option>' + companies.map(function (c) { return '<option value="' + c.ticker + '">' + c.ticker + ' – ' + c.name + '</option>'; }).join("");
+  document.getElementById("alertThreshold").addEventListener("input", function (e) { document.getElementById("alertThresholdVal").textContent = e.target.value; });
+  document.getElementById("saveAlertBtn").addEventListener("click", function () {
+    var rules = getAlertRules();
+    rules.push({ ticker: document.getElementById("alertCompany").value, threshold: parseInt(document.getElementById("alertThreshold").value, 10), keyword: document.getElementById("alertKeyword").value.trim() });
+    saveAlertRules(rules);
+    document.getElementById("modalNewAlert").classList.remove("open");
+    document.getElementById("alertKeyword").value = "";
+    renderAlertRules();
+  });
+
+  // ---------- init ----------
+  populateCompanyFilter();
+  renderKpis(); renderWaffle(); renderImpact(); renderNewsTable(); renderAlertRules();
+  App.initModals(document);
+})();
+</script>
+</body>
+</html>

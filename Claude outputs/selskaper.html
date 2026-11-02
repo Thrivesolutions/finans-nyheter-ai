@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<title>Selskaper – Innsikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .company-card { position: relative; cursor: pointer; }
+  .company-card:hover { border-color: #d4d4d8; }
+  .fav-btn { position: absolute; top: 16px; right: 16px; background: transparent; border: none; cursor: pointer; padding: 2px; line-height: 1; }
+  .extra-card { border-style: dashed; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 8-9"/><path d="M14 6h6v6"/></svg></div>
+      <div class="brand-text"><span class="brand-eyebrow">Aksjeovervåkning</span><span class="brand-name">Innsikt</span></div>
+    </div>
+    <nav class="col gap-2">
+      <span class="navsection">Hovedmeny</span>
+      <a href="dashboard.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Oversikt</a>
+      <a href="selskaper.html" class="navlink active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg>Selskaper</a>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>Varsler</a>
+      <a href="strategier.html" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.6 6.6 6.9.6-5.2 4.6 1.6 6.8-6-3.8-6 3.8 1.6-6.8-5.2-4.6 6.9-.6Z"/></svg>Strategier</a>
+      <span class="navsection">Innstillinger</span>
+      <a href="#" class="navlink"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Konto</a>
+    </nav>
+    <div class="user-card"><div class="avatar-sm">EO</div><div class="col" style="line-height:1.2;min-width:0;"><span style="font-size:13px;font-weight:600;">Emil</span><span style="font-size:11.5px;color:var(--text-faint);">Privat portefølje</span></div></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Innsikt <span class="sep">/</span> <span class="now">Selskaper</span></div>
+      <div class="row center gap-14">
+        <div class="search-wrap">
+          <label for="topsearch2" class="visually-hidden">Søk</label>
+          <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"/></svg>
+          <input id="topsearch2" class="input" type="text" placeholder="Søk etter selskap, ticker..." style="width:260px;">
+        </div>
+        <button class="icon-btn" aria-label="Varsler"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button>
+        <div class="avatar-sm" style="background:#e4e4e7;color:#52525b;">EO</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="row wrap between" style="align-items:flex-start;gap:12px;">
+        <div>
+          <h1 class="h1">Selskaper</h1>
+          <p class="muted" style="margin:4px 0 0;font-size:13.5px;" id="companyCountLabel"></p>
+        </div>
+        <button class="btn btn-primary" data-modal-open="modalAddCompany">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Legg til selskap
+        </button>
+      </div>
+
+      <div class="row between center wrap gap-10">
+        <div class="chip-row" id="filterChips"></div>
+        <select class="select" id="sortSelect" style="width:190px;">
+          <option value="sentiment">Sorter: Sentiment</option>
+          <option value="name">Sorter: Navn (A–Å)</option>
+          <option value="change">Sorter: Kursendring</option>
+          <option value="added">Sorter: Sist lagt til</option>
+        </select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px,1fr));gap:16px;" id="companyGrid"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: legg til selskap -->
+<div class="modal-overlay" id="modalAddCompany">
+  <div class="modal">
+    <div class="modal-head"><h3 class="h3">Legg til selskap</h3><button class="icon-btn plain" data-modal-close aria-label="Lukk">✕</button></div>
+    <div class="modal-body">
+      <p class="muted" style="margin:0;font-size:12.5px;">Selskapet legges til overvåkningslisten din med standard kilder og AI-prompter fra den globale malen. Full markedsdata vises når en ekte datakilde er koblet til.</p>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Ticker</span><input class="input" id="newCoTicker" placeholder="F.eks. YAR" style="text-transform:uppercase;"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Selskapsnavn</span><input class="input" id="newCoName" placeholder="F.eks. Yara International"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Børs</span><input class="input" id="newCoExchange" placeholder="F.eks. Oslo Børs" value="Oslo Børs"></label>
+      <label class="col gap-6"><span style="font-size:12.5px;font-weight:600;">Sektor</span><input class="input" id="newCoSector" placeholder="F.eks. Materialer"></label>
+    </div>
+    <div class="modal-foot"><button class="btn" data-modal-close>Avbryt</button><button class="btn btn-primary" id="saveNewCoBtn">Legg til</button></div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  "use strict";
+  var App = window.App, MOCK = window.MOCK;
+  var TODAY = "2026-09-18";
+
+  function esc(s) { return App.escapeHtml(s); }
+  function getExtraCompanies() { return App.store.get("extraCompanies", []); }
+  function saveExtraCompanies(list) { App.store.set("extraCompanies", list); }
+  function getFavorites() { return App.store.get("favorites", []); }
+  function saveFavorites(list) { App.store.set("favorites", list); }
+
+  function getCompanyMerged(ticker) {
+    var base = MOCK.companies[ticker];
+    var overrides = App.store.get("company:" + ticker, {});
+    var news = base.news.map(function (n) {
+      var copy = Object.assign({}, n);
+      if (overrides.newsMeta && overrides.newsMeta[n.id]) Object.assign(copy, overrides.newsMeta[n.id]);
+      return copy;
+    });
+    var avgImpact = news.length ? news.reduce(function (s, n) { return s + n.impact; }, 0) / news.length : 0;
+    return {
+      ticker: base.ticker, name: base.name, exchange: base.exchange, sector: base.sector,
+      color: base.color, initials: base.initials, price: base.price, changePct: base.changePct,
+      priceHistory: base.priceHistory,
+      inPortfolio: overrides.inPortfolio !== undefined ? overrides.inPortfolio : base.inPortfolio,
+      newsToday: news.filter(function (n) { return n.date === TODAY; }).length,
+      avgImpact: avgImpact,
+      isExtra: false
+    };
+  }
+
+  var favorites = getFavorites();
+  var currentFilter = "all", searchQuery = "", sortMode = "sentiment";
+
+  function trendPill(avgImpact) {
+    if (avgImpact > 1) return '<span class="pill pill-pos">Positiv</span>';
+    if (avgImpact < -1) return '<span class="pill pill-neg">Negativ</span>';
+    return '<span class="pill pill-neu">Nøytral</span>';
+  }
+
+  function renderChips(companies) {
+    var counts = {
+      all: companies.length,
+      portfolio: companies.filter(function (c) { return c.inPortfolio; }).length,
+      watch: companies.filter(function (c) { return !c.inPortfolio; }).length,
+      negative: companies.filter(function (c) { return c.avgImpact < -1; }).length,
+      favorites: companies.filter(function (c) { return favorites.indexOf(c.ticker) > -1; }).length
+    };
+    var defs = [["all", "Alle"], ["portfolio", "I portefølje"], ["watch", "Overvåkningsliste"], ["negative", "Negativ trend"], ["favorites", "Favoritter"]];
+    document.getElementById("filterChips").innerHTML = defs.map(function (d) {
+      return '<span class="chip' + (currentFilter === d[0] ? " active" : "") + '" data-filter="' + d[0] + '">' + d[1] + ' (' + counts[d[0]] + ')</span>';
+    }).join("");
+    App.qsa("[data-filter]", document.getElementById("filterChips")).forEach(function (chip) {
+      chip.addEventListener("click", function () { currentFilter = chip.getAttribute("data-filter"); renderAll(); });
+    });
+  }
+
+  function companyCard(c) {
+    var sparkColor = c.changePct >= 0 ? "var(--pos)" : "var(--neg)";
+    var isFav = favorites.indexOf(c.ticker) > -1;
+    return '<div class="company-card card" data-open="' + c.ticker + '">' +
+      '<button class="fav-btn" data-fav="' + c.ticker + '" aria-label="Favoritt">' +
+        '<svg width="17" height="17" viewBox="0 0 24 24" fill="' + (isFav ? "#18181b" : "none") + '" stroke="' + (isFav ? "#18181b" : "#d4d4d8") + '" stroke-width="1.6"><path d="m12 3 2.6 5.6 6 0.8-4.4 4.3 1 6.1L12 17l-5.2 2.8 1-6.1L3.4 9.4l6-.8Z"/></svg>' +
+      '</button>' +
+      '<div class="row" style="align-items:flex-start;gap:10px;margin-bottom:14px;padding-right:24px;">' +
+        '<div style="width:38px;height:38px;border-radius:10px;background:' + c.color + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;">' + c.initials + '</div>' +
+        '<div class="col" style="line-height:1.25;"><span style="font-size:13.5px;font-weight:700;">' + c.ticker + '</span><span style="font-size:11.5px;color:var(--text-faint);">' + esc(c.name) + ' · ' + c.exchange + '</span></div>' +
+      '</div>' +
+      '<div class="row" style="align-items:baseline;justify-content:space-between;margin-bottom:10px;"><span style="font-size:20px;font-weight:700;">' + c.price.toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span><span style="font-size:12.5px;font-weight:700;color:' + sparkColor + ';">' + MOCK.fmtPct(c.changePct) + '</span></div>' +
+      App.sparklineSvg(c.priceHistory, sparkColor, 100, 28) +
+      '<div class="row center between" style="margin-top:12px;">' + trendPill(c.avgImpact) + '<span style="font-size:11px;color:var(--text-faint);">' + c.newsToday + ' nye i dag</span></div>' +
+    '</div>';
+  }
+
+  function extraCard(c, idx) {
+    return '<div class="company-card card extra-card">' +
+      '<div class="row" style="align-items:flex-start;gap:10px;margin-bottom:14px;">' +
+        '<div style="width:38px;height:38px;border-radius:10px;background:#e4e4e7;color:#52525b;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex-shrink:0;">' + esc(c.ticker.slice(0, 2)) + '</div>' +
+        '<div class="col" style="line-height:1.25;"><span style="font-size:13.5px;font-weight:700;">' + esc(c.ticker) + '</span><span style="font-size:11.5px;color:var(--text-faint);">' + esc(c.name) + ' · ' + esc(c.exchange) + '</span></div>' +
+      '</div>' +
+      '<p class="muted" style="margin:0 0 12px;font-size:12px;">Nylig lagt til – kobles til nyheter og markedsdata når kilder er konfigurert for dette selskapet.</p>' +
+      '<div class="row between center"><span class="tag">' + esc(c.sector) + '</span><button class="btn-danger-ghost" style="font-size:11.5px;font-weight:600;padding:0;" data-remove-extra="' + idx + '">Fjern</button></div>' +
+    '</div>';
+  }
+
+  function renderAll() {
+    var companies = MOCK.companyOrder.map(getCompanyMerged);
+    var extra = getExtraCompanies();
+
+    renderChips(companies);
+
+    var filtered = companies.filter(function (c) {
+      if (currentFilter === "portfolio") return c.inPortfolio;
+      if (currentFilter === "watch") return !c.inPortfolio;
+      if (currentFilter === "negative") return c.avgImpact < -1;
+      if (currentFilter === "favorites") return favorites.indexOf(c.ticker) > -1;
+      return true;
+    });
+    if (searchQuery) {
+      var q = searchQuery.toLowerCase();
+      filtered = filtered.filter(function (c) { return c.name.toLowerCase().indexOf(q) > -1 || c.ticker.toLowerCase().indexOf(q) > -1; });
+    }
+    if (sortMode === "sentiment") filtered.sort(function (a, b) { return b.avgImpact - a.avgImpact; });
+    else if (sortMode === "name") filtered.sort(function (a, b) { return a.name.localeCompare(b.name, "nb"); });
+    else if (sortMode === "change") filtered.sort(function (a, b) { return b.changePct - a.changePct; });
+
+    document.getElementById("companyCountLabel").textContent = (companies.length + extra.length) + " selskaper under overvåkning · " + filtered.length + " vises";
+
+    var extraHtml = (currentFilter === "all" && !searchQuery) ? extra.map(extraCard).join("") : "";
+    document.getElementById("companyGrid").innerHTML = filtered.map(companyCard).join("") + extraHtml || '<p class="empty-hint">Ingen selskaper matcher filteret ditt.</p>';
+
+    App.qsa("[data-open]", document.getElementById("companyGrid")).forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("[data-fav]")) return;
+        location.href = "selskap.html?ticker=" + card.getAttribute("data-open");
+      });
+    });
+    App.qsa("[data-fav]", document.getElementById("companyGrid")).forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var t = btn.getAttribute("data-fav");
+        var idx = favorites.indexOf(t);
+        if (idx > -1) favorites.splice(idx, 1); else favorites.push(t);
+        saveFavorites(favorites);
+        renderAll();
+      });
+    });
+    App.qsa("[data-remove-extra]", document.getElementById("companyGrid")).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.getAttribute("data-remove-extra"), 10);
+        var list = getExtraCompanies(); list.splice(idx, 1); saveExtraCompanies(list);
+        renderAll();
+      });
+    });
+  }
+
+  document.getElementById("topsearch2").addEventListener("input", App.debounce(function (e) { searchQuery = e.target.value.trim(); renderAll(); }, 200));
+  document.getElementById("sortSelect").addEventListener("change", function (e) { sortMode = e.target.value; renderAll(); });
+
+  document.getElementById("saveNewCoBtn").addEventListener("click", function () {
+    var ticker = document.getElementById("newCoTicker").value.trim().toUpperCase();
+    var name = document.getElementById("newCoName").value.trim();
+    if (!ticker || !name) return;
+    var list = getExtraCompanies();
+    list.push({ ticker: ticker, name: name, exchange: document.getElementById("newCoExchange").value.trim() || "Oslo Børs", sector: document.getElementById("newCoSector").value.trim() || "Ukategorisert", addedAt: TODAY });
+    saveExtraCompanies(list);
+    document.getElementById("modalAddCompany").classList.remove("open");
+    document.getElementById("newCoTicker").value = ""; document.getElementById("newCoName").value = ""; document.getElementById("newCoSector").value = "";
+    renderAll();
+  });
+
+  renderAll();
+  App.initModals(document);
+})();
+</script>
+</body>
+</html>
